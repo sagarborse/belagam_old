@@ -202,3 +202,7 @@ catalog/controller/module/pavmegamenu.php
 catalog/model/menu/megamenu.php
 catalog/language/english/module/pavmegamenu.php
 catalog/view/theme/pav_books/template/module/pavmegamenu.tpl
+catalog/controller/information/contact.php
+catalog/language/english/information/contact.php
+catalog/view/theme/pav_books/template/information/contact.tpl
+system/library/captcha.php
