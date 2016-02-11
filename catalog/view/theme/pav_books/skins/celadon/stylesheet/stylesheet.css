@@ -294,6 +294,16 @@ footer a,footer p{
 
 
 
+.show-mobile .quickaccess-toggle {
+    background-color: #7FB8AE;
+    border: 1px solid #7FB8AE;
+}
+.show-mobile .quickaccess-toggle:hover {
+    background-color: #6ea59b;
+}
+.show-mobile .inner-toggle {
+    border-color: #6ea59b;
+}
 
 
 

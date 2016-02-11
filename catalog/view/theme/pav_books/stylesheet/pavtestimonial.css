@@ -72,8 +72,10 @@
     z-index: 20;
 }
 .testimonial-item{
-	overflow: hidden;
 }
+
+
+
 .testimonial{
 	float: left;
 	width: 58%;
@@ -115,11 +117,9 @@
 }
 .pavtestimonial .left{
 	left: 10px;
-	top: 35%;
 }
 .pavtestimonial .right{
 	right: 10px;
-	top: 35%;
 }
 
 .pavtestimonial .carousel-control{
@@ -132,6 +132,7 @@
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 	filter: alpha(opacity=0);
 	opacity: 0;	
+	top: 30%
 }	
 .pavtestimonial:hover .carousel-control{
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";

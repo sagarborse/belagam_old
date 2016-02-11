@@ -1,0 +1,20 @@
+<modification>
+<id>OpenCart Mobile Framework Lite</id>
+<version>v1.7.2</version>
+    <vqmver>2.4.1</vqmver>
+    <author>opencartmobile.com / omframework.com / braiv.com</author>	
+	
+	<file name="system/startup.php">
+		<operation>
+			<search position="before">
+			<![CDATA[?>]]></search>
+			<add><![CDATA[
+			
+//Mobile Esp detection library
+require_once(DIR_SYSTEM . 'library/categorizr.php');
+			]]></add>
+		</operation>
+
+	</file>
+	
+</modification>

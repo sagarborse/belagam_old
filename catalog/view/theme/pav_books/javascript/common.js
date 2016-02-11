@@ -42,6 +42,27 @@
 
 
 $(window).ready( function(){
+/* Fix Search */
+	/* Search */
+	$('#search_mobile .button-search').bind('click', function() {
+		url = $('base').attr('href') + 'index.php?route=product/search';
+		var search = $('#search_mobile input[name=\'search1\']').attr('value');
+		if (search) {
+			url += '&search=' + encodeURIComponent(search);
+		}
+		location = url;
+	});	
+	$('#search_mobile input[name=\'search1\']').bind('keydown', function(e) {
+		if (e.keyCode == 13) {
+			url = $('base').attr('href') + 'index.php?route=product/search';			 
+			var search = $('#search_mobile input[name=\'search1\']').attr('value');			
+			if (search) {
+				url += '&search=' + encodeURIComponent(search);
+			}			
+			location = url;
+		}
+	});
+	
 	/*  Fix First Click Menu */
 	$(document.body).on('click', '#mainnav [data-toggle="dropdown"]' ,function(){
 		if(!$(this).parent().hasClass('open') && this.href && this.href != '#'){

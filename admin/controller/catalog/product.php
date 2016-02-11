@@ -834,7 +834,7 @@ class ControllerCatalogProduct extends Controller {
 		} elseif (!empty($product_info)) {
 			$this->data['image'] = $product_info['image'];
 		} else {
-			$this->data['image'] = '';
+			$this->data['image'] = 'no_image.jpg';
 		}
 
 		$this->load->model('tool/image');

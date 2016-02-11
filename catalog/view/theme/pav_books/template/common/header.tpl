@@ -158,7 +158,7 @@
 			<?php } ?>
 			<div id="header-top" class="pav-header-top">
 				<div class="container">
-					<div class="row-fluid">
+					<div class="row-fluid hidden-tablet hidden-phone">
 						<div class="span8">							
 							<nav id="links" class="pull-left">
 								<ul class="clearfix links">
@@ -203,6 +203,7 @@
 							<?php echo $currency; ?>
 						</div>
 					</div>
+			
 				</div>
 			</div>
 
@@ -273,6 +274,78 @@
 								</div>
 							</nav>
 						<?php } ?>
+														
+			<div class="show-mobile hidden-desktop  pull-right">
+				<div class="quick-user pull-left">
+							<div class="quickaccess-toggle">
+								<i class="fa fa-user"></i>															
+							</div>	
+							<div class="inner-toggle">
+								<div class="login">
+									<?php if (!$logged) { ?>
+									<?php echo $text_welcome; ?>
+									<?php } else { ?>
+									<?php echo $text_logged; ?>
+									<?php } ?> 
+								</div>
+							</div>						
+						</div>
+						<div class="quick-access pull-left">
+							<div class="quickaccess-toggle">
+								<i class="fa fa-list"></i>															
+							</div>	
+							<div class="inner-toggle">
+								<ul class="pull-left">
+									<!-- <li><a class="first" href="<?php echo $home; ?>"><?php echo $text_home; ?></a></li> -->
+									<li><a class="account" href="<?php echo $account; ?>"><?php echo $text_account; ?></a></li>
+									<li><a class="wishlist" href="<?php echo $wishlist; ?>" id="wishlist-total"><?php echo $text_wishlist; ?></a></li>
+									<li><a class="shoppingcart" href="<?php echo $shopping_cart; ?>"><?php echo $text_shopping_cart; ?></a></li>
+									<li><a class="last checkout" href="<?php echo $checkout; ?>"><?php echo $text_checkout; ?></a></li> 
+						
+								</ul>
+							</div>						
+						</div>
+
+
+						<div id="search_mobile" class="search pull-left">				
+							<div class="quickaccess-toggle">
+								<i class="fa fa-search"></i>								
+							</div>																								
+							<div class="inner-toggle">
+							
+								<div id="search">
+						<input type="text" name="search1" placeholder="<?php echo $text_search; ?>" value="<?php echo $search; ?>" />
+						<div class="button-search pavicon-search">&nbsp;</div>
+					</div>
+
+							</div>
+						</div>
+
+
+						<div class="currency-mobile pull-left">
+							<div class="quickaccess-toggle">
+								<i class="fa fa-calendar"></i>								
+							</div>						
+							<div class="inner-toggle">
+								<div class="currency pull-left">
+									<?php echo $currency; ?>
+								</div> 
+							</div>															
+						</div>
+						
+						
+						<div class="language-mobile pull-left">
+							<div class="quickaccess-toggle">
+								<i class="fa fa-cog"></i>								
+							</div>						
+							<div class="inner-toggle">	
+								<div class="language pull-left">
+									<?php echo $language; ?>
+								</div>
+							</div>															
+						</div>
+						
+			</div>	
 					</div>
 				</div>				
 			</div>
@@ -286,10 +359,10 @@
 									<div id="logo" class="pull-left"><a href="<?php echo $home; ?>"><img src="<?php echo $logo; ?>" title="<?php echo $name; ?>" alt="<?php echo $name; ?>" /></a></div>
 								<?php } ?>
 							</div>
-							<div class="span7">
+							<div class="span7 hidden-phone ">
 								<div class="header-right clearfix">
 									<?php echo $cart; ?>		
-									<div id="search" class="pull-right">
+									<div id="search" class="pull-right hidden-tablet ">
 										<input type="text" name="search" placeholder="<?php echo $text_search; ?>" value="<?php echo $search; ?>" />
 										<div class="button-search pavicon-search">&nbsp;</div>
 									</div>	

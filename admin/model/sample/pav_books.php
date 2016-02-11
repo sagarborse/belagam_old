@@ -1,43 +1,30 @@
-<?php
-if( !class_exists("ModuleSample") ) { 
+<?php 
+if( !class_exists("ModuleSample") ) {
 	class ModuleSample { 
 		public static function getModules(){ 
 			$modules = array(
+				'pavblog',
 				'pavblogcategory',
 				'pavblogcomment',
 				'pavbloglatest',
-
-				
-				
-				'pavcustom',								
-				'pavproducttabs',
-				'pavmegamenu',
-				
-				'pavproducts',
+				'pavcustom',				
 				'pavsliderlayer',
-				'pavtestimonial',					
-					
-				'account',
-				'carousel',	
-				'affiliate',
-				'banner',
-				'bestseller',
-				'category',				
-				'featured',
-				'latest',	
-				'special'
-			
-				
-				);
+				'pavmegamenu',
+				'pavproducttabs',		
+				'pavproducts',
+				'pavtestimonial',	
+			);
 			
 			return $modules;
 		}
+		
 		public static function getModulesQuery(){
 			$query = array();
 			require( dirname(__FILE__).'/pav_books_query.php' );
 			return $query;
 		}
-				public static function installCustomSetting( $m ){
+		
+		public static function installCustomSetting( $m ){
 			
 				$d['pavblog'] = array(
 							'general_lwidth'=> '680',
@@ -87,45 +74,43 @@ if( !class_exists("ModuleSample") ) {
 							'recaptcha_public_key'=>'6LcoLd4SAAAAADoaLy7OEmzwjrf4w7bf-SnE_Hvj',
 							'recaptcha_private_key'=>'6LcoLd4SAAAAAE18DL_BUDi0vmL_aM0vkLPaE9Ob',
 							'cat_columns_leading_blogs'=> 1
+
 				);
 
 				$m->load->model('setting/setting');
 				$m->model_setting_setting->editSetting('pavblog', $d );	
-				
-				
 		}
 		public static function getStoreConfigs(){
-			return array(
-				'config_image_category_width' =>714,
-				'config_image_category_height' => 203,					
+				return array(
+							'config_image_category_width' =>714,
+							'config_image_category_height' => 203,					
 
-				'config_image_thumb_width' =>285,
-				'config_image_thumb_height' => 311,
+							'config_image_thumb_width' =>285,
+							'config_image_thumb_height' => 311,
 
-				'config_image_popup_width' =>600,
-				'config_image_popup_height' =>600,
+							'config_image_popup_width' =>600,
+							'config_image_popup_height' =>600,
 
-				'config_image_product_width' =>200,
-				'config_image_product_height' =>200,
+							'config_image_product_width' =>200,
+							'config_image_product_height' =>200,
 
-				'config_image_additional_width' => 80,
-				'config_image_additional_height' => 80,
+							'config_image_additional_width' => 80,
+							'config_image_additional_height' => 80,
 
-				'config_image_related_width' => 184,
-				'config_image_related_height' => 140,
+							'config_image_related_width' => 184,
+							'config_image_related_height' => 140,
 
-				'config_image_compare_width' => 140,
-				'config_image_compare_height' => 175,
+							'config_image_compare_width' => 140,
+							'config_image_compare_height' => 175,
 
-				'config_image_wishlist_width' => 80,
-				'config_image_wishlist_height' => 80,
+							'config_image_wishlist_width' => 80,
+							'config_image_wishlist_height' => 80,
 
-				'config_image_cart_width' => 80,
-				'config_image_cart_height' => 80,
-
+							'config_image_cart_width' => 80,
+							'config_image_cart_height' => 80,
 				);
 		}
-
+	
 	}
 }
 ?>

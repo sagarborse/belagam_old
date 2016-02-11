@@ -246,7 +246,7 @@ Please donate via PayPal to donate@opencart.com
             <?php } else { ?>
 				<?php echo $powered; ?>
             <?php } ?>
-            by <a href="http://www.pavothemes.com" target="_blank" title="pavothemes - opencart themes clubs">Pavothemes.com</a> All reversed.
+            All reversed.
         </address>        
     </div>
 </aside>

@@ -1,21 +1,83 @@
-/* #Large desktop 
-===========================================================================================================================================================================*/
+/* Large desktop */
 @media (min-width: 1200px) {
 	#off-canvas-nav{
 		display: none;
 	}
+	
+		
+	/* Custom Bootstrap */
+
+	.row-fluid [class*="pav-span"] {
+		display: block;
+		float: left;
+		margin: 0;            
+	}
+
+	.row-fluid .pav-span1 {
+		width: 8.33333%;
+	}
+
+	.row-fluid .pav-span2 {
+		width: 16.6667%;
+	}
+
+	.row-fluid .pav-span3{
+		width: 25%;
+	}
+	.row-fluid .pav-span4 {
+		width: 33.3333%;
+	}
+	.row-fluid .pav-span5 {
+		width: 41.6667%;
+	}
+	.row-fluid .pav-span6 {
+		width: 50%;
+	}
+	.row-fluid .pav-span7 {
+		width: 58.3333%;
+	}
+	.row-fluid .pav-span8 {
+		width: 66.6667%;
+	}
+	.row-fluid .pav-span9 {
+		width: 75%;
+	}
+	.row-fluid .pav-span10 {
+		width: 83.3333%;
+	}
+	.row-fluid .pav-span11 {
+		width: 91.6667%;
+	}
+	.row-fluid .pav-span12 {
+		width: 100%;
+	}
 }
 
-/* #Ipad landscape
-===========================================================================================================================================================================*/
+/* Ipad landscape */
 @media (min-width: 940px) and (max-width: 1170px) {
 	#off-canvas-nav{
 		display: none;
 	}
 }
+@media(max-width:979px){
+#mainnav .container {
+	position: relative;
+}
+.wrapper-nav-title {
+    padding: 5px 0;
+}
+.pav-header-top {
+    background: none repeat scroll 0 0 #F1F2F4;
+    border-bottom: none;
+    padding:0;
+}
 
-/* #Ipad Portrait
-===========================================================================================================================================================================*/   
+	.navbar .btn-navbar{
+		display: inline-block;
+		padding:8px 7px;
+	}
+}
+/* Ipad Portrait */
 @media (min-width: 768px) and (max-width: 979px) {
 
 	h1, .h1{
@@ -93,7 +155,7 @@
 	=========================================================*/
 
 
-.jcarousel .box-content{
+	.jcarousel .box-content{
 		padding-left: 3%;padding-right: 3%;
 	}
 
@@ -128,8 +190,6 @@
 		visibility: hidden;
 	}
 
-
-
 	.product-block h3{
 		margin: 0;
 	}
@@ -155,224 +215,183 @@
 
 
 
-
-/* #Iphone 5 landscape 
-===========================================================================================================================================================================*/
+/* Iphone 5 landscape  */
 @media(max-width:767px) {
-
+.zoomContainer {
+ display:none;
+ }
+	span.h1{
+		padding-left: 15%;
+		width: auto;
+	}
+	.navbar-inner{
+		display: none;
+	}
+	.language-wrapper,.currency-wrapper{
+		margin-top: 10px;margin-bottom: 10px;
+		float: none;
+		display: inline-block;
+	}
+	#links{
+		float: none;
+		text-align: center;
+	}
+	.links li{
+		float: none;
+		display: inline;
+	}
+	#welcome{
+		float: none;
+		text-align: center;		
+	}
+	#logo{
+		float: none;
+		text-align: center;
+	}
+	.header-right{
+		text-align: center;
+		margin-top: 10px;
+		margin-bottom: 20px;
+	}
+	#cart,#search{
+		float: none;
+		display: inline-block;
+	}
+	.testimonial:before,.testimonial:after{
+		display: none;
+	}
+	.testimonial,.t-avatar{
+		margin: 0 0 20px 0;
+		width: 100%;
+	}
+	.pavtestimonial{
+		padding: 5%;
+	}
+	.colorbox-t{
+		display: block;
+		margin-top: 10px;
+	}
+	.product-tab-content:before{
+		display: none;
+	}
+	a.button, input.button, .btn, .btn-small{
+		padding-top: 7px;padding-bottom: 7px;
+	}
 	
+	.nav-tabs > li > a{
+		font-size: 12px;
+		padding:8px;
+	}
+	.tabs-category,.product-tab-content{
+		width: 100%;		
+	}
+	.tabs-category{
+		padding: 0 0 20px 0;
+	}
+	.h-tabs a span{
+		float: none;
+		margin: 0;
+		padding:0 0 0 10px;
+	}
+	.h-tabs li a{
+		float: none;
+		width: 100%;
+		padding: 10px 0;
+		display: block;
+	}
+	.h-tabs a img{
+		margin-right: 10px;
+	}
+	.jcarousel-skin-opencart .jcarousel-item span{
+		display: none;
+	}
+	.jcarousel-skin-opencart .jcarousel-item{
+		width: 40px !important;
+	}
+	.jcarousel .box-content{
+		padding:20px 15px;	
+	}
+	.pav-about-us img{
+		display: none;
+	}
+	.footer-top-inner:before,.footer-top-inner:after{
+		display: none;
+	}
+	.footer-top-wrapper{
+		margin: 0;
+	}
+	.footer-top-inner{
+		position: static;
+		margin: 0 0 20px 0;
+		padding:10px;
+		border: 1px solid #E5E2DD;
+		height: auto;
+		line-height: normal;
+	}
+	.foot-pack{
+		margin-top: 0;
+		padding: 20px 20px 30px;
+	}
+	#back-top a{
+		left: 40%;
+	}
+	a.button-newsletter{
+		height: auto;
+		line-height: normal;
+		margin: 0 0 10px 0;
+		float: none;
+		display: inline-block;
+	}
+	.input-box .input-subscribe{
+		float: none;
+		width: 220px;
+		display: inline;
+	}
+	.social{
+		margin-bottom: 20px;
+		text-align: center;
+	}
+	.social li{
+		float: none;
+		display: inline-block;
+	}
+	.input-box{
+		text-align: center;
+	}
+	.m-height .box-content{
+		min-height: 100px;
+	}
 
 }
 
 
    
-/* #Iphone 4 + 5 Portrait 
-===========================================================================================================================================================================*/
+/* Iphone 4 + 5 Portrait */ 
 @media only screen and (min-width: 240px) and (max-width: 320px) {
-
-	/* Header
-	=========================================================*/
-	.pav-header-top{
-		padding: 10px;
+	.m-height .box-content{
+		min-height: 100px;
 	}
-	#welcome{
-		margin-top: 10px;
+	.tab-nav{
+		margin-bottom: 45px;
+	}
+	.pav-product-tab .carousel-control{
+		top: 40px;
+	}
+	.tab-nav.tabs-category{
 		margin-bottom: 10px;
+	}
+	.filter > div, .filter > ul{
 		float: none;
-		clear: both;
-		text-align: center;
+		margin-bottom: 10px;
 	}
-	.language-wrapper,
-	.currency-wrapper{
-		text-align: center;
-		float: none !important;
-		margin: 5px 0;
-	}
-	#logo{
-		margin: 10px 0;
-		text-align: center;
-		width: 100%;
-	}
-	#search, #cart{
-		 display: inline-block;
-    float: none;
-    margin: 5px 5%;
-    width: 80%;
-	}
-	span.h1{
-		width: 80%;
-	}
-	.links{
-		text-align: center;
-	}
-	.links li{
+	.product-list .image,.product-list .product-bottom{
 		float: none;
-		display: inline-block;
+		padding:0;
 	}
-	
-	.navbar-inner{
-		min-height: inherit;
-	}
-	
-	.product-tab-content:before{
-		display: none;
-	}
-	.tabs-category,.product-tab-content,.h-tabs li a{
-		width: 98%;
-	}
-	a.button, input.button, .btn, .btn-small{font-size: 12px !important;}
-	.h-tabs li a{
-		padding: 6px;
-	}
-	.footer-top-wrapper{
-		margin: 0;
-	}
-	.foot-pack{margin-top: 0;}
-	.footer-top-inner{height: auto; padding: 10px 0;}
-	.footer-top-inner:before, .footer-top-inner:after{display: none;}
-
-	/* Product Tab 
-	=========================================================*/
-	.nav-tabs > li > a{
-		padding: 8px 5px;
-		margin: 0 2px 0 0;
-	}
-
-	.carousel-controls .left{
-		display: none;
-	}
-	.carousel-controls .right{
-		display: none;
-	}
-
-	/* Product 
-	=========================================================*/
 	.pavicon-compare-default, .pavicon-wishlist-default{
-		height: 28px;
+		height: 30px;
 	}
-
 	#image-additional a{
-		margin-right: 2px;margin-left: 2px;
+		margin-right: 2px;
 	}
-
-	#image-additional{
-		width: 100%;
-	}
-
-	/* testimonial 
-	=========================================================*/
-
-	.testimonial{
-		margin:0;		
-	}
-
-	.testimonial:before,
-	.testimonial:after{
-		display: none;
-	}	
-
-	.pavtestimonial p{
-		font-size: 100%;
-	}
-
-
-	/* Manufacture */
-	.jcarousel-list li img{
-		border-radius: 50%;
-		-webkit-border-radius: 50%;
-		-moz-border-radius: 50%;
-		-ms-border-radius: 50%;
-		-o-border-radius: 50%;
-	}
-
-	.jcarousel-skin-opencart .jcarousel-next-horizontal, 
-	.jcarousel-skin-opencart .jcarousel-prev-horizontal,
-	.jcarousel-skin-opencart .jcarousel-item span
-	{
-		display: none;
-	}
-	.jcarousel .box-content{
-		padding: 20px 13px;
-	}
-
-	/* Footer */
-	.input-box .input-subscribe{
-		width: 150px;
-	}
-	.button-newsletter span{
-		float: left;
-		font-size: 12px;
-		margin-top: 6px;
-	}
-	.input-box{
-		margin-top: 20px;
-	}
-	.foot-pack{
-		padding: 20px 20px 40px;
-	}
-	.foot-pack p{
-		line-height: normal;
-	}
-	footer h3{
-		font-size: 100%;
-	}
-	#back-top a{
-		left: 40%;
-	}
-	.info li{
-		line-height: 20px;
-	}
-	address{
-		line-height: 20px;
-		margin: 10px 0 0 0;
-	}
-	#powered{
-		padding: 20px 10px;
-	}
-
-	a.button-newsletter{
-		padding-left: 8px;padding-right: 8px;
-	}
-	.input-box .input-subscribe{
-		width: 130px;
-	}
-
-	.nav-tabs > li > a{
-		padding: 8px;
-		font-size: 100%;
-	}
-
-	/* SlideShow 
-	=========================================================*/
-	[id*="sliderlayer"] .tp-bannershadow,[id*="sliderlayer"] .tp-bullets{
-		display: none;
-	}
-
-	.pav-about-us img{
-		display: none;
-	}
-
-	.bannercontainer:hover .tparrows{
-		display: none;
-	}
-
-	/* testimonial 
-	=========================================================*/
-
-	.testimonial{
-		width: 100%;
-	}
-	.t-avatar{
-		width: 100%;
-		float: left;
-		text-align: left;margin-top: 20px;
-	}
-	.colorbox-t{
-		padding-top: 10px;
-		display: inline-block;
-
-	}
-
-
-
 }

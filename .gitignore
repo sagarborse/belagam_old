@@ -2,3 +2,4 @@
 config.php
 admin/config.php
 system/cache/*
+vqmod/vqcache/*

@@ -5,7 +5,7 @@ $_['heading_title']       = '<b style="font-size:18	px;color:#E8481B">Pavo Theme
 // Text
 $_['text_module']         = 'Modules';
 $_['text_default_theme']         = 'Configure Option for Template ';
-$_['text_success']        = 'Success: You have modified module slideshow!';
+$_['text_success']        = 'Success: You have modified module framework!';
 $_['text_content_top']    = 'Content Top';
 $_['text_content_bottom'] = 'Content Bottom';
 $_['text_column_left']    = 'Column Left';
@@ -67,7 +67,7 @@ $_['logo_system'] = 'Use System';
 $_['logo_text']   = 'Logo Text';
 $_['logo_image']  = 'Logo Image';
 // Error
-$_['error_permission']    = 'Warning: You do not have permission to modify module slideshow!';
+$_['error_permission']    = 'Warning: You do not have permission to modify module framework!';
 $_['error_dimension']     = 'Width &amp; Height dimensions required!';
 $_['text_message_override_sample'] = 'Do you want to override data sample for this?';
 $_['text_message_install_sample'] = 'Do you want to Install New data sample for this?';
@@ -112,6 +112,17 @@ $_['text_len_zoom_basic'] = 'Basic';
 $_['text_contact_html'] = 'Custom HTML';
 $_['text_auto'] = 'Auto';
 $_['text_support'] = '';
-
+$_['text_add_product_tab'] = 'Add Custom Tab';
+$_['entry_customtab_content'] = 'Custom Tab Content';
+$_['entry_customtab_name'] = 'Custom Tab Name: ';
 $_['text_product_related_column'] = '<b>Product Related Columns<b>';
+$_['text_explain_internal_modules'] = '* <span class="label">Internal Modules</span><i> supports by pavo framework and need not install, put on postions as opencart module</i>';
+//start edit code
+$_['location_address'] = 'Location Address';
+$_['help_location_address'] = 'Place Autocomplete Address';
+$_['text_contact_googlemap'] = 'Googlemap Location';
+$_['location_latitude'] = 'Latitude Address';
+$_['location_longitude'] = 'Longitude Address';
+$_['text_location_address'] = 'Enter a Location';
+//end edit code
 ?>

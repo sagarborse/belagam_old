@@ -308,7 +308,7 @@ class ControllerAccountRegister extends Controller {
 		if (isset($this->request->post['newsletter'])) {
 			$this->data['newsletter'] = $this->request->post['newsletter'];
 		} else {
-			$this->data['newsletter'] = '';
+			$this->data['newsletter'] = '1';
 		}	
 
 		if ($this->config->get('config_account_id')) {

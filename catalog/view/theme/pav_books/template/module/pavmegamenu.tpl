@@ -6,7 +6,6 @@
 				<span class="icon-bar is-white"></span>
 				<span class="icon-bar is-white"></span>			
 			</a>
-			<span class="hidden-desktop pull-left h1">Navigation</span>
 		</div>	
 		<div class="navbar-inner">
 			<div class="nav-collapse collapse">

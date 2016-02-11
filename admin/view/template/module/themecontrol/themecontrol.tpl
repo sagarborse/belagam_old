@@ -198,6 +198,43 @@
 			  			 					</select>
 			  			 				</td>
 			  			 			</tr>	
+			  			 			<tr>
+			  			 				<td colspan="1"><h4><?php echo $this->language->get('text_add_product_tab');?></h4></td>
+			  			 				<td>
+			  			 					<select name="themecontrol[enable_product_customtab]">
+			  			 						<?php foreach( $yesno as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['enable_product_customtab']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  			 					</select>
+			  			 				</td>
+			  			 			</tr>
+			  			 			<tr>
+			  			 				
+			  			 				<td colspan="2">
+			  			 					 
+			  			 					<table class="form">
+			  			 					<?php   foreach( $languages as $language ) {  
+
+			  			 							 $customtab_name = isset($module['product_customtab_name'][$language['language_id']])
+			  			 							 				?$module['product_customtab_name'][$language['language_id']] :"";
+			  			 							 $customtab_content = isset($module['product_customtab_content'][$language['language_id']])?$module['product_customtab_content'][$language['language_id']]:"";				
+			  			 					 ?>
+			  			 						<tr>
+			  			 						<td>  <img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /> <?php echo $language['name'];?> 	</td>
+			  			 						<td>
+			  			 						 	<p>
+			  			 							 <label> <?php echo $this->language->get('entry_customtab_name');?></label>	</p>
+
+					  			 					 <p><input size="80" type="text"  name="themecontrol[product_customtab_name][<?php echo $language['language_id'];?>]" value="<?php echo $customtab_name;?>"/></p>
+					  			 					 
+					  			 					 <label> <?php echo $this->language->get('entry_customtab_content');?> 	
+			  			 							<textarea id="customtab-content-<?php echo $language['language_id']; ?>"  style="width:90%; height:300px" name="themecontrol[product_customtab_content][<?php echo $language['language_id'];?>]"><?php echo $customtab_content;?></textarea>
+			  			 						 	</td>
+			  			 						</tr>
+			  			 					<?php } ?>	
+			  			 					</table>
+			  			 				</td>
+			  			 			</tr>
 			  					</table>
 			  				</div>
 			  			 </div>
@@ -206,6 +243,30 @@
 			  			 	<div class="tab-inner">
 			  			 		
 			  			 		<table class="form">
+			  			 			<tr>
+			  			 				<td class="" colspan="2"><h4><?php echo $this->language->get('text_contact_googlemap'); ?></h4></td>
+			  			 			</tr>
+			  			 			<tr>
+			  			 				<td><?php echo $this->language->get('location_address'); ?><span class="help"><?php echo $this->language->get("help_location_address"); ?></span></td>
+			  			 				<td>
+			  			 					<input id="searchTextField" name="themecontrol[location_address]" type="text" value="<?php echo isset($module['location_address'])?$module['location_address']:''; ?>" placeholder="<?php echo $this->language->get('text_location_address'); ?>" autocomplete="on" runat="server" size="60"/>
+			  			 				</td>
+			  			 			</tr>
+			  			 			<tr>
+			  			 				<td><?php echo $this->language->get('location_latitude'); ?></td>
+			  			 				<td>
+			  			 					<input id="location_latitude" name="themecontrol[location_latitude]" value="<?php echo isset($module['location_latitude'])?$module['location_latitude']:''; ?>" size="30"/>
+										</td>
+			  			 			</tr>
+			  			 			<tr>
+			  			 				<td><?php echo $this->language->get('location_longitude'); ?></td>
+			  			 				<td><input id="location_longitude" name="themecontrol[location_longitude]" value="<?php echo isset($module['location_longitude'])?$module['location_longitude']:''; ?>" size="30"/></td>
+			  			 			</tr>
+			  			 			<tr>
+
+
+
+
 			  			 			<tr>
 			  			 				<td class="" colspan="2"><h4><?php echo $this->language->get('text_contact_html'); ?></h4></td>
 			  			 			</tr>
@@ -220,7 +281,7 @@
 			  			 					 <?php echo $language['name'];?> 
 			  			 				</td>
 			  			 				<td>
-			  			 					<textarea style="width:90%; height:300px" name="themecontrol[contact_customhtml][<?php echo $language['language_id'];?>]"><?php echo $contact_customhtml;?></textarea>
+			  			 					<textarea id="contact_customhtml-<?php echo $language['language_id'];?>" style="width:90%; height:300px" name="themecontrol[contact_customhtml][<?php echo $language['language_id'];?>]"><?php echo $contact_customhtml;?></textarea>
 			  			 				</td>
 			  			 			<tr>
 			  			 			<?php } ?>	
@@ -378,6 +439,7 @@
 				
 				<?php if(  $modules_tpl ){ ?>
 				<div id="tab-imodules">
+					<p><?php echo $this->language->get('text_explain_internal_modules'); ?></p>
 					<?php require( $modules_tpl );?>
 				</div>
 				<?php } ?>
@@ -619,7 +681,31 @@
   </form>
   
 </div>
+<script type="text/javascript" src="view/javascript/ckeditor/ckeditor.js"></script> 
  <script type="text/javascript"><!--
+
+ 	<?php foreach ($languages as $language) { ?>
+	CKEDITOR.replace('customtab-content-<?php echo $language['language_id']; ?>', {
+		filebrowserBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserImageBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserFlashBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserImageUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserFlashUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>'
+	});  
+
+	CKEDITOR.replace('contact_customhtml-<?php echo $language['language_id']; ?>', {
+		filebrowserBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserImageBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserFlashBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserImageUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserFlashUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>'
+	}); 
+
+	<?php } ?>
+
+
 $('#tabs a').tabs(); 
 $('.mytabs a').tabs();
 $('#languages a').tabs();
@@ -725,4 +811,22 @@ function image_upload(field, thumb) {
 	});
 };
 //--></script> 
+
+<script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places" type="text/javascript"></script>
+<script type="text/javascript">
+	function initialize() {
+		var input = document.getElementById('searchTextField');
+		var autocomplete = new google.maps.places.Autocomplete(input);
+		google.maps.event.addListener(autocomplete, 'place_changed', function () {
+			var place = autocomplete.getPlace();
+
+			var lat = place.geometry.location.lat();
+			var lon = place.geometry.location.lng();
+
+			document.getElementById('location_latitude').value = lat;
+			document.getElementById('location_longitude').value = lon;
+		});
+	}
+    google.maps.event.addDomListener(window, 'load', initialize);
+</script>
 <?php echo $footer; ?>

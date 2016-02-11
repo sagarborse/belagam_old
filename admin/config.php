@@ -20,8 +20,8 @@ define('DIR_LOGS', DIR_ROOT.'system/logs/');
 define('DIR_CATALOG', DIR_ROOT.'catalog/');
 // DB
 define('DB_DRIVER', 'mysqli');
-define('DB_HOSTNAME', 'localhost');
-define('DB_USERNAME', 'root');
+define('DB_HOSTNAME', '173.194.243.94');
+define('DB_USERNAME', 'belagam');
 define('DB_PASSWORD', 'Zerocool1$$');
 define('DB_DATABASE', 'belagam');
 define('DB_PREFIX', 'oc_');

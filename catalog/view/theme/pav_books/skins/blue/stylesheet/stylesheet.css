@@ -288,7 +288,16 @@ ul li a.active{
 .h-tabs li.active a, .h-tabs li a:hover{
 	background-color: #446cb3;
 }
-
+.show-mobile .quickaccess-toggle {
+    background-color: #446CB3;
+    border: 1px solid #446CB3;
+}
+.show-mobile .quickaccess-toggle:hover {
+    background-color: #355a9c;
+}
+.show-mobile .inner-toggle {
+    border-color: #355a9c;
+}
 /*Layout.css
 ====================================================*/
 .nav-tabs > .active > a:link, .nav-tabs > .active > a:hover, 

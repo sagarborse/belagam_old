@@ -3,7 +3,7 @@
 $_['heading_title']          = 'Shopping Cart';
 
 // Text
-$_['text_success']           = 'Success: You have added <a href="%s">%s</a> to your <a href="%s">shopping cart</a>!';
+$_['text_success']           = 'Success: You have added <a href="%s">%s</a> to your <br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<a class="btn" href="%s">shopping cart</a>!';
 $_['text_remove']            = 'Success: You have modified your shopping cart!';
 $_['text_coupon']            = 'Success: Your coupon discount has been applied!';
 $_['text_voucher']           = 'Success: Your gift voucher discount has been applied!';

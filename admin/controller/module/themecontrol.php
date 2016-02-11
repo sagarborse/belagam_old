@@ -43,8 +43,10 @@ class ControllerModuleThemeControl extends Controller {
 						'block_footer_center' => '',
 						'block_footer_bottom'=>'',
 						'body_pattern' => '',
+						'enable_product_customtab'=>'',
 						'product_related_column'=> '',
-						
+						'product_customtab_content' => '',
+						'product_customtab_name' => '',
 						'type_fonts1' => array(),
 						'normal_fonts1' => array(),
 						'google_url1' => '',
@@ -78,7 +80,12 @@ class ControllerModuleThemeControl extends Controller {
 						'product_zoomlenssize' => 150,
 						'product_zoomlensshape' => 'normal',		
 						'product_zoomgallery' => 0,		
-						'contact_customhtml' => ''
+						'contact_customhtml' => '',
+						//start edit code
+						'location_address' => '79-99 Beaver Street, New York, NY 10005, USA',
+						'location_latitude' => '40.705423',
+						'location_longitude' => '-74.008616',
+						//end edit code
 											
 		);
 
@@ -129,9 +136,11 @@ class ControllerModuleThemeControl extends Controller {
 		// themes 
 		$directories = glob(DIR_CATALOG . 'view/theme/*', GLOB_ONLYDIR);
 		$this->data['templates'] = array();
-		foreach ($directories as $directory) {	 
-			if( file_exists($directory."/etc/config.ini") ){
-				$this->data['templates'][] = basename($directory);
+		if(isset($directories) && !empty($directories)){
+			foreach ($directories as $directory) {	 
+				if( file_exists($directory."/etc/config.ini") ){
+					$this->data['templates'][] = basename($directory);
+				}
 			}
 		}	
 		if( count($this->data['templates']) && empty($this->data['module']['default_theme'])  ){ 
@@ -352,9 +361,11 @@ class ControllerModuleThemeControl extends Controller {
 		$output = array();
 		if( $this->getTheme()  ) {
 			$directories = glob(DIR_CATALOG . 'view/theme/'.$this->getTheme().'/skins/*', GLOB_ONLYDIR);
-			foreach( $directories as $dir ){
-				$output[] = basename( $dir );
-			}			
+			if(isset($directories) && !empty($directories)){
+				foreach( $directories as $dir ){
+					$output[] = basename( $dir );
+				}
+			}
 		}
 		return $output;
 	}
@@ -363,8 +374,10 @@ class ControllerModuleThemeControl extends Controller {
 		$output = array();
 		if( $this->getTheme() && is_dir(DIR_CATALOG . 'view/theme/'.$this->getTheme().'/image/pattern/') ) {
 			$files = glob(DIR_CATALOG . 'view/theme/'.$this->getTheme().'/image/pattern/*.png');
-			foreach( $files as $dir ){
-				$output[] = str_replace("","",basename( $dir ) );
+			if(isset($files) && !empty($files)){
+				foreach( $files as $dir ){
+					$output[] = str_replace("","",basename( $dir ) );
+				}
 			}			
 		}
 		return $output;

@@ -301,10 +301,16 @@ footer a,footer p{
 
 
 
-
-
-
-
+.show-mobile .quickaccess-toggle {
+    background-color: #e14f42;
+    border: 1px solid #e14f42;
+}
+.show-mobile .quickaccess-toggle:hover {
+    background-color: #cd483c;
+}
+.show-mobile .inner-toggle {
+    border-color: #cd483c;
+}
 
 
 

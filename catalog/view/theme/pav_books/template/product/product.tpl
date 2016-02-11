@@ -11,7 +11,11 @@
       'product_zoomgallery'  => 0,
       'extra_images_visiable' => 3,
       'product_related_column'=>'', 
+      'enable_product_customtab'   => 0,
+      'product_customtab_name'     => '',
+      'product_customtab_content'  => '',
   );
+  $languageID = $this->config->get('config_language_id');
   $productConfig = array_merge( $productConfig, $themeConfig );
   
 ?>
@@ -426,7 +430,12 @@
 					<li>
 						<a class="tab-link" href="#tab-review"><?php echo $tab_review; ?></a>
 					</li>
-					<?php } ?>	
+					<?php } ?>
+
+					<?php if( $productConfig['enable_product_customtab'] && isset($productConfig['product_customtab_name'][$languageID]) ) { ?>
+     				<li><a href="#tab-customtab" class="tab-link"><?php echo $productConfig['product_customtab_name'][$languageID]; ?></a></li>
+   					<?php } ?> 
+
 				</ul>				
 			</div>
 			
@@ -493,7 +502,12 @@
 				</div>	
 			</div>		
 			<?php } ?>	
-			
+		    <?php if( $productConfig['enable_product_customtab'] && isset($productConfig['product_customtab_content'][$languageID]) ) { ?>
+			<div id="tab-customtab" class="custom-tab wrapper">
+			<div class="inner">
+			<?php echo html_entity_decode( $productConfig['product_customtab_content'][$languageID], ENT_QUOTES, 'UTF-8'); ?>
+			</div></div>
+			<?php } ?>
 		</div>
 	</div>	    
 

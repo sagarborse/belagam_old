@@ -1,1 +1,7 @@
-2016-02-11 17:41:12 - PHP Notice:  Error: Could not load controller module/pavproducttabs! in /Applications/MAMP/htdocs/belagam/system/engine/controller.php on line 47
+2016-02-09 8:21:52 - PHP Notice:  Undefined index: company_id in /home/belagam/public_html/catalog/model/account/customer.php on line 18
+2016-02-09 8:21:55 - PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/belagam/public_html/index.php:102) in /home/belagam/public_html/system/engine/controller.php on line 28
+2016-02-09 8:21:55 - PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/belagam/public_html/index.php:102) in /home/belagam/public_html/system/engine/controller.php on line 29
+2016-02-10 7:17:33 - PHP Notice:  Undefined index: order_id in /home/belagam/public_html/catalog/controller/payment/cod.php on line 20
+2016-02-10 11:04:20 - PHP Notice:  Undefined index: company_id in /home/belagam/public_html/catalog/model/account/customer.php on line 18
+2016-02-10 11:04:29 - PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/belagam/public_html/index.php:102) in /home/belagam/public_html/system/engine/controller.php on line 28
+2016-02-10 11:04:29 - PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/belagam/public_html/index.php:102) in /home/belagam/public_html/system/engine/controller.php on line 29

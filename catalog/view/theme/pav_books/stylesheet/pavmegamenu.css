@@ -119,3 +119,62 @@
 .menu-content{
 	width: 100%;
 }   
+.pavo-widget h3 {
+    line-height: 30px;
+    margin-top: 0;
+}
+.pavo-widget .menu-title {
+    font-size: 16px;
+}
+.widget-product-list .product-block {
+    margin-bottom: 10px;
+}
+.widget-product-list .image {
+    border: 1px solid #E7E7E7;
+    float: left;
+    margin-right: 10px;
+    padding: 0;
+}
+.widget-product-list a {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
+    padding-left: 0 !important;
+}
+.widget-product-list a:hover {
+    color: #30ADE7 !important;
+}
+.widget-product-list .product-block:hover .image a {
+    opacity: 1;
+}
+.name a {
+    border: medium none !important;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+}
+.widget-product-list .product-block .price {
+    color: #F94B4B;
+    font-size: 14px;
+    margin: 5px 0;
+}
+.widget-product-list .product-block:hover .price {
+    color: #F94B4B;
+    display: block;
+}
+.widget-product-list .product-block .price-old {
+    color: #555555;
+}
+.widget-product-list .product-block .button {
+    height: 28px;
+    line-height: 28px;
+}
+.widget-product-list .product-block .cart {
+    display: none;
+}
+.widget-banner {
+    border: 1px solid #E7E7E7;
+}
+.widget-banner .w-banner {
+    float: left;
+    margin: 6px 10px;
+}

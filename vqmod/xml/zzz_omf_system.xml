@@ -1,0 +1,1679 @@
+<modification>
+<id>OpenCart Mobile Framework Lite</id>
+<version>v1.7.2</version>
+    <vqmver>2.4.1</vqmver>
+    <author>omframework.com / wearebraiv.com </author>
+
+    <file name="system/startup.php">
+		<operation>
+			<search position="before">
+			<![CDATA[?>]]></search>
+			<add><![CDATA[
+			
+//Mobile Esp detection library
+require_once(DIR_SYSTEM . 'library/get_resolution.php');
+			]]></add>
+		</operation>
+
+		<operation>
+	        <search position="replace">
+	        <![CDATA[<?php]]></search>
+	        <add><![CDATA[<?php 
+	    header( 'Vary: User-Agent' );
+	        ]]></add>
+		</operation>
+	</file>	
+
+	<!-- This is where the magic happens :) -->
+	<file name="system/engine/controller.php">
+		<operation>
+			<search position="before" ><![CDATA[
+			protected function render() {
+			]]></search>
+			<add><![CDATA[
+	protected function isVisitorMobile() {		// Mobile device detection
+
+		$config_mobile_tablets = $this->config->get('config_mobile_tablets');
+
+		//If mobile or tablet views are disabled
+		if (isset($config_mobile_tablets)) {
+
+			//If there is a setting for tablets to be disabled and client is a tablet, disable mobile interface
+			if (($this->config->get('config_mobile_tablets') == true) && isTablet()) {
+
+				return false;
+
+			} else {
+
+				return isMobile() || isTablet();
+
+			}
+
+		} else {
+			//No settings for disabling mobile interface or first run
+			return isMobile() || isTablet();
+		}
+	}]]></add>
+
+		</operation>
+		
+		<operation>
+			<search position="after" ><![CDATA[
+			protected function render() {
+			]]></search>
+			<add><![CDATA[
+		if ($this->isVisitorMobile()) {
+
+			if (isTablet()) {
+
+				if (strrpos($this->template, "_tablet.tpl") === false ) {
+
+					if (preg_match("(\/template\/\w*\/\w*)", $this->template, $matches)) {
+
+						if (file_exists(DIR_TEMPLATE . $this->config->get('config_mobile_theme') . $matches[0] . '_tablet.tpl')) {
+							$this->template = $this->config->get('config_mobile_theme') . $matches[0] . '_tablet.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . "omf" . $matches[0] . '_tablet.tpl')) {
+							$this->template = 'omf' . $matches[0] . '_tablet.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . $this->config->get('config_mobile_theme') . $matches[0] . '_mobile.tpl')) {
+							$this->template = $this->config->get('config_mobile_theme') . $matches[0] . '_mobile.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . "omf" . $matches[0] . '_mobile.tpl')) {
+							$this->template = 'omf' . $matches[0] . '_mobile.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . $matches[0] . '.tpl')) {
+							$this->template = $this->config->get('config_template') . $matches[0] . '.tpl';
+
+						}
+					}
+				}
+
+			} else {
+
+				if (strrpos($this->template, "_mobile.tpl") === false ) {
+
+					if (preg_match("(\/template\/\w*\/\w*)", $this->template, $matches)) {
+
+						if (file_exists(DIR_TEMPLATE . $this->config->get('config_mobile_theme') . $matches[0] . '_mobile.tpl')) {
+							$this->template = $this->config->get('config_mobile_theme') . $matches[0] . '_mobile.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . "omf" . $matches[0] . '_mobile.tpl')) {
+							$this->template = 'omf' . $matches[0] . '_mobile.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . $matches[0] . '.tpl')) {
+							$this->template = $this->config->get('config_template') . $matches[0] . '.tpl';
+
+						}
+					}
+
+				} else if (defined('VERSION') && (version_compare(VERSION, '1.5.5', '<') == true)) {
+
+					if (preg_match("(\/template\/\w*\/\w*)", $this->template, $matches)) {
+
+						if (file_exists(DIR_TEMPLATE . $this->config->get('config_mobile_theme') . $matches[0] . '.tpl')) {
+							$this->template = $this->config->get('config_mobile_theme') . $matches[0] . '.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . "omf" . $matches[0] . '.tpl')) {
+							$this->template = 'omf' . $matches[0] . '.tpl';
+
+						} elseif (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . $matches[0] . '.tpl')) {
+							$this->template = $this->config->get('config_template') . $matches[0] . '.tpl';
+
+						}
+					}
+				}
+
+			}
+		}
+	]]></add>
+		</operation>
+
+		<operation>
+			<search position="before" ><![CDATA[
+			protected function render() {
+			]]></search>
+			<add><![CDATA[
+	protected function isVisitorTablet() {
+		return isTablet();
+	}
+			]]></add>
+		</operation>
+	</file>
+
+	<!--  Patch the image library adding a new mode for responsive scalling—one without
+		white background of scaled images. This way images are scaled proportionally to 
+		the width of the screen. The "resolution" is detected in categorizr.
+
+		Usage: everywhere you scale an image and you want it to take the screen size 
+		into effect you have to supply 'r' as a laste parameter of the 
+		model_tool_image_resize function.
+		-->
+	<file name="system/library/image.php">
+		<operation>
+			<search>
+			<![CDATA[
+			$this->image = imagecreatetruecolor($width, $height);
+			]]></search>
+			<add><![CDATA[
+			//OMF proper responsive scalling without BG
+			if ($default == 'r') {
+				$this->image = imagecreatetruecolor($new_width, $new_height);
+			} else {
+				$this->image = imagecreatetruecolor($width, $height);
+			}
+			//End OMF
+			]]></add>
+		</operation>
+
+		<operation>
+			<search position="before"><![CDATA[
+			$xpos = (int)(($width - $new_width) / 2);
+			]]></search>
+
+			<add><![CDATA[
+			//OMF proper responsive scalling without BG
+			if ($default == 'r') {
+				$xpos = (int) 0;
+   				$ypos = (int) 0;
+			} else {			
+			]]></add>
+		</operation>	
+
+		<operation>
+			<search position="after">
+			<![CDATA[
+			$ypos = (int)(($height - $new_height) / 2);
+			]]></search>
+			<add><![CDATA[
+			}
+			//End OMF		
+			]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search position="replace"><![CDATA[
+			public function resize($width = 0, $height = 0) {
+			]]></search>
+			<add><![CDATA[
+			//OMF proper responsive scalling without BG
+			public function resize($width = 0, $height = 0, $default = '') {
+			//End OMF
+			]]></add>
+		</operation>
+	</file>	
+
+	<!-- Compatibility patching -->
+	<!-- OpenCart v.1.5.1 -->
+	<![CDATA[
+	Needed on OC1513 and below
+	]]>
+	<!-- OC151: REMOVE ME-->
+
+  	<file name="catalog/controller/total/*.php">
+		<operation error="skip">
+			<search position="after"><![CDATA[$this->data['button_]]></search>
+			<add><![CDATA[
+	if($this->isVisitorMobile()) {
+		$this->language->load('omf/common');
+		$this->data['button_apply'] = $this->language->get('button_apply');
+	}	]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search regex="true"><![CDATA[
+			~\$this\-\>response\-\>setOutput\((.*encode.*)\);~
+			]]></search>
+			<add><![CDATA[
+		if(!$this->isVisitorMobile()) {
+			$this->response->setOutput($1);
+		} else {
+			$this->response->setOutput($this->render());
+		}			]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search position="after"><![CDATA[
+			$json = array();
+			]]></search>
+			<add><![CDATA[
+		$errors = array();
+			]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search position="replace" regex="true"><![CDATA[
+			~\$json\['error'\]\['(\w*)'\] = (.*);~
+			]]></search>
+			<add><![CDATA[$json['error']['$1'] = $2;
+					$errors['$1'] = $2;]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search position="replace" regex="true"><![CDATA[
+			~\$json\['error'\] = (.*);~
+			]]></search>
+			<add><![CDATA[$json['error'] = $1;
+					$errors = $1;]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search regex="true" position="replace"><![CDATA[
+			~\$json\['redirect'\] = \$this\-\>url\-\>link\('(.*)'\);~
+			]]></search>
+			<add><![CDATA[
+			if (!$this->isVisitorMobile()) {
+				$json['redirect'] = $this->url->link('$1');
+			} else {
+				$this->redirect($this->url->link('$1'));
+			}]]></add>
+		</operation>
+
+	</file>
+
+	<file name="catalog/controller/total/voucher.php" error="skip">
+		<operation error="skip">
+			<search position="after" index="1"><![CDATA[
+			$this->language->load('total/
+			]]></search>
+			<add><![CDATA[
+		if ($this->isVisitorMobile() && isset($this->session->data['voucher_errors'])) {
+			$this->data['errors'] = $this->session->data['voucher_errors'];
+		}]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search position="after" index="2"><![CDATA[
+			$this->language->load('total/
+			]]></search>
+			<add><![CDATA[
+		if ($this->isVisitorMobile() && isset($this->session->data['voucher_errors'])) {
+			unset($this->session->data['voucher_errors']);
+		}]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search  position="replace"><![CDATA[
+			$this->response->setOutput($this->render());
+			]]></search>
+			<add><![CDATA[
+			$this->session->data['voucher_errors'] = $errors;
+			$this->redirect($this->url->link('checkout/cart', '', 'SSL') . "#error");
+			]]></add>
+		</operation>
+
+	</file>
+
+	<file name="catalog/controller/total/coupon.php" error="skip">
+		<operation error="skip">
+			<search position="after" index="1"><![CDATA[
+			$this->language->load('total/
+			]]></search>
+			<add><![CDATA[
+		if ($this->isVisitorMobile() && isset($this->session->data['coupon_errors'])) {
+			$this->data['errors'] = $this->session->data['coupon_errors'];
+		}]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search position="after" index="2"><![CDATA[
+			$this->language->load('total/
+			]]></search>
+			<add><![CDATA[
+		if ($this->isVisitorMobile() && isset($this->session->data['coupon_errors'])) {
+			unset($this->session->data['coupon_errors']);
+		}]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search  position="replace"><![CDATA[
+			$this->response->setOutput($this->render());
+			]]></search>
+			<add><![CDATA[
+			$this->session->data['coupon_errors'] = $errors;
+			$this->redirect($this->url->link('checkout/cart', '', 'SSL') . "#error");
+			]]></add>
+		</operation>
+
+	</file>
+
+	<file name="catalog/controller/checkout/cart.php">
+		<operation error="skip"	>
+			<search regex="true"><![CDATA[
+			~\$this\-\>response\-\>setOutput\((.*encode.*)\);~
+			]]></search>
+			<add><![CDATA[
+		if(!$this->isVisitorMobile()) {
+			$this->response->setOutput($1);
+		} else {
+			$this->response->setOutput($this->render());
+		}			]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search position="after"><![CDATA[
+			$json = array();
+			]]></search>
+			<add><![CDATA[
+		$errors = array();
+			]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search position="replace" regex="true"><![CDATA[
+			~\$json\['error'\]\['(\w*)'\] = (.*);~
+			]]></search>
+			<add><![CDATA[$json['error']['$1'] = $2;
+					$errors['$1'] = $2;]]></add>
+		</operation>
+
+		<operation error="skip" >
+			<search position="replace" regex="true"><![CDATA[
+			~\$json\['error'\] = (.*);~
+			]]></search>
+			<add><![CDATA[$json['error'] = $1;
+					$errors = $1;]]></add>
+		</operation>
+	</file>
+	<!--OC151: REMOVE ME, TOO. -->
+
+	<!-- <file name="catalog/controller/product/*.php">
+		<operation error="skip" >
+			<search regex="true"><![CDATA[
+			~[^\/]\$this\-\>response\-\>setOutput\((.*encode.*)\);~
+			]]></search>
+			<add><![CDATA[
+		if (defined('VERSION') && (version_compare(VERSION, '1.5.2', '<') == true)) {
+		if(!$this->isVisitorMobile()) {
+			$this->response->setOutput($1);
+		} else {
+			$this->response->setOutput($this->render());
+			}
+		}
+			]]></add>
+
+		</operation>
+	</file> -->
+
+	<!-- Shoppica v.1.x -->
+	<![CDATA[
+		If you have shoppica v.1 delete the lines saying
+		"SHPPC1: REMOVE ME"
+		This patch will speed up loading and make OMF compatible with shoppica v.1
+		]]>
+
+	<!-- SHPPC1: REMOVE ME//scroll down for more
+
+	<file name="catalog/controller/module/shoppica.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+			if ($this->config->get('config_template')
+			]]></search>
+			<add><![CDATA[
+		if(!$this->isVisitorMobile()) {
+	]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search position="after"><![CDATA[
+			$this->setSubcategoiesImages();
+			]]></search>
+			<add><![CDATA[
+		}
+	]]></add>
+		</operation>
+	</file>
+	SHPPC1: REMOVE ME, TOO. -->
+
+	<!-- Shoppica v.2.x -->
+	<![CDATA[
+		If you experience any compatibility issues with OMF coexisting with shoppica2.x
+		delete the lines in this section saying
+		"SHPPC2: REMOVE ME"
+		]]>
+
+	<!-- SHPPC2: REMOVE ME//scroll down for more
+
+	<file name="catalog/controller/common/tb.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+			$theme_config = $this->getThemeConfig();
+			]]></search>
+			<add><![CDATA[
+		if(!$this->isVisitorMobile()) {
+	]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search position="after"><![CDATA[
+			$dispatcher->dispatch();
+			]]></search>
+			<add><![CDATA[
+		}
+	]]></add>
+		</operation>
+	</file>
+	 SHPPC2: REMOVE ME, TOO. -->
+
+<!-- Delivery Date Pro -->
+	<![CDATA[
+		If you have Delivery Date Pro installed and would like to have it work on the mobile version of your site
+		delete the whole lines in this section saying
+		"DDPRO:REMOVE ME"
+		]]>
+
+	<!-- DDPRO: REMOVE ME//scroll down for more
+
+	<file name="catalog/view/theme/omf/template/checkout/checkout_mobile.tpl">
+		<operation>
+			<search position="replace"><![CDATA[
+            data: $('#shipping-method input[type=\'radio\']:checked, #shipping-method textarea'),
+            ]]></search>
+			<add><![CDATA[
+            data: $('#shipping-method input[type=\'radio\']:checked, #shipping-method textarea, #shipping-method input[type=\'text\'], #shipping-method input[type=\'date\']'),
+            ]]></add>
+		</operation>
+	</file>
+
+	<file name="catalog/view/theme/omf/template/checkout/shipping_method_mobile.tpl">
+        <operation>
+            <search position="before"><![CDATA[
+            <label for="comment"><?php echo $text_comments; ?></label>
+            ]]></search>
+            <add><![CDATA[
+              <?php if ($deliverydate_status) { ?>
+              <h2><?php echo $text_deliverydate; ?></h2>
+              <div style="background: #F7F7F7; border: 1px solid #DDDDDD; padding: 10px; margin-bottom: 10px;">
+                <p><?php echo $text_delivery; ?></p>
+                <table width="100%" cellpadding="3">
+                  <tr>
+                    <td width="120"><?php echo $entry_deliverydate; ?></td>
+                    <td><input type="date" name="deliverydate" id="deliverydate" value="<?php echo $deliverydate; ?>" size="12" class="deliverydate" /></td>
+                  </tr>
+
+                  <?php if ($range_hours) { ?>
+                  <tr>
+                    <td colspan="2">
+                      <table width="100%">
+                        <tr>
+                          <td colspan="2"><?php echo $text_select_range_hour; ?></td>
+                        </tr>
+                        <?php foreach ($range_hours as $range_hour) { ?>
+                        <tr>
+                          <td width="1">
+                            <?php if ($range_hour['id'] == $range || !$range) { ?>
+                            <?php $range = $range_hour['id']; ?>
+                            <input type="radio" name="range_hour" value="<?php echo $range_hour['id']; ?>" id="<?php echo $range_hour['id']; ?>" checked="checked" style="margin: 0px;" />
+                            <?php } else { ?>
+                            <input type="radio" name="range_hour" value="<?php echo $range_hour['id']; ?>" id="<?php echo $range_hour['id']; ?>" style="margin: 0px;" />
+                            <?php } ?></td>
+                          <?php if ($range_hour['to'] == '') { ?>
+                          <td><label for="<?php echo $range_hour['id']; ?>" style="cursor: pointer;"><?php echo $range_hour['from']; ?></label></td>
+                          <?php } else { ?>
+                          <td><label for="<?php echo $range_hour['id']; ?>" style="cursor: pointer;"><?php echo $range_hour['from'] . ' - ' . $range_hour['to']; ?></label></td>
+                          <?php } ?>
+                        </tr>
+                        <?php } ?>
+                      </table>
+                    </td>
+                  </tr>
+                  <?php } ?>
+
+                  <?php if ($deliverydate_same_day) { ?>
+                  <tr>
+                    <td colspan="2"><?php echo $text_unavailable_after; ?></td>
+                  </tr>
+                  <?php } ?>
+
+                  <?php if ($deliverydate_custom) { ?>
+                  <tr>
+                    <td colspan="2"><?php echo $deliverydate_custom_same_day; ?></td>
+                  </tr>
+                  <?php } ?>
+                </table>
+              </li>
+              <?php } ?>
+            </div>
+              <li>
+            ]]></add>
+        </operation>
+	</file>
+	 DDPRO: REMOVE ME, TOO. -->
+
+	<!-- OneCheckout v .32-->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with onecheckout delete the lines in this section saying "ONCHKT.32:REMOVE ME"
+	]]>
+	<!-- ONCHKT.32:REMOVE ME//scroll down for more
+	<file name="catalog/controller/checkout/checkout.php">
+		<operation error="skip">
+			<search position="before">
+				<![CDATA[ $this->redirect($this->url->link('checkout/onepage','','SSL')); ]]>
+			</search>
+			<add>
+				<![CDATA[ if(!$this->isVisitorMobile()) {	 ]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="after">
+				<![CDATA[ $this->redirect($this->url->link('checkout/onepage','','SSL')); ]]>
+			</search>
+			<add><![CDATA[
+			}
+			]]></add>
+		</operation>
+	</file>
+	ONCHKT.32:REMOVE ME, TOO. -->
+
+	<!-- Caching mod by Jay Gilford -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with caching mod by Jay Gilford delete the lines in this section saying "REMOVE ME"
+	]]>
+	<!-- Caching:REMOVE ME//scroll down for more
+	<file name="system/library/response.php">
+		<operation error="skip">
+			<search position="after">
+			<![CDATA[ public function setOutput($output) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+			require_once(DIR_SYSTEM . 'library/categorizr.php'); if(!(isMobile() || isTablet())) {
+			]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="before">
+			<![CDATA[ $this->output = $output; ]]>
+			</search>
+			<add>
+			<![CDATA[ } ]]>
+			</add>
+		</operation>
+	</file>
+	 Caching:REMOVE ME, TOO. -->
+
+	<!-- Caching mod 1.4.2 by Jay Gilford -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with caching mod 1.4.2 by Jay Gilford delete the lines in this section saying "REMOVE ME"
+	]]>
+	<!-- Caching 1.4.2:REMOVE ME//scroll down for more
+	<file name="system/library/response.php">
+		<operation error="skip">
+			<search position="after"><![CDATA[
+			public function setOutput($output) {
+			]]>
+			</search>
+			<add><![CDATA[
+			require_once(DIR_SYSTEM . 'library/categorizr.php'); if(!(isMobile() || isTablet())) {
+			]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search position="before"><![CDATA[
+			$this->output = $output;
+			]]></search>
+			<add><![CDATA[
+			}
+			]]></add>
+		</operation>
+	</file>
+
+	<file name="system/startup.php">
+		<operation>
+			<search position="replace"><![CDATA[
+			if (!session_id()) {
+			]]></search>
+			<add><![CDATA[
+			require_once(DIR_SYSTEM . 'library/categorizr.php');
+			if (!session_id() && !$this->isVisitorMobile()) {
+			]]></add>
+		</operation>
+	</file>
+	Caching 1.4.2:REMOVE ME, TOO. -->
+
+	<!-- Simplecheckout 2.3.17 fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with Simplecheckout 2.3.17 delete the lines in this section saying "Simplecheckout 2.3.17: REMOVE ME"
+	]]>
+	<!-- SimpleCheckout 2.3.17: REMOVE ME
+	<file name="system/library/url.php">
+		<operation error="skip">
+			<search position="after">
+			<![CDATA[
+			 public function rewrite($url) {
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			require_once(DIR_SYSTEM . 'library/categorizr.php');
+			]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search>
+			<![CDATA[
+			 if ($route == 'checkout/checkout') {
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($route == 'checkout/checkout' && (!(isMobile() || isTablet())) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	SimpleCheckout 2.3.17: REMOVE ME, too -->
+
+	<!-- "CSS and JavaScript Minifier by OCplugs.com. Combine, minify, compress and cache CSS and JavaScript for OpenCart 1.5" fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with OCPlugs's Minifier delete the lines in this section saying "OCPlugs Minifier: REMOVE ME"
+	]]>
+	<!-- OCPlugs Minifier: REMOVE ME
+	<file name="catalog/controller/common/header.php">
+		<operation error="skip">
+			<search>
+			<![CDATA[
+	 			if ( $this->config->get('config_css_js_minify_enable') == '2') {
+	 		]]>
+	 		</search>
+	 		<add>
+	 		<![CDATA[
+				if ( ($this->config->get('config_css_js_minify_enable') == '2') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="system/library/response.php">
+		<operation error="skip">
+			<search position="before">
+			<![CDATA[
+		 		if ( $config->get('config_html_optimization_enable') == '2' && defined('HTTP_ADMIN')) {
+		 	]]>
+		 	</search>
+		 	<add>
+		 	<![CDATA[
+				require_once(DIR_SYSTEM . 'library/categorizr.php');
+			]]>
+			</add>
+		</operation>
+
+		<operation error="skip">
+			<search>
+			<![CDATA[
+	 			if ( $config->get('config_html_optimization_enable') == '2' && defined('HTTP_ADMIN')) {
+	 		]]>
+	 		</search>
+	 		<add>
+	 		<![CDATA[
+				if ( $config->get('config_html_optimization_enable') == '2' && defined('HTTP_ADMIN') && (!(isMobile() || isTablet())) {
+			]]>
+			</add>
+		</operation>
+
+	</file>
+	OCPlugs Minifier: REMOVE ME, too -->
+
+	<!-- Ubercheckout fix -->
+	<![CDATA[
+	If you have UberCheckout by Qphoria installed delete the lines in this section saying "UBER: REMOVE ME". Also you need to rename this file to z_omf_system.xml so that it gets loaded last and compatibility patching can happen after other vqmod extensions have done their work.
+	]]>
+	<!-- UBER: REMOVE ME
+	<file name="catalog/controller/account/login.php">
+		<operation error="skip">
+			<search>
+			<![CDATA[ if ($this->config->get('uber_checkout_status')) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($this->config->get('uber_checkout_status') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	<file name="catalog/controller/account/register.php">
+		<operation error="skip">
+			<search>
+			<![CDATA[ if ($this->config->get('uber_checkout_status')) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($this->config->get('uber_checkout_status') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	<file name="catalog/controller/checkout/checkout.php">
+		<operation error="skip">
+			<search>
+			<![CDATA[ if ($this->config->get('uber_checkout_status')) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($this->config->get('uber_checkout_status') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	<file name="catalog/controller/account/address.php">
+		<operation error="skip">
+			<search>
+			<![CDATA[ if ($this->config->get('uber_checkout_status')) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($this->config->get('uber_checkout_status') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	<file name="catalog/controller/checkout/cart.php">
+		<operation error="skip">
+			<search>
+			<![CDATA[ if ($this->config->get('uber_checkout_status')) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($this->config->get('uber_checkout_status') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	UBER: REMOVE ME, too -->
+
+	<!--
+	Increase Page Speed For Open Cart by Jeff Hunter/Tcalp
+	-->
+	<![CDATA[
+	If you have "Increase Page Speed For Open Cart" by Tcalp installed delete the lines in this section saying "IPSOC: REMOVE ME". Also you need to rename this file to z_omf_system.xml so that it gets loaded last and compatibility patching can happen after other vqmod extensions have done their work.
+	]]>
+	<!-- IPSOC: REMOVE ME
+	<file name="catalog/controller/common/header.php">
+		<operation error="skip">
+			<search>
+				<![CDATA[ if ($this->config->get('config_minify')) { ]]>
+			</search>
+			<add>
+			<![CDATA[
+				if ($this->config->get('config_minify') && !$this->isVisitorMobile()) {
+			]]>
+			</add>
+		</operation>
+	</file>
+	IPSOC: REMOVE ME, too -->
+
+	<!-- Simplecheckout 3.1.5.x+ fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with Simplecheckout 3.1.5.x+ delete the lines in this section saying "Simplecheckout 3.1.5.x+: REMOVE ME"
+	]]>
+	<!-- SimpleCheckout 3.1.5.x+ : REMOVE ME
+	<file name="system/library/url.php">
+		<operation error="skip">
+			<search position="before">
+			<![CDATA[
+			 // SIMPLE START
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			require_once(DIR_SYSTEM . 'library/categorizr.php');
+			if(!(isMobile() || isTablet())) {
+			]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search>
+			<![CDATA[
+			 // SIMPLE END
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			}
+			]]>
+			</add>
+		</operation>
+	</file>
+	SimpleCheckout 3.1.5.x+: REMOVE ME, too -->
+
+	<!-- SecureTrading fix
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with SecureTrading
+	]]>
+
+	<file name="catalog/controller/payment/securetrading.php">
+		<operation error="skip">
+			<search position="after">
+			<![CDATA[
+			 $iframeEnabled = $this->config->get('securetrading_iframe_enabled'); // If iframe is enabled in payment module config.
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($this->isVisitorMobile()) $iframeEnabled = false;
+			]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[require_once('securetrading_stpp/STPPLoader.php');]]></search>
+			<add>
+			<![CDATA[require_once(DIR_APPLICATION.'controller/payment/securetrading_stpp/STPPLoader.php');]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[require_once(dirname(__FILE__) . '/OpenCart151PPages.class.php');]]></search>
+			<add>
+			<![CDATA[require_once(DIR_APPLICATION.'controller/payment/OpenCart151PPages.class.php');]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="replace"><![CDATA[require_once(dirname(__FILE__) . '/OpenCart151Helper.class.php');]]></search>
+			<add>
+			<![CDATA[require_once(DIR_APPLICATION.'controller/payment/OpenCart151Helper.class.php');]]>
+			</add>
+		</operation>
+	</file>
+	/SecureTrading fix -->
+
+	<!-- QuickCheckout Fix -->
+	<![CDATA[
+	If you have QuickCheckout delete the lines saying
+	"QuickCheckout: REMOVE ME"
+	This patch will speed up loading and make OMF compatible with QuickCheckout
+	]]>
+	<!-- QuickCheckout: REMOVE ME
+	<file name="catalog/controller/checkout/checkout.php">
+		<operation error="skip">
+			<search position="after">
+				<![CDATA[ public function index() { ]]>
+			</search>
+			<add>
+				<![CDATA[ if(!$this->isVisitorMobile()) {	 ]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[ 
+				$this->redirect($this->url->link('quickcheckout/checkout', '', 'SSL')); 
+			]]></search>
+			<add><![CDATA[ 
+			} 
+			]]></add>
+		</operation>
+	</file>
+	QuickCheckout: REMOVE ME, TOO. -->
+
+	<!-- NEW AJAX Quick Checkout 3.4+ fix -->
+    <![CDATA[
+    If you experience any compatibility issues with OMF coexisting with NEW AJAX Quick Checkout 3.4+ by Dreamvention delete the lines in this section saying "NEW AJAX Quick Checkout 3.4+: REMOVE ME"
+    ]]>
+  	<!-- NEW AJAX Quick Checkout 3.4+: REMOVE ME
+    <file name="catalog/controller/checkout/login.php">
+  	    <operation>
+			<search position="replace"><![CDATA[
+			$config = $this->config->get('quickcheckout');
+			]]></search>
+	  		<add><![CDATA[
+	        	$config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+		    ]]></add>
+	    </operation>
+	</file>
+  
+    <file name="catalog/controller/checkout/checkout.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+
+        <operation error="skip">
+      		<search position="after"><![CDATA[
+      		$this->data['shipping_required'] = $this->cart->hasShipping();
+      		]]></search>
+			<add><![CDATA[
+       		if(!(isMobile() || isTablet())){
+       		]]></add>
+	    </operation>
+
+	    <operation error="skip">
+		    <search position="before"><![CDATA[
+		    $this->children = array(
+		    ]]></search>
+      		<add><![CDATA[
+       		} else {
+       			$this->template = 'default/template/checkout/checkout.tpl';
+       		}
+       		]]></add>
+	    </operation>
+    </file>
+  
+    <file name="catalog/controller/checkout/register.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+    </file>
+  
+    <file name="catalog/controller/checkout/guest.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[$config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+    </file>
+  
+    <file name="catalog/controller/checkout/guest_shipping.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/checkout/payment_address.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+            	$config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+    </file>
+
+	<file name="catalog/controller/checkout/shipping_address.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+        	}
+            ]]></add>
+        </operation>
+    </file>
+
+	<file name="catalog/controller/checkout/shipping_method.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+    </file>
+
+	<file name="catalog/controller/checkout/payment_method.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+		        require_once(DIR_SYSTEM . 'library/categorizr.php');
+		        if($this->isVisitorMobile()) {
+		        $config['quickcheckout_display'] = false;
+	        }
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/checkout/confirm.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            if(strpos($this->language->get('text_checkout_account'), '2')){
+            ]]></search>
+            <add><![CDATA[
+              
+            //$config = $this->config->get('quickcheckout');
+	        require_once(DIR_SYSTEM . 'library/categorizr.php');
+	        if($this->isVisitorMobile()) {
+	        $config['quickcheckout_display'] = false;
+        }
+
+        if(strpos($this->language->get('text_checkout_account'), '2')){
+            ]]></add>
+        </operation>
+    </file>
+  
+	<file name="catalog/controller/checkout/payment_method.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[
+            $config = $this->config->get('quickcheckout');
+            ]]></search>
+            <add><![CDATA[
+	            $config = $this->config->get('quickcheckout');
+	        	require_once(DIR_SYSTEM . 'library/categorizr.php');
+	        	if($this->isVisitorMobile()) {
+	        	$config['quickcheckout_display'] = false;
+        	}
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="system/library/url.php">
+    	<operation error="skip">
+		    <search position="replace" offset="2"><![CDATA[
+		    	$route = str_replace("checkout/", "quickcheckout/", $route);
+		    ]]></search>
+    		<add><![CDATA[
+	        if(!(isMobile() || isTablet())){
+		        $route = str_replace("checkout/", "quickcheckout/", $route);
+
+				$route = str_replace("quickcheckout/cart", "checkout/cart", $route);
+			}
+			]]></add>
+    	</operation>
+    </file>
+    NEW AJAX Quick Checkout 3.4+: REMOVE ME, TOO. -->
+
+    <!-- Ajax Shopping Cart fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with Ajax Shopping Cart delete the lines in this section saying "Ajax Shopping Cart: REMOVE ME"
+	]]>
+	<!-- Ajax Shopping Cart: REMOVE ME
+	<file name="catalog/controller/checkout/ajaxshoppingcart.php">
+		<operation error="skip">
+			<search><![CDATA[
+			if ($this->config->get('ajaxshoppingcart_status') && isset($this->request->get['_route_'])) {			
+			]]></search>
+			<add><![CDATA[
+			if ($this->config->get('ajaxshoppingcart_status') && isset($this->request->get['_route_']) && !$this->isVisitorMobile()) {
+			]]></add>
+		</operation>
+
+		<operation error="skip">
+			<search><![CDATA[
+			 if ($this->config->get('ajaxshoppingcart_status') && isset($this->request->get['route'])) {		
+			 ]]></search>
+			 <add><![CDATA[
+			if ($this->config->get('ajaxshoppingcart_status') && isset($this->request->get['route']) && !$this->isVisitorMobile()) {
+			]]></add>
+		</operation>
+	</file>
+	Ajax Shopping Cart: REMOVE ME, TOO. -->
+
+	<!-- PayPal Express Checkout fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with PayPal Express Checkout delete the lines in this section saying "PayPal Express Checkout: REMOVE ME"
+	]]>
+	<!-- PayPal Express Checkout: REMOVE ME
+	<file name="catalog/view/theme/*/template/checkout/cart_mobile.tpl">
+		<operation>
+			<search position="replace"><![CDATA[
+			<a href="<?php echo $checkout; ?>" class="button"><?php echo $button_checkout; ?></a>
+			]]></search>
+			<add><![CDATA[
+			<a href="<?php echo $checkout; ?>" class="button"><?php echo $button_checkout; ?></a>
+			<?php if ($this->config->get('paypal_express_status')) {
+                if (file_exists(DIR_TEMPLATE . 'default/image/btn_' . $this->session->data['language'] . '_xpressCheckout.gif')) {
+                    $btn_pec = 'catalog/view/theme/default/image/btn_' . $this->session->data['language'] . '_xpressCheckout.gif';
+                } else {
+                    $btn_pec = 'catalog/view/theme/default/image/btn_xpressCheckout.gif';
+                }
+                ?><br /><br />
+                OR
+                <br /><br />
+                <a id="pecCart"><img src="<?php echo $btn_pec; ?>" alt="PayPal Express Checkout" /></a>
+                <script type="text/javascript">
+                    if(document.readyState !== "complete") {  
+ document.addEventListener("DOMContentLoaded", function () {
+                    $("#pecCart").bind('click', function() {
+                        $.ajax({
+                            type: 'POST',
+                            url: 'index.php?route=payment/paypal_express/DoExpressCheckoutPayment',
+                            dataType: 'json',
+                            beforeSend: function() {
+                                $('#pecCart').after('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /></div>');
+                            },
+                            success: function(json) {
+                                if (json['error']) {
+                                    alert(json['error']);
+                                }
+
+                                $('.attention').remove();
+
+                                if (json['success']) {
+                                    location = json['success'];
+                                }
+                            }
+                        });
+                    });
+                    });
+                    }
+                    </script>
+            <?php } ?>
+	        ]]></add>
+	    </operation>
+	</file>
+	PayPal Express Checkout: REMOVE ME, TOO. -->
+
+	<!-- Lazy2Checkout fix
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with Lazy2Checkout
+	]]>
+
+    <file name="system/library/url.php">
+	<operation error="skip">
+		<search position="before">
+			<![CDATA[ 
+			$url .= 'index.php?route=' . $route;
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			require_once(DIR_SYSTEM . 'library/categorizr.php');			
+			]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="replace">
+			<![CDATA[ 
+			if ($route=="checkout/checkout") $route="lazy/checkout";	 
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($route == 'checkout/checkout' && (!(isMobile() || isTablet())) $route="lazy/checkout";
+			]]>
+			</add>
+		</operation>
+		<operation error="skip">
+			<search position="replace">
+			<![CDATA[ 
+			 if ($route=="account/register") $route="lazy/signup";
+			 ]]>
+			</search>
+			<add>
+			<![CDATA[
+			if ($route == 'account/register' && (!(isMobile() || isTablet())) $route="lazy/signup";
+			]]>
+			</add>
+		</operation>
+	</file>
+	/Lazy2Checkout fix -->
+
+	<!-- PayPal Express by integrio -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with PayPal Express by integrio delete the lines in this section saying "REMOVE ME"
+	]]>
+	<!-- PayPal Express: REMOVE ME
+	<file name="catalog/language/english/payment/pp_express.php">
+		<operation error="skip">
+			<search position="after">
+			<![CDATA[// Text]]>
+			</search>
+			<add>
+			<![CDATA[
+			$_['button_continue']                    = 'Continue';
+			]]>
+			</add>
+		</operation>
+	</file>
+	PayPal Express: REMOVE ME, TOO. -->
+
+	<!-- OC Advanced Modules fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with OC Advanced Modules delete the lines in this section saying "OC Advanced Modules: REMOVE ME"
+	]]>
+	<!-- OC Advanced Modules: REMOVE ME
+	<file name="catalog/controller/common/content_top.php">
+ 		<operation error="skip">
+			<search position="replace" offset="23"><![CDATA[$status = true;]]></search>
+			<add><![CDATA[//OMF start
+			if ($module['layout_id'] == $layout_id && $module['position'] == 'content_top' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else { // Load extensions normally 
+				if ($modules) {
+				foreach ($modules as $module) {
+
+				$status = true;
+            	$oca_modules = array('ocaadvancedbanners', 'ocaapd', 'ocapd', 'ocaard', 'ocaaytvd', 'ocaytvd');
+				if (in_array($extension['code'], $oca_modules)) {
+					$layouts = isset($module['layouts']) ? $module['layouts'] : array();
+					if (!in_array($layout_id, $layouts) && !in_array(0, $layouts)) {
+						$status = false;
+					}
+				} else {
+					if ($module['layout_id'] !== $layout_id) {
+						$status = false;
+					}
+				}
+            
+					if ($status && $module['position'] == 'content_top' && $module['status']) {
+						$module_data[] = array(
+							'code'       => $extension['code'],
+							'setting'    => $module,
+							'sort_order' => $module['sort_order']
+						);				
+					}
+				}
+			}
+			}//OMF end  
+			]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="catalog/controller/common/content_bottom.php">
+ 		<operation error="skip">
+			<search position="replace" offset="23"><![CDATA[$status = true;]]></search>
+			<add><![CDATA[//OMF start
+			if ($module['layout_id'] == $layout_id && $module['position'] == 'content_bottom' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else { // Load extensions normally 
+				if ($modules) {
+				foreach ($modules as $module) {
+
+				$status = true;
+            	$oca_modules = array('ocaadvancedbanners', 'ocaapd', 'ocapd', 'ocaard', 'ocaaytvd', 'ocaytvd');
+				if (in_array($extension['code'], $oca_modules)) {
+					$layouts = isset($module['layouts']) ? $module['layouts'] : array();
+					if (!in_array($layout_id, $layouts) && !in_array(0, $layouts)) {
+						$status = false;
+					}
+				} else {
+					if ($module['layout_id'] !== $layout_id) {
+						$status = false;
+					}
+				}
+            
+					if ($status && $module['position'] == 'content_bottom' && $module['status']) {
+						$module_data[] = array(
+							'code'       => $extension['code'],
+							'setting'    => $module,
+							'sort_order' => $module['sort_order']
+						);				
+					}
+				}
+			}
+			}//OMF end  
+			]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="catalog/controller/common/column_right.php">
+ 		<operation>
+			<search position="replace" offset="23"><![CDATA[$status = true;]]></search>
+			<add><![CDATA[//OMF start
+			if ($module['layout_id'] == $layout_id && $module['position'] == 'column_right' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else { // Load extensions normally 
+				if ($modules) {
+				foreach ($modules as $module) {
+
+				$status = true;
+            	$oca_modules = array('ocaadvancedbanners', 'ocaapd', 'ocapd', 'ocaard', 'ocaaytvd', 'ocaytvd');
+				if (in_array($extension['code'], $oca_modules)) {
+					$layouts = isset($module['layouts']) ? $module['layouts'] : array();
+					if (!in_array($layout_id, $layouts) && !in_array(0, $layouts)) {
+						$status = false;
+					}
+				} else {
+					if ($module['layout_id'] !== $layout_id) {
+						$status = false;
+					}
+				}
+            
+					if ($status && $module['position'] == 'column_right' && $module['status']) {
+						$module_data[] = array(
+							'code'       => $extension['code'],
+							'setting'    => $module,
+							'sort_order' => $module['sort_order']
+						);				
+					}
+				}
+			}
+			}//OMF end  
+			]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="catalog/controller/common/column_left.php">
+ 		<operation>
+			<search position="replace" offset="23"><![CDATA[$status = true;]]></search>
+			<add><![CDATA[//OMF start
+						if ($module['layout_id'] == $layout_id && $module['position'] == 'column_left' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else { // Load extensions normally 
+				if ($modules) {
+				foreach ($modules as $module) {
+
+				$status = true;
+            	$oca_modules = array('ocaadvancedbanners', 'ocaapd', 'ocapd', 'ocaard', 'ocaaytvd', 'ocaytvd');
+				if (in_array($extension['code'], $oca_modules)) {
+					$layouts = isset($module['layouts']) ? $module['layouts'] : array();
+					if (!in_array($layout_id, $layouts) && !in_array(0, $layouts)) {
+						$status = false;
+					}
+				} else {
+					if ($module['layout_id'] !== $layout_id) {
+						$status = false;
+					}
+				}
+            
+					if ($status && $module['position'] == 'column_left' && $module['status']) {
+						$module_data[] = array(
+							'code'       => $extension['code'],
+							'setting'    => $module,
+							'sort_order' => $module['sort_order']
+						);				
+					}
+				}
+			}
+			}//OMF end  
+			]]>
+			</add>
+		</operation>
+	</file>
+	OC Advanced Modules: REMOVE ME, TOO. -->
+
+	<!-- OMtex fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with OMtex delete the lines in this section saying "OMtex: REMOVE ME"
+	]]>
+	<!-- OMtex: REMOVE ME
+	<file name="catalog/controller/common/content_top.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$sort_order = array(); 
+			]]></search>
+			<add>
+			<![CDATA[} //OMF end]]>
+			</add>
+		</operation>
+
+ 		<operation error="skip">
+			<search position="before"><![CDATA[if ($modules) {]]></search>
+			<add><![CDATA[
+			if ($modules) {
+				foreach ($modules as $module) {
+					if ($module['layout_id'] == $layout_id && $module['position'] == 'content_top' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else { 
+				
+			]]>
+			</add>
+		</operation>
+
+		<operation error="skip">
+			<search position="replace"><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'content_top' && $module['status']) {]]></search>
+			<add><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'content_top' && $module['status'] && !$isMobileExtension) {]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="catalog/controller/common/content_bottom.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$sort_order = array(); 
+			]]></search>
+			<add>
+			<![CDATA[} //OMF end]]>
+			</add>
+		</operation>
+
+		<operation error="skip">
+			<search position="before"><![CDATA[if ($modules) {]]></search>
+			<add><![CDATA[
+			if ($modules) {
+				foreach ($modules as $module) {
+					if ($module['layout_id'] == $layout_id && $module['position'] == 'content_bottom' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else { 
+				
+			]]>
+			</add>
+		</operation>
+
+		<operation error="skip">
+			<search position="replace"><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'content_bottom' && $module['status']) {]]></search>
+			<add><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'content_bottom' && $module['status'] && !$isMobileExtension) {]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="catalog/controller/common/column_right.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$sort_order = array(); 
+			]]></search>
+			<add>
+			<![CDATA[} //OMF end]]>
+			</add>
+		</operation>
+
+ 		<operation error="skip">
+			<search position="before"><![CDATA[if ($modules) {]]></search>
+			<add><![CDATA[
+			if ($modules) {
+				foreach ($modules as $module) {
+					if ($module['layout_id'] == $layout_id && $module['position'] == 'column_right' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else {
+				
+			]]>
+			</add>
+		</operation>
+
+		<operation error="skip">
+			<search position="replace"><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'column_right' && $module['status']) {]]></search>
+			<add><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'column_right' && $module['status'] && !$isMobileExtension) {]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="catalog/controller/common/column_left.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$sort_order = array(); 
+			]]></search>
+			<add>
+			<![CDATA[} //OMF end]]>
+			</add>
+		</operation>
+
+ 		<operation error="skip">
+			<search position="before"><![CDATA[if ($modules) {]]></search>
+			<add><![CDATA[
+			if ($modules) {
+				foreach ($modules as $module) {
+					if ($module['layout_id'] == $layout_id && $module['position'] == 'column_left' && $module['status'] && $isMobileExtension) { //load only mobile extensions
+							$module_data[] = array(
+								'code'       => $extension['code'],
+								'setting'    => $module,
+								'sort_order' => $module['sort_order']
+							);
+						}
+					}
+				}
+				
+			} else {
+				
+			]]>
+			</add>
+		</operation>
+
+		<operation error="skip">
+			<search position="replace"><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'column_left' && $module['status']) {]]></search>
+			<add><![CDATA[if ($module['layout_id'] == $layout_id && $module['position'] == 'column_left' && $module['status'] && !$isMobileExtension) {]]>
+			</add>
+		</operation>
+
+	</file>
+	OMtex: REMOVE ME, TOO. -->
+
+	<!-- iCustomFooter -->
+	<![CDATA[
+		If you have compatibility issues with iCustomFooter delete the lines saying
+		"iCustomFooter: REMOVE ME"
+		]]>
+
+	<!-- iCustomFooter: REMOVE ME 
+
+	<file name="catalog/controller/common/footer.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+			$this->render();
+			]]></search>
+			<add><![CDATA[
+			if($this->isVisitorMobile()) {
+				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/common/footer.tpl')) {
+					$this->template = $this->config->get('config_template') . '/template/common/footer.tpl';
+				} else {
+					$this->template = 'default/template/common/footer.tpl';
+				}
+			}
+			]]></add>
+		</operation>
+	</file>
+	iCustomFooter: REMOVE ME, TOO. -->
+
+	<!-- Categories to Information Pages fix -->
+	<![CDATA[
+	If you experience any compatibility issues with OMF coexisting with Categories to Information Pages delete the lines in this section saying "Categories to Information Pages: REMOVE ME"
+	]]>
+	<!-- Categories to Information Pages: REMOVE ME
+	<file name="catalog/controller/common/footer.php">
+		<operation error="skip">
+		    <search position="before"><![CDATA[
+		   	$children_data[]
+		    ]]></search>
+		    <add><![CDATA[
+			if ($child['linkto']) {
+				$link = $child['linkto'];
+			} else {
+				$link = $this->url->link('product/category', 'path=' . $category['category_id'] . '_' . $child['category_id']);
+			}
+		    ]]></add>
+		</operation>
+		<operation error="skip">
+		    <search position="replace"><![CDATA[
+		   	=> $this->url->link('product/category', 'path=' . $category['category_id'] . '_' . $child['category_id'])
+		    ]]></search>
+		    <add trim="true"><![CDATA[
+			=> $link
+		    ]]></add>
+		</operation>
+		<operation error="skip">
+		    <search position="before"><![CDATA[
+		   	$this->data['categories'][]
+		    ]]></search>
+		    <add><![CDATA[
+			if ($category['linkto']) {
+				$link = $category['linkto'];
+			} else {
+				$link = $this->url->link('product/category', 'path=' . $category['category_id']);
+			}
+		    ]]></add>
+		</operation>
+		
+		<operation error="skip">
+		    <search position="replace"><![CDATA[
+		   	=> $this->url->link('product/category', 'path=' . $category['category_id'])
+		    ]]></search>
+		    <add trim="true"><![CDATA[
+			=> $link
+		    ]]></add>
+		</operation>		
+	</file>
+	Categories to Information Pages: REMOVE ME, TOO. -->
+
+</modification>
