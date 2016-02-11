@@ -13,20 +13,20 @@
 	</div>
 	<div class="blog-meta">
 		<?php if( $config->get('cat_show_author') ) { ?>
-		<span class="author"><span><?php echo $objlang->get("text_write_by");?></span> <?php echo $blog['author'];?></span>
+		<span class="author"><span><?php echo $this->language->get("text_write_by");?></span> <?php echo $blog['author'];?></span>
 		<?php } ?>
 		<?php if( $config->get('cat_show_category') ) { ?>
 		<span class="publishin">
-			<span><?php echo $objlang->get("text_published_in");?></span>
+			<span><?php echo $this->language->get("text_published_in");?></span>
 			<a href="<?php echo $blog['category_link'];?>" title="<?php echo $blog['category_title'];?>"><?php echo $blog['category_title'];?></a>
 		</span>
 		<?php } ?>
 		
 		<?php if( $config->get('cat_show_hits') ) { ?>
-		<span class="hits"><span><?php echo $objlang->get("text_hits");?></span> <?php echo $blog['hits'];?></span>
+		<span class="hits"><span><?php echo $this->language->get("text_hits");?></span> <?php echo $blog['hits'];?></span>
 		<?php } ?>
 		<?php if( $config->get('cat_show_comment_counter') ) { ?>
-		<span class="comment_count"><span><?php echo $objlang->get("text_comment_count");?></span> <?php echo $blog['comment_count'];?></span>
+		<span class="comment_count"><span><?php echo $this->language->get("text_comment_count");?></span> <?php echo $blog['comment_count'];?></span>
 		<?php } ?>
 	</div>
 	<div class="blog-body">
@@ -41,7 +41,7 @@
 		</div>
 		<?php } ?>
 		<?php if( $config->get('cat_show_readmore') ) { ?>
-		<a href="<?php echo $blog['link'];?>" class="readmore"><?php echo $objlang->get('text_readmore');?></a>
+		<a href="<?php echo $blog['link'];?>" class="readmore"><?php echo $this->language->get('text_readmore');?></a>
 		<?php } ?>
 	</div>	
 </div>

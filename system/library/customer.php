@@ -16,7 +16,7 @@ class Customer {
 		$this->request = $registry->get('request');
 		$this->session = $registry->get('session');
 
-		if (isset($this->session->data['customer_id'])) {
+		if (isset($this->session->data['customer_id'])) { 
 			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE customer_id = '" . (int)$this->session->data['customer_id'] . "' AND status = '1'");
 
 			if ($customer_query->num_rows) {
@@ -45,13 +45,13 @@ class Customer {
 
 	public function login($email, $password, $override = false) {
 		if ($override) {
-			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND status = '1'");
+			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer where LOWER(email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND status = '1'");
 		} else {
 			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND (password = SHA1(CONCAT(salt, SHA1(CONCAT(salt, SHA1('" . $this->db->escape($password) . "'))))) OR password = '" . $this->db->escape(md5($password)) . "') AND status = '1' AND approved = '1'");
 		}
 
 		if ($customer_query->num_rows) {
-			$this->session->data['customer_id'] = $customer_query->row['customer_id'];
+			$this->session->data['customer_id'] = $customer_query->row['customer_id'];	
 
 			if ($customer_query->row['cart'] && is_string($customer_query->row['cart'])) {
 				$cart = unserialize($customer_query->row['cart']);
@@ -62,7 +62,7 @@ class Customer {
 					} else {
 						$this->session->data['cart'][$key] += $value;
 					}
-				}
+				}			
 			}
 
 			if ($customer_query->row['wishlist'] && is_string($customer_query->row['wishlist'])) {
@@ -76,7 +76,7 @@ class Customer {
 					if (!in_array($product_id, $this->session->data['wishlist'])) {
 						$this->session->data['wishlist'][] = $product_id;
 					}
-				}
+				}			
 			}
 
 			$this->customer_id = $customer_query->row['customer_id'];
@@ -142,15 +142,15 @@ class Customer {
 	}
 
 	public function getNewsletter() {
-		return $this->newsletter;
+		return $this->newsletter;	
 	}
 
-	public function getGroupId() {
-		return $this->customer_group_id;
+	public function getCustomerGroupId() {
+		return $this->customer_group_id;	
 	}
 
 	public function getAddressId() {
-		return $this->address_id;
+		return $this->address_id;	
 	}
 
 	public function getBalance() {
@@ -162,6 +162,7 @@ class Customer {
 	public function getRewardPoints() {
 		$query = $this->db->query("SELECT SUM(points) AS total FROM " . DB_PREFIX . "customer_reward WHERE customer_id = '" . (int)$this->customer_id . "'");
 
-		return $query->row['total'];
+		return $query->row['total'];	
 	}
 }
+?>

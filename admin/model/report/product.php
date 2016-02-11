@@ -6,22 +6,28 @@ class ModelReportProduct extends Model {
 		if (isset($data['start']) || isset($data['limit'])) {
 			if ($data['start'] < 0) {
 				$data['start'] = 0;
-			}
+			}			
 
 			if ($data['limit'] < 1) {
 				$data['limit'] = 20;
-			}
+			}	
 
 			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
-		}
+		}	
 
 		$query = $this->db->query($sql);
 
 		return $query->rows;
-	}
+	}	
 
 	public function getTotalProductsViewed() {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "product WHERE viewed > 0");
+
+		return $query->row['total'];
+	}
+
+	public function getTotalProductViews() {
+		$query = $this->db->query("SELECT SUM(viewed) AS total FROM " . DB_PREFIX . "product");
 
 		return $query->row['total'];
 	}
@@ -31,7 +37,7 @@ class ModelReportProduct extends Model {
 	}
 
 	public function getPurchased($data = array()) {
-		$sql = "SELECT op.name, op.model, SUM(op.quantity) AS quantity, SUM((op.total + op.tax) * op.quantity) AS total FROM " . DB_PREFIX . "order_product op LEFT JOIN `" . DB_PREFIX . "order` o ON (op.order_id = o.order_id)";
+		$sql = "SELECT op.name, op.model, SUM(op.quantity) AS quantity, SUM(op.total + op.total * op.tax / 100) AS total FROM " . DB_PREFIX . "order_product op LEFT JOIN `" . DB_PREFIX . "order` o ON (op.order_id = o.order_id)";
 
 		if (!empty($data['filter_order_status_id'])) {
 			$sql .= " WHERE o.order_status_id = '" . (int)$data['filter_order_status_id'] . "'";
@@ -52,11 +58,11 @@ class ModelReportProduct extends Model {
 		if (isset($data['start']) || isset($data['limit'])) {
 			if ($data['start'] < 0) {
 				$data['start'] = 0;
-			}
+			}			
 
 			if ($data['limit'] < 1) {
 				$data['limit'] = 20;
-			}
+			}	
 
 			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
 		}
@@ -88,3 +94,4 @@ class ModelReportProduct extends Model {
 		return $query->row['total'];
 	}
 }
+?>

@@ -1,8 +1,4 @@
 
-.group-form h4, .groups h4 {
-	color: red;
-	font-weight: bold;
-}
 
 .clearfix:after {
 	content: ".";
@@ -70,21 +66,21 @@ div.layer-form {
 }
 
 /*******/
-.slider-layers{ position: relative; padding-top: 20px }
+.slider-layers{ float: left; margin-left: 85px; }
  .slider-toolbar{
- 	clear: both;
 	 overflow: hidden;
-	 position: relative;
+	 position: absolute;
 	 background: #F5F5F5;
-	  width: 100%;
+	  width: 60px;
 	 margin-bottom: 1px;
 	 
 	 padding: 12px 6px;
 	 margin-right: 10px;
 	 border: 1px solid rgba(0, 0, 0, 0.15);
 	 font-size: 10px;	
- 
-	 
+
+	 top: 45px;
+	 left: 0;z-index: 999999;
   
  
   -webkit-border-radius: 6px;
@@ -95,33 +91,23 @@ div.layer-form {
           box-shadow: 0 1px 4px rgba(0,0,0,.065);
 }
  .slider-toolbar ul{ padding: 0; margin: 0}
- .slider-toolbar li {
-	display: block;
-	float: left ;
-	margin: 0 0 -1px;
-	padding: 8px 12px;
-	text-align: center;
-	border-bottom: 1px solid #f3f3f3;
+ .slider-toolbar li{
+ display: block;
 
-	display: block;
-	margin: 2px;
+  margin: 0 0 -1px;
+  padding: 8px 1px;
+  text-align: center;
+  border-bottom: 1px solid #f3f3f3;
 
-	background: #3A87AD;
-	color: #FFF;
-
-	cursor: hand; cursor: pointer;
-	border-radius: 10px 10px 10px 10px; -moz-transition:all 0.5s
+    display: block;
+    margin: 2px;
+  
+    background: #3A87AD;
+    color: #FFF;
+    font-size: 11px;
+    cursor: hand; cursor: pointer;
+      border-radius: 10px 10px 10px 10px; -moz-transition:all 0.5s
 }
-
-.slider-toolbar .red{
-	background: #A94442;
-}
-
-.btn-delete:hover {
-	background: #ccc;
-}
-
-
 .slider-toolbar li:hover{ background: #ccc;color:#444; -moz-transition:all 0.5s; }
  .slider-toolbar .icon{
    height: 35px;
@@ -143,7 +129,7 @@ div.layer-form {
   .slider-toolbar .icon-delete{
   	background: url("delete.png") no-repeat scroll left 0;
   }
-  .btn-delete{ padding:9px 10px; float: left;  color:#FFF; /* margin-left: 30px;*/ background: #A94442; border-radius: 10px 10px 10px 10px; -moz-transition:all 0.5s }
+  .btn-delete{ padding-top:20px;}
 .slider-toolbar h4{ text-align: center; font-size: 11px; }
 
 .slider-editor-wrap{
@@ -228,7 +214,7 @@ box-shadow: 1px 1px 2px 1px rgba(217,110,74,0.45), 1px 1px 5px 2px rgba(221,221,
 	 margin-left: 12px;
 }
 /****/
-.layer-collection-wrapper { width: 47%;   padding: 15px 12px 30px;   margin-left: 12px; margin-top: 12px; border: 1px solid #DDDDDD		}
+.layer-collection-wrapper { width: 48%;   padding: 15px 12px 30px;   margin-left: 12px; margin-top: 12px; border: 1px solid #DDDDDD		}
 .layer-collection .layer-active{ background: #f6f6f6; border: 1px solid #ccc }
 .layer-index{  background: #fff;  padding: 5px 8px;    	margin-bottom: 1px; cursor:hand; cursor: pointer;
 			 border: solid 1px #eee; overflow: hidden;
@@ -239,10 +225,10 @@ box-shadow: 1px 1px 2px 1px rgba(217,110,74,0.45), 1px 1px 5px 2px rgba(221,221,
     padding: 5px 12px;
 }
  .layer-index  .layer-index-caption{  
- 	display: block;
+ 	 display: block;
     float: left;
-    font-size: 10px;
-    height: 20px;
+    font-size: 12px;
+    height: 12px;
     overflow: hidden;
     width: 235px;
  }
@@ -278,8 +264,7 @@ box-shadow: 1px 1px 2px 1px rgba(217,110,74,0.45), 1px 1px 5px 2px rgba(221,221,
  .layer_image .content-sample{ width: 190px; height: 190px; background: #888;} 
 
   .buttons .pull-right {float:right}
-
-/* .buttons .btn {
+ .buttons .btn {
     background: none repeat scroll 0 0 #003A88;
     border-radius: 10px 10px 10px 10px;
     color: #FFFFFF;
@@ -296,7 +281,7 @@ td .buttons .btn{ padding:5px 12px; font-weight: normal; margin:0;}
 .buttons .orange {
 	background: #FAA732;
 }
-.buttons .btn:hover{ border:#CCC solid 3px;}*/
+.buttons .btn:hover{ border:#CCC solid 3px;}
 
  /*
   * 

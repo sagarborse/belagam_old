@@ -14,3 +14,4 @@ final class Registry {
 		return isset($this->data[$key]);
 	}
 }
+?>

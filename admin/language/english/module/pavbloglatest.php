@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']       = 'Pav Blog Latest Module';
+$_['heading_title']       = '<span style="color:#E1653B">Pav Blog Latest Module</span>';
 
 // Text
 $_['text_module']         = 'Modules';
@@ -42,8 +42,5 @@ $_['button_blog_management'] = 'Blog Management';
 $_['error_permission']    = 'Warning: You do not have permission to modify module slideshow!';
 $_['error_dimension']     = 'Width &amp; Height dimensions required!';
 $_['error_carousel']     = 'Width &amp;  Max Items - Max Columns - Limit Items In Carousel  required!';
-
-$_['entry_prefixclass'] = "Additional Class";
-
 
 ?>

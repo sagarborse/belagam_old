@@ -1,0 +1,3 @@
+a:1:{i:1;a:7:{s:12:"module_title";a:2:{i:1;s:14:"Banner Pretium";i:7;s:14:"Banner Pretium";}s:11:"description";a:2:{i:1;s:118:"&lt;p&gt;&lt;img alt=&quot;Faucibus Pretium&quot; src=&quot;image/data/demo/banner-pretium.png&quot; /&gt;&lt;/p&gt;
+";i:7;s:118:"&lt;p&gt;&lt;img alt=&quot;Faucibus Pretium&quot; src=&quot;image/data/demo/banner-pretium.png&quot; /&gt;&lt;/p&gt;
+";}s:9:"layout_id";s:1:"1";s:8:"position";s:11:"content_top";s:6:"status";s:1:"1";s:12:"module_class";s:11:"main-banner";s:10:"sort_order";i:2;}}

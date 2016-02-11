@@ -3,7 +3,7 @@ class ControllerTotalKlarnaFee extends Controller {
 	private $error = array();
 
 	public function index() {
-		$this->load->language('total/klarna_fee');
+		$this->language->load('total/klarna_fee');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -24,99 +24,103 @@ class ControllerTotalKlarnaFee extends Controller {
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
-			$this->response->redirect($this->url->link('extension/total', 'token=' . $this->session->data['token'], 'SSL'));
+			$this->redirect($this->url->link('extension/total', 'token=' . $this->session->data['token'], 'SSL'));
 		}
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_edit'] = $this->language->get('text_edit');
-		$data['text_enabled'] = $this->language->get('text_enabled');
-		$data['text_disabled'] = $this->language->get('text_disabled');
-		$data['text_none'] = $this->language->get('text_none');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['entry_total'] = $this->language->get('entry_total');
-		$data['entry_fee'] = $this->language->get('entry_fee');
-		$data['entry_tax_class'] = $this->language->get('entry_tax_class');
-		$data['entry_status'] = $this->language->get('entry_status');
-		$data['entry_sort_order'] = $this->language->get('entry_sort_order');
+		$this->data['text_enabled'] = $this->language->get('text_enabled');
+		$this->data['text_disabled'] = $this->language->get('text_disabled');
+		$this->data['text_none'] = $this->language->get('text_none');
 
-		$data['button_save'] = $this->language->get('button_save');
-		$data['button_cancel'] = $this->language->get('button_cancel');
+		$this->data['entry_total'] = $this->language->get('entry_total');
+		$this->data['entry_fee'] = $this->language->get('entry_fee');
+		$this->data['entry_tax_class'] = $this->language->get('entry_tax_class');
+		$this->data['entry_status'] = $this->language->get('entry_status');
+		$this->data['entry_sort_order'] = $this->language->get('entry_sort_order');
+
+		$this->data['button_save'] = $this->language->get('button_save');
+		$this->data['button_cancel'] = $this->language->get('button_cancel');
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
-		$data['breadcrumbs'] = array();
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_total'),
-			'href' => $this->url->link('extension/total', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_total'),
+			'href'      => $this->url->link('extension/total', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => ' :: '
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('total/klarna_fee', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('total/klarna_fee', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => ' :: '
 		);
 
-		$data['action'] = $this->url->link('total/klarna_fee', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['action'] = $this->url->link('total/klarna_fee', 'token=' . $this->session->data['token'], 'SSL');
 
-		$data['cancel'] = $this->url->link('extension/total', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['cancel'] = $this->url->link('extension/total', 'token=' . $this->session->data['token'], 'SSL');
 
-		$data['countries'] = array();
+		$this->data['countries'] = array();
 
-		$data['countries'][] = array(
+		$this->data['countries'][] = array(
 			'name' => $this->language->get('text_germany'),
 			'code' => 'DEU'
 		);
 
-		$data['countries'][] = array(
+		$this->data['countries'][] = array(
 			'name' => $this->language->get('text_netherlands'),
 			'code' => 'NLD'
 		);
 
-		$data['countries'][] = array(
+		$this->data['countries'][] = array(
 			'name' => $this->language->get('text_denmark'),
 			'code' => 'DNK'
 		);
 
-		$data['countries'][] = array(
+		$this->data['countries'][] = array(
 			'name' => $this->language->get('text_sweden'),
 			'code' => 'SWE'
 		);
 
-		$data['countries'][] = array(
+		$this->data['countries'][] = array(
 			'name' => $this->language->get('text_norway'),
 			'code' => 'NOR'
 		);
 
-		$data['countries'][] = array(
+		$this->data['countries'][] = array(
 			'name' => $this->language->get('text_finland'),
 			'code' => 'FIN'
 		);
 
 		if (isset($this->request->post['klarna_fee'])) {
-			$data['klarna_fee'] = $this->request->post['klarna_fee'];
+			$this->data['klarna_fee'] = $this->request->post['klarna_fee'];
 		} else {
-			$data['klarna_fee'] = $this->config->get('klarna_fee');
+			$this->data['klarna_fee'] = $this->config->get('klarna_fee');
 		}
 
 		$this->load->model('localisation/tax_class');
 
-		$data['tax_classes'] = $this->model_localisation_tax_class->getTaxClasses();
+		$this->data['tax_classes'] = $this->model_localisation_tax_class->getTaxClasses();
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
+		$this->template = 'total/klarna_fee.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$this->response->setOutput($this->load->view('total/klarna_fee.tpl', $data));
+		$this->response->setOutput($this->render());
 	}
 
 	private function validate() {
@@ -124,6 +128,11 @@ class ControllerTotalKlarnaFee extends Controller {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 
-		return !$this->error;
+		if (!$this->error) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
+?>

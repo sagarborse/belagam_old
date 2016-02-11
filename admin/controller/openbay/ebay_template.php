@@ -3,202 +3,215 @@ class ControllerOpenbayEbayTemplate extends Controller {
 	private $error = array();
 
 	public function listAll() {
-		$data = $this->load->language('openbay/ebay_template');
+		$this->data = array_merge($this->data, $this->load->language('openbay/ebay_template'));
 
 		$this->load->model('openbay/ebay_template');
 
-		$this->document->setTitle($data['heading_title']);
-		$this->document->addScript('view/javascript/openbay/js/faq.js');
+		$this->document->setTitle($this->data['lang_title_list']);
+		$this->document->addStyle('view/stylesheet/openbay.css');
+		$this->document->addScript('view/javascript/openbay/faq.js');
+
+		$this->template = 'openbay/ebay_template_list.tpl';
+
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
 		if (isset($this->session->data['error'])) {
-			$data['error_warning'] = $this->session->data['error'];
+			$this->data['error_warning'] = $this->session->data['error'];
 			unset($this->session->data['error']);
-		} else {
-			$data['error_warning'] = '';
 		}
 
 		if (isset($this->session->data['success'])) {
-			$data['success'] = $this->session->data['success'];
+			$this->data['success'] = $this->session->data['success'];
 			unset($this->session->data['success']);
-		} else {
-			$data['success'] = '';
 		}
 
-		$data['add'] = $this->url->link('openbay/ebay_template/add', 'token=' . $this->session->data['token'], 'SSL');
-		$data['cancel'] = $this->url->link('openbay/ebay', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['btn_add']  = $this->url->link('openbay/ebay_template/add', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['templates'] = $this->model_openbay_ebay_template->getAll();
+		$this->data['token']    = $this->session->data['token'];
 
-		$data['templates'] = $this->model_openbay_ebay_template->getAll();
-		$data['token'] = $this->session->data['token'];
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'] = array();
-
-		$data['breadcrumbs'][] = array(
+		$this->data['breadcrumbs'][] = array(
 			'href' => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
 			'text' => $this->language->get('text_home'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
+		$this->data['breadcrumbs'][] = array(
 			'href' => $this->url->link('extension/openbay', 'token=' . $this->session->data['token'], 'SSL'),
-			'text' => $this->language->get('text_openbay'),
+			'text' => $this->language->get('lang_openbay'),
+			'separator' => ' :: '
 		);
 
-		$data['breadcrumbs'][] = array(
-			'href' => $this->url->link('openbay/ebay', 'token=' . $this->session->data['token'], 'SSL'),
-			'text' => $this->language->get('text_ebay'),
+		$this->data['breadcrumbs'][] = array(
+			'href' => $this->url->link('openbay/openbay', 'token=' . $this->session->data['token'], 'SSL'),
+			'text' => $this->language->get('lang_ebay'),
+			'separator' => ' :: '
 		);
 
-		$data['breadcrumbs'][] = array(
+		$this->data['breadcrumbs'][] = array(
 			'href' => $this->url->link('openbay/ebay_template/listAll', 'token=' . $this->session->data['token'], 'SSL'),
-			'text' => $this->language->get('heading_title'),
+			'text' => $this->language->get('lang_heading'),
+			'separator' => ' :: '
 		);
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
-
-		$this->response->setOutput($this->load->view('openbay/ebay_template_list.tpl', $data));
+		$this->response->setOutput($this->render(true), $this->config->get('config_compression'));
 	}
 
 	public function add() {
-		$data = $this->load->language('openbay/ebay_template');
+		$this->data = array_merge($this->data, $this->load->language('openbay/ebay_template'));
 
 		$this->load->model('openbay/ebay_template');
 
-		$data['page_title']   = $data['heading_title'];
-		$data['btn_save']     = $this->url->link('openbay/ebay_template/add', 'token=' . $this->session->data['token'], 'SSL');
-		$data['cancel']       = $this->url->link('openbay/ebay_template/listAll', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['page_title']   = $this->data['lang_title_list_add'];
+		$this->data['btn_save']     = $this->url->link('openbay/ebay_template/add', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['cancel']       = $this->url->link('openbay/ebay_template/listAll', 'token=' . $this->session->data['token'], 'SSL');
 
 		if ($this->request->post && $this->templateValidate()) {
-			$this->session->data['success'] = $data['text_added'];
+			$this->session->data['success'] = $this->data['lang_added'];
 
 			$this->model_openbay_ebay_template->add($this->request->post);
 
-			$this->response->redirect($this->url->link('openbay/ebay_template/listAll&token=' . $this->session->data['token'], 'SSL'));
+			$this->redirect($this->url->link('openbay/ebay_template/listAll&token=' . $this->session->data['token'], 'SSL'));
 		}
 
-		$this->templateForm($data);
+		$this->templateForm();
 	}
 
 	public function delete() {
-		$this->load->language('openbay/ebay_template');
 		$this->load->model('openbay/ebay_template');
 
 		if (!$this->user->hasPermission('modify', 'openbay/ebay_template')) {
-			$this->error['warning'] = $this->language->get('error_permission');
-		} else {
+			$this->error['warning'] = $this->language->get('invalid_permission');
+		}else{
 			if (isset($this->request->get['template_id'])) {
 				$this->model_openbay_ebay_template->delete($this->request->get['template_id']);
-
-				$this->session->data['success'] = $this->language->get('text_deleted');
 			}
 		}
-		$this->response->redirect($this->url->link('openbay/ebay_template/listAll&token=' . $this->session->data['token'], 'SSL'));
+		$this->redirect($this->url->link('openbay/ebay_template/listAll&token=' . $this->session->data['token'], 'SSL'));
 	}
 
 	public function edit() {
-		$data = $this->load->language('openbay/ebay_template');
+		$this->data = array_merge($this->data, $this->load->language('openbay/ebay_template'));
 
 		$this->load->model('openbay/ebay_template');
 
-		$data['page_title']   = $data['text_title_list_edit'];
-		$data['btn_save']     = $this->url->link('openbay/ebay_template/edit', 'token=' . $this->session->data['token'], 'SSL');
-		$data['cancel']       = $this->url->link('openbay/ebay_template/listAll', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['page_title']   = $this->data['lang_title_list_edit'];
+		$this->data['btn_save']     = $this->url->link('openbay/ebay_template/edit', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['cancel']       = $this->url->link('openbay/ebay_template/listAll', 'token=' . $this->session->data['token'], 'SSL');
 
 		if ($this->request->post && $this->templateValidate()) {
 
-			$this->session->data['success'] = $data['text_updated'];
+			$this->session->data['success'] = $this->data['lang_updated'];
 
 			$this->model_openbay_ebay_template->edit($this->request->post['template_id'], $this->request->post);
 
-			$this->response->redirect($this->url->link('openbay/ebay_template/listAll&token=' . $this->session->data['token'], 'SSL'));
+			$this->redirect($this->url->link('openbay/ebay_template/listAll&token=' . $this->session->data['token'], 'SSL'));
 		}
 
-		$this->templateForm($data);
+		$this->templateForm();
 	}
 
-	public function templateForm($data) {
+	public function templateForm() {
 		$this->load->model('openbay/ebay');
 
-		$data['token'] = $this->session->data['token'];
+		$this->data['token'] = $this->session->data['token'];
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
 		if (isset($this->request->get['template_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
 			$template_info = $this->model_openbay_ebay_template->get($this->request->get['template_id']);
-			$data['text_manage'] = $this->language->get('text_edit');
-		} else {
-			$data['text_manage'] = $this->language->get('text_add');
 		}
 
-		$this->document->setTitle($data['page_title']);
-		$this->document->addStyle('view/javascript/openbay/css/codemirror.css');
-		$this->document->addScript('view/javascript/openbay/js/codemirror.js');
-		$this->document->addScript('view/javascript/openbay/js/faq.js');
+		$this->document->setTitle($this->data['page_title']);
+		$this->document->addStyle('view/stylesheet/openbay.css');
+		$this->document->addStyle('view/stylesheet/codemirror.css');
+		$this->document->addScript('view/javascript/openbay/codemirror.js');
+		$this->document->addScript('view/javascript/openbay/faq.js');
 
-		$data['breadcrumbs'] = array();
+		$this->template = 'openbay/ebay_template_form.tpl';
 
-		$data['breadcrumbs'][] = array(
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
+
+		$this->data['breadcrumbs'] = array();
+
+		$this->data['breadcrumbs'][] = array(
 			'href' => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
 			'text' => $this->language->get('text_home'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
+		$this->data['breadcrumbs'][] = array(
 			'href' => $this->url->link('extension/openbay', 'token=' . $this->session->data['token'], 'SSL'),
 			'text' => 'OpenBay Pro',
+			'separator' => ' :: '
 		);
 
-		$data['breadcrumbs'][] = array(
-			'href' => $this->url->link('openbay/ebay', 'token=' . $this->session->data['token'], 'SSL'),
+		$this->data['breadcrumbs'][] = array(
+			'href' => $this->url->link('openbay/openbay', 'token=' . $this->session->data['token'], 'SSL'),
 			'text' => 'eBay',
+			'separator' => ' :: '
 		);
 
-		$data['breadcrumbs'][] = array(
-			'href' => $this->url->link('openbay/ebay/listAll', 'token=' . $this->session->data['token'], 'SSL'),
+		$this->data['breadcrumbs'][] = array(
+			'href' => $this->url->link('openbay/openbay/listAll', 'token=' . $this->session->data['token'], 'SSL'),
 			'text' => 'Profiles',
+			'separator' => ' :: '
 		);
 
 		if (isset($this->request->post['name'])) {
-			$data['name'] = $this->request->post['name'];
+			$this->data['name'] = $this->request->post['name'];
 		} elseif (!empty($template_info)) {
-			$data['name'] = $template_info['name'];
+			$this->data['name'] = $template_info['name'];
 		} else {
-			$data['name'] = '';
+			$this->data['name'] = '';
 		}
 
 		if (isset($this->request->post['html'])) {
-			$data['html'] = $this->request->post['html'];
+			$this->data['html'] = $this->request->post['html'];
 		} elseif (!empty($template_info)) {
-			$data['html'] = $template_info['html'];
+			$this->data['html'] = $template_info['html'];
 		} else {
-			$data['html'] = '';
+			$this->data['html'] = '';
 		}
 
 		if (isset($this->request->get['template_id'])) {
-			$data['template_id'] = $this->request->get['template_id'];
+			$this->data['template_id'] = $this->request->get['template_id'];
 		} else {
-			$data['template_id'] = '';
+			$this->data['template_id'] = '';
 		}
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
-
-		$this->response->setOutput($this->load->view('openbay/ebay_template_form.tpl', $data));
+		$this->response->setOutput($this->render(true), $this->config->get('config_compression'));
 	}
 
 	private function templateValidate() {
 		if (!$this->user->hasPermission('modify', 'openbay/ebay_template')) {
-			$this->error['warning'] = $this->language->get('error_permission');
+			$this->error['warning'] = $this->language->get('invalid_permission');
 		}
 
 		if ($this->request->post['name'] == '') {
-			$this->error['warning'] = $this->language->get('error_name');
+			$this->error['name'] = $this->data['lang_error_name'];
 		}
 
-		return !$this->error;
+		if ($this->error && !isset($this->error['warning'])) {
+			$this->error['warning'] = $this->language->get('error_warning');
+		}
+
+		if (!$this->error) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
+?>

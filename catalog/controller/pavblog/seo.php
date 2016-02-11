@@ -135,14 +135,8 @@
 					$url .= '/' . $query->row['keyword'];
 					unset($data[$key]);
 					unset($data['id']);
-				}
-
-				if( preg_match( "#pavblog/category#", $data['route'] ) && preg_match( "#\{page\}#", $url_info['query'] ) && !isset($data['page'])) {
-					$data['page'] = '{page}';
-				}
-
-			}
-			  else if( $data['route'] == 'pavblog/blogs' ){ 
+				}					
+			}  else if( $data['route'] == 'pavblog/blogs' ){ 
 				$blogConfig = $this->config->get('pavblog');
 				$seo = isset($blogConfig['keyword_listing_blogs_page'])?trim($blogConfig['keyword_listing_blogs_page']):"blogs"; 
 				$url .= '/'.$seo;

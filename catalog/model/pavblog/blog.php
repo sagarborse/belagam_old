@@ -13,11 +13,6 @@
 class ModelPavblogBlog extends Model {		
 	
 	
-	public function __construct( $registry ){
-		parent::__construct( $registry );
-		$this->isInstalled();
-
-	}
 	/**
 	 * Get Blog Information by Id 
 	 */
@@ -27,7 +22,7 @@ class ModelPavblogBlog extends Model {
 								. DB_PREFIX . "pavblog_blog b LEFT JOIN "
 								. DB_PREFIX . "pavblog_blog_description bd ON b.blog_id=bd.blog_id LEFT JOIN "
 								. DB_PREFIX . 'pavblog_category c ON c.category_id=b.category_id  LEFT JOIN ' 
-								. DB_PREFIX . 'pavblog_category_description cd ON (c.category_id=cd.category_id AND cd.language_id='.(int)$this->config->get('config_language_id').')' ;
+								. DB_PREFIX . 'pavblog_category_description cd ON c.category_id=cd.category_id ' ;
 				
 		$query .=" WHERE bd.language_id=".(int)$this->config->get('config_language_id');
 		$query .= " AND b.blog_id=".(int)$id;
@@ -111,7 +106,7 @@ class ModelPavblogBlog extends Model {
 								. DB_PREFIX . 'pavblog_category c ON c.category_id=b.category_id  LEFT JOIN ' 
 								. DB_PREFIX . 'pavblog_category_description cd ON c.category_id=cd.category_id  and cd.language_id='.(int)$this->config->get('config_language_id') ;
 				
-		$sql .=" WHERE b.status = '1' AND bd.language_id=".(int)$this->config->get('config_language_id');
+		$sql .=" WHERE bd.language_id=".(int)$this->config->get('config_language_id');
 		
 		if( isset($data['filter_category_id']) && $data['filter_category_id'] ){
 			$sql .= " AND b.category_id=".(int)$data['filter_category_id'];
@@ -182,28 +177,7 @@ class ModelPavblogBlog extends Model {
 		$blogs = $query->rows;
 		return $blogs; 
 	}
-
-	public function isInstalled() {
-		$sql = " SHOW TABLES LIKE '".DB_PREFIX."pavblog_blog'";
-		$query = $this->db->query( $sql );
-		if( count($query->rows) <=0 ){ 
-			$file = dirname(DIR_APPLICATION).'/admin/model/sample/module.php';
-			if( file_exists($file) ){
-				require_once( $file );
-		 		$sample = new ModelSampleModule( $this->registry );
-		 	    $result = $sample->installSampleQuery( $this->config->get('config_template'),'pavblog', true );  
-		 	    
-			}
-			return false;
-		}
-		return true;
-	}
-
-
 	public function getDefaultConfig(){
-
-
- 
 		return array(
 			'children_columns' => '3',
 			'general_cwidth' => '250',

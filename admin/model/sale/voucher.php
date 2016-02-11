@@ -38,12 +38,12 @@ class ModelSaleVoucher extends Model {
 			'v.amount',
 			'v.status',
 			'v.date_added'
-		);
+		);	
 
 		if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
-			$sql .= " ORDER BY " . $data['sort'];
+			$sql .= " ORDER BY " . $data['sort'];	
 		} else {
-			$sql .= " ORDER BY v.date_added";
+			$sql .= " ORDER BY v.date_added";	
 		}
 
 		if (isset($data['order']) && ($data['order'] == 'DESC')) {
@@ -55,14 +55,14 @@ class ModelSaleVoucher extends Model {
 		if (isset($data['start']) || isset($data['limit'])) {
 			if ($data['start'] < 0) {
 				$data['start'] = 0;
-			}
+			}			
 
 			if ($data['limit'] < 1) {
 				$data['limit'] = 20;
-			}
+			}	
 
 			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
-		}
+		}		
 
 		$query = $this->db->query($sql);
 
@@ -88,77 +88,91 @@ class ModelSaleVoucher extends Model {
 				$this->load->model('localisation/language');
 
 				$language = new Language($order_info['language_directory']);
-				$language->load('default');
+				$language->load($order_info['language_filename']);	
 				$language->load('mail/voucher');
 
 				// HTML Mail
-				$data = array();
+				$template = new Template();				
 
-				$data['title'] = sprintf($language->get('text_subject'), $voucher_info['from_name']);
+				$template->data['title'] = sprintf($language->get('text_subject'), $voucher_info['from_name']);
 
-				$data['text_greeting'] = sprintf($language->get('text_greeting'), $this->currency->format($voucher_info['amount'], $order_info['currency_code'], $order_info['currency_value']));
-				$data['text_from'] = sprintf($language->get('text_from'), $voucher_info['from_name']);
-				$data['text_message'] = $language->get('text_message');
-				$data['text_redeem'] = sprintf($language->get('text_redeem'), $voucher_info['code']);
-				$data['text_footer'] = $language->get('text_footer');
+				$template->data['text_greeting'] = sprintf($language->get('text_greeting'), $this->currency->format($voucher_info['amount'], $order_info['currency_code'], $order_info['currency_value']));
+				$template->data['text_from'] = sprintf($language->get('text_from'), $voucher_info['from_name']);
+				$template->data['text_message'] = $language->get('text_message');
+				$template->data['text_redeem'] = sprintf($language->get('text_redeem'), $voucher_info['code']);
+				$template->data['text_footer'] = $language->get('text_footer');	
 
 				$this->load->model('sale/voucher_theme');
 
 				$voucher_theme_info = $this->model_sale_voucher_theme->getVoucherTheme($voucher_info['voucher_theme_id']);
 
-				if ($voucher_theme_info && is_file(DIR_IMAGE . $voucher_theme_info['image'])) {
-					$data['image'] = HTTP_CATALOG . 'image/' . $voucher_theme_info['image'];
+				if ($voucher_info && file_exists(DIR_IMAGE . $voucher_theme_info['image'])) {
+					$template->data['image'] = HTTP_CATALOG . 'image/' . $voucher_theme_info['image'];
 				} else {
-					$data['image'] = '';
+					$template->data['image'] = '';
 				}
 
-				$data['store_name'] = $order_info['store_name'];
-				$data['store_url'] = $order_info['store_url'];
-				$data['message'] = nl2br($voucher_info['message']);
+				$template->data['store_name'] = $order_info['store_name'];
+				$template->data['store_url'] = $order_info['store_url'];
+				$template->data['message'] = nl2br($voucher_info['message']);
 
-				$mail = new Mail($this->config->get('config_mail'));
+				$mail = new Mail(); 
+				$mail->protocol = $this->config->get('config_mail_protocol');
+				$mail->parameter = $this->config->get('config_mail_parameter');
+				$mail->hostname = $this->config->get('config_smtp_host');
+				$mail->username = $this->config->get('config_smtp_username');
+				$mail->password = $this->config->get('config_smtp_password');
+				$mail->port = $this->config->get('config_smtp_port');
+				$mail->timeout = $this->config->get('config_smtp_timeout');			
 				$mail->setTo($voucher_info['to_email']);
 				$mail->setFrom($this->config->get('config_email'));
 				$mail->setSender($order_info['store_name']);
-				$mail->setSubject(sprintf($language->get('text_subject'), $voucher_info['from_name']));
-				$mail->setHtml($this->load->view('mail/voucher.tpl', $data));
+				$mail->setSubject(html_entity_decode(sprintf($language->get('text_subject'), $voucher_info['from_name']), ENT_QUOTES, 'UTF-8'));
+				$mail->setHtml($template->fetch('mail/voucher.tpl'));				
 				$mail->send();
 
-			// If voucher does not belong to an order
+			// If voucher does not belong to an order				
 			}  else {
-				$this->load->language('mail/voucher');
+				$this->language->load('mail/voucher');
 
-				$data = array();
+				$template = new Template();		
 
-				$data['title'] = sprintf($this->language->get('text_subject'), $voucher_info['from_name']);
+				$template->data['title'] = sprintf($this->language->get('text_subject'), $voucher_info['from_name']);
 
-				$data['text_greeting'] = sprintf($this->language->get('text_greeting'), $this->currency->format($voucher_info['amount'], $order_info['currency_code'], $order_info['currency_value']));
-				$data['text_from'] = sprintf($this->language->get('text_from'), $voucher_info['from_name']);
-				$data['text_message'] = $this->language->get('text_message');
-				$data['text_redeem'] = sprintf($this->language->get('text_redeem'), $voucher_info['code']);
-				$data['text_footer'] = $this->language->get('text_footer');
+				$template->data['text_greeting'] = sprintf($this->language->get('text_greeting'), $this->currency->format($voucher_info['amount'], $order_info['currency_code'], $order_info['currency_value']));
+				$template->data['text_from'] = sprintf($this->language->get('text_from'), $voucher_info['from_name']);
+				$template->data['text_message'] = $this->language->get('text_message');
+				$template->data['text_redeem'] = sprintf($this->language->get('text_redeem'), $voucher_info['code']);
+				$template->data['text_footer'] = $this->language->get('text_footer');					
 
 				$this->load->model('sale/voucher_theme');
 
 				$voucher_theme_info = $this->model_sale_voucher_theme->getVoucherTheme($voucher_info['voucher_theme_id']);
 
-				if ($voucher_theme_info && is_file(DIR_IMAGE . $voucher_theme_info['image'])) {
-					$data['image'] = HTTP_CATALOG . 'image/' . $voucher_theme_info['image'];
+				if ($voucher_info && file_exists(DIR_IMAGE . $voucher_theme_info['image'])) {
+					$template->data['image'] = HTTP_CATALOG . 'image/' . $voucher_theme_info['image'];
 				} else {
-					$data['image'] = '';
+					$template->data['image'] = '';
 				}
 
-				$data['store_name'] = $this->config->get('config_name');
-				$data['store_url'] = HTTP_CATALOG;
-				$data['message'] = nl2br($voucher_info['message']);
+				$template->data['store_name'] = $this->config->get('config_name');
+				$template->data['store_url'] = HTTP_CATALOG;
+				$template->data['message'] = nl2br($voucher_info['message']);
 
-				$mail = new Mail($this->config->get('config_mail'));
+				$mail = new Mail(); 
+				$mail->protocol = $this->config->get('config_mail_protocol');
+				$mail->parameter = $this->config->get('config_mail_parameter');
+				$mail->hostname = $this->config->get('config_smtp_host');
+				$mail->username = $this->config->get('config_smtp_username');
+				$mail->password = $this->config->get('config_smtp_password');
+				$mail->port = $this->config->get('config_smtp_port');
+				$mail->timeout = $this->config->get('config_smtp_timeout');			
 				$mail->setTo($voucher_info['to_email']);
 				$mail->setFrom($this->config->get('config_email'));
 				$mail->setSender($this->config->get('config_name'));
-				$mail->setSubject(sprintf($this->language->get('text_subject'), $voucher_info['from_name']));
-				$mail->setHtml($this->load->view('mail/voucher.tpl', $data));
-				$mail->send();
+				$mail->setSubject(html_entity_decode(sprintf($this->language->get('text_subject'), $voucher_info['from_name']), ENT_QUOTES, 'UTF-8'));
+				$mail->setHtml($template->fetch('mail/voucher.tpl'));
+				$mail->send();				
 			}
 		}
 	}
@@ -167,13 +181,13 @@ class ModelSaleVoucher extends Model {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "voucher");
 
 		return $query->row['total'];
-	}
+	}	
 
 	public function getTotalVouchersByVoucherThemeId($voucher_theme_id) {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "voucher WHERE voucher_theme_id = '" . (int)$voucher_theme_id . "'");
 
 		return $query->row['total'];
-	}
+	}	
 
 	public function getVoucherHistories($voucher_id, $start = 0, $limit = 10) {
 		if ($start < 0) {
@@ -182,7 +196,7 @@ class ModelSaleVoucher extends Model {
 
 		if ($limit < 1) {
 			$limit = 10;
-		}
+		}	
 
 		$query = $this->db->query("SELECT vh.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, vh.amount, vh.date_added FROM " . DB_PREFIX . "voucher_history vh LEFT JOIN `" . DB_PREFIX . "order` o ON (vh.order_id = o.order_id) WHERE vh.voucher_id = '" . (int)$voucher_id . "' ORDER BY vh.date_added ASC LIMIT " . (int)$start . "," . (int)$limit);
 
@@ -193,5 +207,6 @@ class ModelSaleVoucher extends Model {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "voucher_history WHERE voucher_id = '" . (int)$voucher_id . "'");
 
 		return $query->row['total'];
-	}
+	}			
 }
+?>

@@ -31,6 +31,7 @@ class ModelLocalisationCurrency extends Model {
 			$this->cache->set('currency', $currency_data);
 		}
 
-		return $currency_data;
-	}
+		return $currency_data;	
+	}	
 }
+?>

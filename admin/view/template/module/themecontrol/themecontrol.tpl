@@ -1,92 +1,56 @@
-<?php echo $header; ?><?php echo $column_left; ?>
+<?php echo $header; ?>
 
-<?php   
-	$adminModuleViewDir = DIR_TEMPLATE . 'module/themecontrol/'; 
+<?php 
+	$modules_tpl = '';
+ 
+	$modules_tpl2 = dirname(__FILE__).'/modules_'.trim($this->getTheme()).'.tpl';
+	$modules_tpl1 = DIR_TEMPLATE.'module/themecontrol/modules.tpl';
+	$modules_tpl3 = DIR_CATALOG.'view/theme/'.$this->getTheme().'/template/common/admin/modules.tpl';
+	if( file_exists($modules_tpl3) ){
+		 $modules_tpl = $modules_tpl3;
+	} else if( file_exists($modules_tpl2) ){
+		$modules_tpl = $modules_tpl2;
+	}elseif( file_exists($modules_tpl1) ){
+		$modules_tpl = $modules_tpl1;
+	} 
 
 
-
-	// echo '<pre>'.print_r( $module['default_theme'],1 );die;	
 ?>
 <div id="content">
-
-		 
-
- <div class="page-header">
-    <div class="container-fluid">
-      <div class="pull-right">
-      	  <a href="<?php echo $ajax_clearcache; ?>" class="btn btn-info ajax-action"><?php echo $olang->get('text_clear_jscss_cache');?></a>
-      </div>	
-      <h1><?php echo $heading_title; ?></h1>
-      <ul class="breadcrumb clearfix">
-        <?php foreach ($breadcrumbs as $breadcrumb) { ?>
-        <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
-        <?php } ?>
-      </ul>
-    </div>
-  </div>
-
-
-<div class="container-fluid">
-
-<?php if( $refreshmodify ){ ?>
-	<div class="alert alert-warning">
-		Please <a href="<?php echo $refreshmodifylink; ?>" target="_blank" class="btn btn-sm btn-info">click here</a> to refesh modifycation which will create multiple layout positions to use for the theme
-	</div>
-<?php } ?>
-<form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" class="form-horizontal" id="sform">
- 	 
- 	 <div class="store-info alert alert-info">
-	 	<div class="row">	
-	 	  <label class="col-sm-1 control-label"><?php echo $olang->get('text_default_store'); ?></label>	
-	 	  <div class="col-sm-3">
-	 	 	  <select class="form-control"  name="stores" id="pavstores">
-					<?php foreach($stores as $store):?>
-					<?php if($store['store_id'] == $store_id):?>
-						<option value="<?php echo $store['store_id'];?>" selected="selected"><?php echo $store['name'];?></option>
-					<?php else:?>
-						<option value="<?php echo $store['store_id'];?>"><?php echo $store['name'];?></option>
-					<?php endif;?>
-					<?php endforeach;?>
-				</select>
-			</div>
-			<div class="col-sm-2 control-label text-align-right"><?php echo $olang->get('text_store_theme'); ?>: <strong class=" label label-danger"><?php echo $module['default_theme']; ?></strong> </div>	
-		 
-		    <div class="col-sm-6">
-			    <div class="pull-right">    <button type="submit" form="sform"  data-toggle="tooltip" title="<?php echo $button_save; ?>" class="btn save-data btn-primary"><i class="fa fa-save"></i> <?php echo $text_save;?></button>
-			        <button type="button" onclick="$('#action_type').val('save-edit');"   data-toggle="tooltip" title="<?php echo $button_save; ?>" class="btn btn-danger save-data"><i class="fa fa-save save-data"></i> <?php echo $text_saveandstay;?></button>
-			 
-			        <a href="<?php echo $cancel; ?>" data-toggle="tooltip" title="<?php echo $button_cancel; ?>" class="btn btn-default"><i class="fa fa-reply"></i></a>
-
-			       
-			      
-			    </div>    
-	    	</div>
-    	
-
-		</div>	
-
-
- 	 </div>
- 	
-    <?php if ($error_warning) { ?>
-    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $error_warning; ?>
-      <button type="button" class="close" data-dismiss="alert">&times;</button>
-    </div>
+<form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" id="sform">
+  <div class="breadcrumb">
+    <?php foreach ($breadcrumbs as $breadcrumb) { ?>
+    <?php echo $breadcrumb['separator']; ?><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a>
     <?php } ?>
-
-  <?php if( isset($alert_info) ){ ?>
-  	  <div class="alert alert-success"><?php echo $alert_info; ?></div>
-   <?php } ?>
-
+  </div>
+  <?php if ($error_warning) { ?>
+  <div class="warning"><?php echo $error_warning; ?></div>
+  <?php } ?>
   <div class="box"  id="themepanel">
-  
+    <div class="heading">
+      <h1><img src="view/image/module.png" alt="" /> <?php echo $heading_title; ?></h1>
+	  
+      <div class="buttons">
+	  <a class="button button-action btn-save" rel=""><?php echo $button_save; ?></a>
+	  <a id="button_save_keep" class="button button-action" rel="save-edit"><?php echo $button_save_keep; ?></a>
+	  
+	  <a href="<?php echo $cancel; ?>" class="button"><?php echo $button_cancel; ?></a></div>
+    </div>
     <div class="content">
 		
 	 <div class="entry-theme">
-		 
+		<b class="label"> <?php echo $this->getLang("text_default_theme");?></b>
+		<select name="themecontrol[default_theme]">
+			<?php foreach( $templates as $template ): ?>
+			<?php  $selected= $template == $module['default_theme']?'selected="selected"':'';	?>
+			<option value="<?php echo $template;?>" <?php echo $selected; ?>><?php echo $template; ?></option>
+			<?php endforeach; ?>
+		</select>
+		
+		 - <a rel="" class="green" href="http://www.pavothemes.com/guides/<?php echo $module['default_theme']?>" id="btn-guide"><?php echo $this->language->get('UserGuide');?></a>
 
 		<?php if( isset($first_installation) )  { ?>
-			<div class="label" style="float:right"><?php echo $olang->get("text_first_installation"); ?></div>
+			<div class="label" style="float:right"><?php echo $this->language->get("text_first_installation"); ?></div>
 		<?php } ?>
 	  </div>
 	  
@@ -95,291 +59,587 @@
 	  
 	
 		 <div id="tabs" class="htabs">
-			<ul class="nav nav-tabs nav-pills nav-tablangs" id="moduletabs">
-				 <li class="active"><a data-toggle="tab"  href="#tab-general"><span class="fa fa-gear"></span> <?php echo $tab_general; ?></a></li>
-				 <li><a data-toggle="tab"  href="#tab-pages-layout"><span class="fa fa-files-o"></span> <?php echo $olang->get('tab_modules_pages');?></a></li>
-				
-
-				 <li><a data-toggle="tab"  href="#tab-font"><span class="fa fa-font"></span> <?php echo $tab_font; ?></a></li>
-				<?php if(  isset($imodules) && is_array($imodules) ){ ?>
-				 <li><a data-toggle="tab"  href="#tab-imodules"><span class="fa fa-gears"></span> <?php echo $olang->get('tab_internal_modules');?></a></li>
-				<?php } ?>
-				 <li><a data-toggle="tab"  href="#tab-modules"><span class="fa fa-bars"></span> <?php echo $olang->get('tab_modules_layouts');?></a></li>
-				<?php if( isset($samples) && $samples )  { ?>
-				 <li><a data-toggle="tab"  href="#tab-datasample"><span class="fa fa-cloud-download"></span> <?php echo $olang->get('tab_datasample');?></a></li>
-				<?php } ?>
-				 <li><a data-toggle="tab"  href="#tab-compress"><span class="fa fa-tachometer"></span> <?php echo $olang->get('tab_compression');?></a></li>
-				 <li><a data-toggle="tab"  href="#tab-customcode"><span class="fa fa-mail-reply"></span> <?php echo $olang->get('tab_customcode');?></a></li>
-				 <li><a data-toggle="tab"  href="#tab-support"><span class="fa fa-info"></span> <?php echo $olang->get('tab_information'); ?> </a></li>
-			</ul>
+			
+			<a href="#tab-general"><?php echo $tab_general; ?></a>
+			<a href="#tab-pages-layout"><?php echo $this->language->get('tab_modules_pages');?></a>
+			<a href="#tab-font"><?php echo $tab_font; ?></a>
+			<?php if(  $modules_tpl ){ ?>
+			<a href="#tab-imodules"><?php echo $this->language->get('tab_internal_modules');?></a>
+			<?php } ?>
+			<a href="#tab-modules"><?php echo $this->language->get('tab_modules_layouts');?></a>
+			<?php if( isset($samples) )  { ?>
+			<a href="#tab-datasample"><?php echo $this->language->get('tab_datasample');?></a>
+			<?php } ?>
+			<a href="#tab-customcode"><?php echo $this->language->get('tab_customcode');?></a>
+			<a href="#tab-support"><?php echo $this->language->get('tab_information'); ?> </a>
 		 </div>
 		 <input type="hidden" name="themecontrol[layout_id]" value="1">
-		 <input type="hidden" name="themecontrol[position]" value="1">
+		  <input type="hidden" name="themecontrol[position]" value="1">
 
 
-		<div id="tab-contents" class="tab-content">
+		<div id="tab-contents">
 				
-				<div id="tab-pages-layout"  class="tab-pane">
-		  			 <?php include( $adminModuleViewDir.'tab/pages-setting.tpl'); ?>
+				<div id="tab-pages-layout">
+		  			 
+	  				 <div id="my-tab-pageslayout" class="vtabs">
+	  					<a href="#tab-pcategory" onclick="return false;">Category</a>
+	  					<a href="#tab-pproduct" onclick="return false;">Product</a>
+	  					<a href="#tab-pcontact" onclick="return false;">Contact</a>
+	  				 </div> 
+	  				 <div class="page-tabs-wrap">
+			  			 <div class="clearfix" id="tab-pcategory">
+			  			 	<div class="tab-inner">
+			  			 		<table class="form">
+			  			 			<tr>
+			  			 				<td><?php echo $this->language->get('text_product_display_mode'); ?></td>
+			  			 				<td>
+
+			  			 					<select name="themecontrol[cateogry_display_mode]">
+			  			 						<?php foreach( $cateogry_display_modes as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['cateogry_display_mode']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  			 					</select>
+			  			 				</td>
+			  			 			</tr>	
+			  			 			<tr>
+			  			 				<td><?php echo $this->language->get('text_max_product_row'); ?></td>
+			  			 				<td>
+
+			  			 					<select name="themecontrol[cateogry_product_row]">
+			  			 						<?php foreach( $product_rows as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['cateogry_product_row']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  			 					</select>
+			  			 				</td>
+			  			 			</tr>	
+			  			 			 
+			  			 			<tr>
+			  			 				<td><?php echo $this->language->get('text_show_product_zoom');?></td>
+			  			 				<td>
+			  			 					<select name="themecontrol[category_pzoom]">
+			  			 						<?php foreach( $yesno  as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['category_pzoom']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  			 					</select>
+			  			 				</td>
+			  			 			</tr>	 
+			  			 		</table>
+			  			 	</div>
+			  			 </div>
+			  			  <div class="clearfix" id="tab-pproduct">
+			  				<div class="tab-inner">
+			  					<table class="form">
+			  						<tr>
+			  							<td><?php echo $this->language->get('text_enable_productzoom'); ?></td>
+			  							<td>
+			  								<select name="themecontrol[product_enablezoom]">
+			  									<?php foreach( $yesno  as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['product_enablezoom']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  								</select>
+			  							</td>
+			  						</tr>
+			  						<tr>
+			  							<td><?php echo $this->language->get('text_product_zoomgallery'); ?></td>
+			  							<td>
+			  								<select name="themecontrol[product_zoomgallery]">
+			  									<?php foreach( $product_zoomgallery  as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['product_zoomgallery']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  								</select>
+			  							</td>
+			  						</tr>	
+			  						<tr>
+			  							<td><?php echo $this->language->get('text_product_zoommode'); ?></td>
+			  							<td>
+			  								<select name="themecontrol[product_zoommode]">
+			  									<?php foreach( $product_zoom_modes  as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['product_zoommode']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  								</select>
+			  							</td>
+			  						</tr>
+			  						<tr>
+			  							<td><?php echo $this->language->get('text_product_zoomlenssize'); ?></td>
+			  							<td>
+			  								<input value=<?php echo $module['product_zoomlenssize'];?> name="themecontrol[product_zoomlenssize]"/> 
+			  							</td>
+			  						</tr>
+			  						<tr>
+			  							<td><?php echo $this->language->get('text_product_zoomeasing'); ?></td>
+			  							<td>
+			  								<select name="themecontrol[product_zoomeasing]">
+			  									<?php foreach( $yesno  as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['product_zoomeasing']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  								</select>
+			  							</td>
+			  						</tr>
+			  						
+			  						<tr>
+			  							<td><?php echo $this->language->get('text_product_zoomlensshapes'); ?></td>
+			  							<td>
+			  								<select name="themecontrol[product_zoomlensshape]">
+			  									<?php foreach( $product_zoomlensshapes  as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['product_zoomlensshape']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  								</select>
+			  							</td>
+			  						</tr>
+
+			  						<tr>
+			  			 				<td><?php echo $this->language->get('text_product_related_column'); ?></td>
+			  			 				<td>
+
+			  			 					<select name="themecontrol[product_related_column]">
+			  			 						<?php foreach( $product_rows as $k=>$v ) { ?>
+			  			 					 		<option value="<?php echo $k;?>"  <?php if( $k==$module['product_related_column']){ ?> selected="selected" <?php } ?>><?php echo $v;?></option>
+			  			 						<?php }  ?>	
+			  			 					</select>
+			  			 				</td>
+			  			 			</tr>	
+			  					</table>
+			  				</div>
+			  			 </div>
+
+			  			 <div id="tab-pcontact">
+			  			 	<div class="tab-inner">
+			  			 		
+			  			 		<table class="form">
+			  			 			<tr>
+			  			 				<td class="" colspan="2"><h4><?php echo $this->language->get('text_contact_html'); ?></h4></td>
+			  			 			</tr>
+			  			 			<?php foreach( $languages as $language ) {  ?>
+			  			 			<tr>
+			  			 				<td>
+			  			 					<?php 
+			  			 						$contact_customhtml = isset($module['contact_customhtml'][$language['language_id']])?
+			  			 						$module['contact_customhtml'][$language['language_id']]:""; 
+			  			 					 ?>
+			  			 					 <img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" />
+			  			 					 <?php echo $language['name'];?> 
+			  			 				</td>
+			  			 				<td>
+			  			 					<textarea style="width:90%; height:300px" name="themecontrol[contact_customhtml][<?php echo $language['language_id'];?>]"><?php echo $contact_customhtml;?></textarea>
+			  			 				</td>
+			  			 			<tr>
+			  			 			<?php } ?>	
+			  			 		</table>	
+			  			 	</div>	
+			  			 </div>
+
+			  			
+			  			</div>  <div class="clear clearfix"></div>
 				</div>  
 
-				<div id="tab-general"  class="tab-pane active">
-					<?php include( $adminModuleViewDir.'tab/general-setting.tpl'); ?>
-
-					<?php if( isset($theme_customizations) && is_array($theme_customizations) && isset($theme_customizations['layout']) ) { ?>
-					<h3><?php echo $olang->get('text_template_layouts_setting'); ?></h3> 
-		  			 <div class="theme-customizations">
-		  			  
-		  			 		<?php foreach($theme_customizations['layout'] as $bhead => $bcustoms ) {  
-		  			 			$ckey = trim(strtolower($bhead));
-		  			 			$default = isset($bcustoms['default'])?trim($bcustoms['default']):"";
-		  			 			$selected = isset($module[$ckey])?$module[$ckey]:$default;
-		  			 			$label = isset($bcustoms['label'])?$bcustoms['label']:$bhead;
-		  			 		 ?>
-		  			 			<div class="theme-custom-block">
-
-		  			 						<div class="form-group">
- 
-												<label class="col-sm-2 control-label"><?php echo $olang->get( ucfirst( str_replace("_"," ",$label)) ); ?></label>
-												<div class="col-sm-10">
-													 <?php if( isset($bcustoms['type']) && ($bcustoms['type']) == 'text') { ?>
-						  			 						<input value="<?php echo $selected; ?>" name="themecontrol[layout_<?php echo trim(strtolower($bhead)); ?>]">
-						  			 					<?php } else { ?>
-						  			 					<select class="form-control <?php if( count($bcustoms['option']) == 2 ) { ?>form-switch<?php } ?>" name="themecontrol[<?php echo $ckey; ?>]">
-						  			 						<?php foreach( $bcustoms['option'] as $okey => $ovalue ) {  ?>
-						  			 						<option <?php if($ovalue['value']==$selected) { ?> selected="selected" <?php } ?> value="<?php echo $ovalue['value']; ?>"><?php echo $olang->get($ovalue['text']); ?></option>
-						  			 						<?php } ?>
-						  			 					</select>
-						  			 					<?php } ?>
-												</div>
-											</div>
-
-
-		  			 			</div>
-		  			 		<?php } ?>
-		  		 
-		  			 </div>
-		  			 <?php } ?>
+				<div id="tab-general">
+					<div class="tab-inner">
+						<table class="form">
+							<tr>
+								<td><?php echo 'Default Theme'; ?></td>
+								<td>
+									<div class="group-options theme-skins clear">
+										<select name="themecontrol[skin]">
+											<option value="">default</option>
+										<?php foreach( $skins as $skin ): ?>
+											<option value="<?php echo $skin;?>" <?php if( $skin==$module['skin']){ ?> selected="selected" <?php } ?>><?php echo $skin;?></option>
+										<?php endforeach;?>
+										</select>
+										
+										<div class="clear"></div>
+									</div>
+						
+								</td>
+							</tr>
+						
+							<tr>
+								<td><?php echo $this->getLang('entry_theme_width');?></td>
+								<td>
+									<input  name="themecontrol[theme_width]" value="<?php echo $module['theme_width'];?>">
+									<p><i><?php echo $this->language->get('text_explain_theme_width');?></i></p>
+								</td>
+							</tr>
+							<tr class="highlight">
+							<td><?php echo $this->getLang('entry_enable_copyright');?></td>
+							<td>
+								<select name="themecontrol[enable_custom_copyright]">
+								
+								<?php foreach( $yesno as $v=>$op ): ?>
+									<option value="<?php echo $v;?>" <?php if( $v==$module['enable_custom_copyright']){ ?> selected="selected" <?php } ?>><?php echo $op;?></option>
+								<?php endforeach;?>
+								</select>
+							</td>
+						</tr>
+							<tr>
+								<td><?php echo $this->getLang('copyright');?></td>
+								<td>
+									<textarea cols="40" rows="3" name="themecontrol[copyright]"><?php echo $module['copyright'];?></textarea>
+								</td>
+							</tr>
+							<tr>
+								<td><?php echo $this->getLang('entry_responsive');?></td>
+								<td>
+									<select name="themecontrol[responsive]">
+										<option value="0" <?php if( $module['responsive'] == 0 ){ echo 'selected="selected"';} ;?>><?php echo $this->getLang('no');?></option>
+										<option value="1" <?php if( $module['responsive'] == 1 ){ echo 'selected="selected"';} ;?>><?php echo $this->getLang('yes');?></option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td><?php echo $this->getLang('entry_enable_footer_center');?></td>
+								<td>
+									<select name="themecontrol[enable_footer_center]">
+										<option value="0" <?php if( $module['enable_footer_center'] == 0 ){ echo 'selected="selected"';} ;?>><?php echo $this->getLang('no');?></option>
+										<option value="1" <?php if( $module['enable_footer_center'] == 1 ){ echo 'selected="selected"';} ;?>><?php echo $this->getLang('yes');?></option>
+									</select>
+								</td>
+							</tr>
+							
+							<tr>
+								<td><?php echo $this->getLang('entry_enable_paneltool');?></td>
+								<td>
+									<select name="themecontrol[enable_paneltool]">
+										<option value="0" <?php if( $module['enable_paneltool'] == 0 ){ echo 'selected="selected"';} ;?>><?php echo $this->getLang('no');?></option>
+										<option value="1" <?php if( $module['enable_paneltool'] == 1 ){ echo 'selected="selected"';} ;?>><?php echo $this->getLang('yes');?></option>
+									</select>
+								</td>
+							</tr>
+							
+							<tr>
+								<td>
+									<label>Body Pattern</label>	
+								</td>
+								<td>
+									<div class="group-input">
+										<div class="box-patterns clearfix">	
+											<div class="none" style="background:#FFF"></div>
+											<?php foreach( $patterns as $pattern )  { ?>
+											<div class="<?php echo str_replace(".png","",$pattern);?>" style="background:url(<?php echo $theme_url."image/pattern/".$pattern; ?>)"></div>
+											<?php } ?>
+										</div>
+										<input name="themecontrol[body_pattern]" type="hidden" id="userparams_body_pattern" value="<?php echo $module['body_pattern'];?>"/>
+										<script type="text/javascript">
+											$( ".box-patterns div").click( function(){
+												$("#userparams_body_pattern").val(  $(this).attr("class") );
+												$( ".box-patterns div").removeClass( "active" );
+												$(this).addClass( "active" );
+											} );
+											if( $("#userparams_body_pattern").val() ){ 
+												$( ".box-patterns").find("."+ $("#userparams_body_pattern").val() ).addClass( "active" );
+											}
+										</script>
+									</div>
+									
+								</td>
+							</tr>
+							<tr>
+								<td><?php echo $this->language->get("entry_use_custom_background");?></td>
+								<td> 
+								<select name="themecontrol[use_custombg]">
+									<?php foreach( $yesno as $v=>$op ): ?>
+									<option value="<?php echo $v;?>" <?php if( $v==$module['use_custombg']){ ?> selected="selected" <?php } ?>><?php echo $op;?></option>
+									<?php endforeach;?>
+								</select>
+								</td>
+							</tr>
+							<tr>
+								<td><?php echo $this->language->get('entry_customize_background');?></td>
+								<td>
+									<?php $image = $module['bg_image'];	?>
+									<div class="image">
+										<img src="<?php echo $bg_thumb; ?>" alt="" id="thumb" />
+										<input type="hidden" name="themecontrol[bg_image]" value="<?php echo $image; ?>" id="image" />
+										<br />
+										<a onclick="image_upload('image', 'thumb');"><?php echo $this->language->get("text_browse"); ?></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+										<a onclick="$('#thumb').attr('src', '<?php echo $no_image; ?>'); $('#image').attr('value', '');"><?php echo $this->language->get("text_clear"); ?></a>
+									</div>
+									
+									<div class="clearfix"><br>
+									<label><?php echo $this->language->get('text_css_background_repeat');?></label>
+									 <select name="themecontrol[bg_repeat]">
+										<?php foreach( $bg_repeat as $bgr ) { ?>
+											<option value="<?php echo $bgr;?>" <?php if( $bgr==$module['bg_repeat']){ ?> selected="selected" <?php } ?>><?php echo $bgr; ?></option>
+										<?php } ?>
+									 </select>
+									</div>
+									<div class="clearfix"><br>
+									<label><?php echo $this->language->get('text_css_background_position');?></label>
+									 <select name="themecontrol[bg_position]">
+										<?php foreach( $bg_position as $bgp ) { ?>
+											<option value="<?php echo $bgp;?>" <?php if( $bgp==$module['bg_position']){ ?> selected="selected" <?php } ?> ><?php echo $bgp; ?></option>
+										<?php } ?>
+									 </select>
+									</div>
+								</td>
+							</tr>
+						</table>
+					</div>
 				</div>
 				
-				<?php if(  isset($imodules) && is_array($imodules) ){ ?>
-				<div id="tab-imodules"  class="tab-pane">
-					<p><?php echo $olang->get('text_explain_internal_modules'); ?></p>
-					
-					<div class="inner-modules-wrap clearfix">	 
-						<div>
-							<ul class="nav nav-tabs" >
-							<?php  $i=0; foreach( $imodules as $key => $imod ) { ?>
-								<li <?php if( $i++ ==0 ){ ?>class="active" <?php } ?>><a  role="tab" data-toggle="tab" href="#tab-imodule-<?php echo $key; ?>"><?php echo $olang->get( $imod['title'] );?></a></li>
-							<?php } ?>
-							</ul>
-						</div>
-						 <div class="tab-content">
-         					<?php $i=0; foreach( $imodules as $key => $imod ) { ?>
-         						<div id="tab-imodule-<?php echo $key;?>" class="tab-pane <?php if( $i++ == 0){ ?> active<?php } ?>">
-         						<?php 
-         						if( is_object($imod['module'])){ 	
-         							$imod['module'] = array(  $imod['module'] );
-         						}
-         						foreach( $imod['module'] as $mkey => $mod ) { ?>	
-         				
-             							<div class="panel panel-default">
-             								<div class="panel-heading"><i class="fa fa-wrench"></i> Module: <strong><?php echo $mod->title?></strong></div>
-             								<div class="panel-body">
-         									 
-             									<?php 
-             									 $mod = (array)$mod;		 
-             							 		$fields = is_object($mod['field'])?array($mod['field']):$mod['field'];		 
-             									 foreach( $fields as  $f ) { ?>
-
-
-             									  <div class="forms-groups">
- 
-													 	<?php 
-
-													 	if( $f->type=="image") { $rand = rand();
-													 		$image = isset($module[trim($f->name)])?$toolimage->resize( $module[trim($f->name)], 100, 100 ):$placeholder;
-													 		$vimg = isset($module[trim($f->name)])?($module[trim($f->name)]):"";
-													 	 ?>
-													 		  <div class="form-group">
-													 		  		<label class="col-sm-3"><?php echo $f->label; ?></label>
-													 		  		<div class="col-sm-9">
-															   		<a href="" id="thumb-image<?php echo $rand;?>" data-toggle="image" class="img-thumbnail">
-															   			<img src="<?php echo $image;?>" alt="" title="" data-placeholder="<?php echo $placeholder; ?>" />
-															   		</a>
-													                 <input type="hidden" name="themecontrol[<?php echo trim($f->name);?>]" value="<?php echo $vimg; ?>" id="input-image<?php echo $rand;?>" />
-													                   </div>
-													            </div>
-													 	<?php }else { ?>
-													 	
-															<div class="mod-text-lang form-group">
-																 <label class="col-sm-3"><?php echo $f->label; ?></label>
-																 <div class="col-sm-9">
-																  <?php if( $f->type=='text') { ?>
-																  	<ul class="nav nav-tabs nav-tablangs">
-																  	<?php foreach ($languages as $language) { ?>
-																  		<li><a href="#tab-lang-<?php echo $f->name;?><?php echo $language['language_id']; ?>" role="tab" data-toggle="tab"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></a></li>
-																  	<?php } ?>
-																  	</ul>
-																  <div class="tab-content">	
-			             										  <?php foreach ($languages as $language) { ?>
-			             											<?php $text = ( isset($module[trim($f->name)][$language['language_id']]) ? trim($module[trim($f->name)][$language['language_id']]) : $f->default );  ?>
-
-			             											<div class="tab-pane" id="tab-lang-<?php echo $f->name;?><?php echo $language['language_id']; ?>">
-				             									 
-				             										   
-				             										 	<input size="100" value="<?php echo $text; ?>" type="text" name="themecontrol[<?php echo trim($f->name);?>][<?php echo $language['language_id']; ?>]">
-				             										 </div>
-			             										 <?php } ?>	 
-			             											</div>
-		             										 <?php }elseif( $f->type == 'textarea' ) { ?>
-		             										 		
-		             										 	<ul class="nav nav-tabs nav-tablangs">
-															  	<?php foreach ($languages as $language) { ?>
-															  		<li><a href="#tab-lang-<?php echo $f->name;?><?php echo $language['language_id']; ?>" role="tab" data-toggle="tab"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></a></li>
-															  	<?php } ?>
-															  	</ul>
-																 <div class="tab-content">	  	
-		             										    <?php foreach ($languages as $language) { ?>
-		             										    	<?php $text = ( isset($module[trim($f->name)][$language['language_id']]) ? trim($module[trim($f->name)][$language['language_id']]) : $f->default );  ?>
-		             										  	 <div class="tab-pane" id="tab-lang-<?php echo $f->name;?><?php echo $language['language_id']; ?>">
-		             										   		 
-		             										 		<textarea id="w<?php echo trim($f->name);?>-<?php echo $language['language_id']; ?>"  name="themecontrol[<?php echo trim($f->name);?>][<?php echo $language['language_id']; ?>]"><?php echo $text;?></textarea>
-		             											 </div>
-		             										 	<?php } ?>	 
-		             										 	</div>
-																	<script type="text/javascript"><!--
-																	// $("#language-support_data a").tabs();
-																	<?php foreach ($languages as $language) { ?>
-																	$('#w<?php echo trim($f->name);?>-<?php echo $language['language_id']; ?>').summernote({
-																		height: 300
-																	});
-																	<?php } ?>
-
-																	</script>
-
-		             										 <?php } ?>
-
-		             								
-
-															</div>	</div>
-														<?php } ?>	
-													</div>
-
-
- 
-             									<?php } ?>	
-             					 
-             								</div>
-             							</div>
-         								 
-         						<?php } ?>
-         						</div>
-         					<?php } ?>
-         				</div>
-					</div>		
-				</div>	
+				<?php if(  $modules_tpl ){ ?>
+				<div id="tab-imodules">
+					<?php require( $modules_tpl );?>
+				</div>
 				<?php } ?>
-				<div id="tab-font"  class="tab-pane">
-					<?php include( $adminModuleViewDir."tab/font-setting.tpl" ); ?>
+				<div id="tab-font">
+					<table class="form">
+						<tr>
+							<td><?php echo $this->getLang("fontsize");?></td>
+							<td>
+								<select name="themecontrol[fontsize]">
+								<?php foreach ( $fontsizes as $key => $value ): ?>
+									<?php  $selected = $value == $module['fontsize']?'selected="selected"':'';	?>	
+									<option value="<?php echo $value;?>" <?php echo $selected; ?>><?php echo  $value; ?></option>
+								<?php endforeach; ?>
+								</select>
+							</td>
+						</tr>
+						<tr class="highlight">
+							<td><?php echo $this->getLang('entry_enable_customfont');?></td>
+							<td>
+								<select name="themecontrol[enable_customfont]">
+								
+								<?php foreach( $yesno as $v=>$op ): ?>
+									<option value="<?php echo $v;?>" <?php if( $v==$module['enable_customfont']){ ?> selected="selected" <?php } ?>><?php echo $op;?></option>
+								<?php endforeach;?>
+								</select>
+							</td>
+						</tr>
+					</table>
+						<?php  //  echo '<pre>'.print_r( $module,1 );die;?>
+					<table class="form">
+						<?php for( $i=1; $i<=3;$i++ ){ ?>	
+						<tr>
+							<td><b><?php echo $this->language->get('entry_font_setting');?></b></td>
+							<td>
+								<div  class="group-change">
+									<select name="themecontrol[type_fonts<?php echo $i;?>]" class="type-fonts">
+										<?php foreach( $type_fonts as $font ) {   ?>
+										<option value="<?php echo $font[0];?>"<?php if( $module['type_fonts'.$i] == $font[0]) { ?> selected="selected"<?php } ?>><?php echo $font[1];?></option>
+										<?php } ?>
+									</select>
+									
+									<table class="form">
+											<tr class="items-group-change group-standard">
+												<td><?php echo $this->language->get('entry_normal_font');?></td>
+												<td>
+													<select name="themecontrol[normal_fonts<?php echo $i;?>]">
+														<?php foreach( $normal_fonts as $font ) {   ?>
+														<option value="<?php echo htmlspecialchars($font[0]);?>"<?php if( $module['normal_fonts'.$i] == htmlspecialchars($font[0])) { ?> selected="selected"<?php } ?>><?php echo $font[1];?></option>
+														<?php } ?>
+													</select>
+												</td>
+											</tr>
+											<tr class="items-group-change group-google">
+												<td><?php echo $this->language->get('entry_body_google_url');?>
+												
+												</td>
+												<td>
+													<input type="text" name="themecontrol[google_url<?php echo $i;?>]" size="65" value="<?php echo $module['google_url'.$i];?>"/>
+													<p><i><?php echo $this->language->get('text_explain_google_url')?></i></p>
+												</td>
+											</tr>
+											<tr class="items-group-change group-google">
+												<td>Google Family:</td>
+												<td><input type="text" name="themecontrol[google_family<?php echo $i?>]" size="65" value="<?php echo $module['google_family'.$i];?>"/>
+												<p><i><?php echo $this->language->get('text_explain_google_family');?></i></p>
+												</td>
+											</tr>
+									</table>
+								</div>
+								
+							</td>
+						</tr>
+						
+						<tr>
+							<td><?php echo $this->language->get('entry_body_selector');?></td>
+							<td>
+								<textarea name="themecontrol[body_selector<?php echo $i?>]" rows="5" cols="50"><?php echo $module['body_selector'.$i];?></textarea>
+								<p><i><?php echo $this->language->get('text_explain_body_selector');?></i></p>
+							</td>
+						</tr>
+					<?php } ?>
+					</table>
 					
 				</div>
 	
-				<div id="tab-modules"  class="tab-pane">
-					<?php
-						// if( file_exists($adminModuleViewDir."tab/layout-setting.tpl") ) {
-						 	include( $adminModuleViewDir."tab/layout-setting.tpl" ); 
-						 
-					?>
+				<div id="tab-modules">
+					<?php include( "layout.tpl" ); ?>
 				</div>
 				
 				
 				
 				<input type="hidden" name="action_type" id="action_type" value="new">
-				<?php if( isset($samples) && $samples )  { ?>
+				<?php if( isset($samples) )  { ?>
 			
-				<div id="tab-datasample"  class="tab-pane">
-					<?php include( $adminModuleViewDir."tab/datasample.tpl" ); ?>	
-				</div>
-				<?php } ?>
-				<div id="tab-compress"  class="tab-pane">
-					<?php include( $adminModuleViewDir.'tab/compress-setting.tpl' ); ?>
-				</div>
-				<div id="tab-customcode"  class="tab-pane">
-					<?php include( $adminModuleViewDir.'tab/customize-setting.tpl' ); ?>
+				<div id="tab-datasample">
+				<p class="message">
+					<i><?php echo $this->language->get('text_message_datasample_modules');?></i>
+				</p>
+						<h3>1. <?php echo $this->language->get('text_install_datasample_store');?></h3>
+						<div class="storeconfig">
+						<a rel="install" href="<?php echo $this->url->link('module/themecontrol/storesample', 'theme='.$module['default_theme'].'&token=' . $this->session->data['token'], 'SSL');?>"><?php echo $this->language->get('text_install_sample');?></a>
+						</div>
+						<h3>2. <?php echo $this->language->get('text_install_datasample_modules');?></h3>
+						
+						<table class="form">
+						<thead>
+						<tr>
+							<td><b>Modules Name</b></td>
+							<td><b>Action</b></td>
+						</th>
+						</thead>
+						<?php foreach( $modulesQuery as  $qmodule => $text_mod ) { ?>
+						<tr>
+							<td><a target="_blank" href="<?php echo $this->url->link('module/'.$qmodule, 'token=' . $this->session->data['token'], 'SSL');?>"><?php echo $text_mod;?></a></td>
+							<td>
+								<a rel="install"   href="<?php echo $this->url->link('module/themecontrol/installsample', 'type=query&theme='.$module['default_theme'].'&module='.$qmodule.'&token=' . $this->session->data['token'], 'SSL');?>"><?php echo $this->language->get('text_install_sample');?></a> [SQL Query]
+							<td>
+						</tr>
+						<?php } ?>
+						<?php 
+						foreach( $samples as $sample  ) { ?>
+							<tr>
+								<td>
+								<?php if( isset($sample['existed']) && !$sample['existed'] ) { ?>
+								<?php echo $this->language->get('text_module_not_uploaded');?>
+								<?php } ?>
+								<a target="_blank" href="<?php echo $this->url->link('module/'.$sample['module'], 'token=' . $this->session->data['token'], 'SSL');?>"><?php echo $sample['moduleName'];?></a>
+								<?php if( isset($sample['extension_installed']) && !$sample['extension_installed'] ) { ?>
+								<?php echo $this->language->get('text_module_not_installed');?>
+								<?php } ?>
+								</td>
+								<td>
+									<?php if( $sample['installed'] ) { ?>
+										<a rel="override" href="<?php echo $this->url->link('module/themecontrol/installsample', 'theme='.$module['default_theme'].'&module='.$sample['module'].'&token=' . $this->session->data['token'], 'SSL');?>"><?php echo $this->language->get('text_override_sample');?></a>
+									<?php } else { ?>
+										<a rel="install" href="<?php echo $this->url->link('module/themecontrol/installsample', 'theme='.$module['default_theme'].'&module='.$sample['module'].'&token=' . $this->session->data['token'], 'SSL');?>"><?php echo $this->language->get('text_install_sample');?></a>
+									<?php } ?>
+									
+								</td>
+							</tr>
+						<?php } ?>
+						
+						
+						</table>
+						<h3>3. <?php echo $this->language->get('disable_expected_module_in_home_page'); ?></h3>
+						<p class="message">
+							<i><?php echo $this->language->get('text_message_disable_expected_module_in_home_page');?></i>
+						</p>
+						<table class="form">
+							<?php foreach(  $unexpectedModules as $umodule )  { ?>
+							<tr>
+								<td>
+									<a href="<?php echo $this->url->link('module/'.$umodule['code'], 'token=' . $this->session->data['token'], 'SSL');?>"><?php echo $umodule['title']; ?></a>
+								</td>
+								<td></td>
+							</tr>
+							<?php } ?>
+						</table>
 				</div>
 				
-				<div id="tab-support"  class="tab-pane">
-					<h3>
-						<?php echo $themeinfo['name'];?>
-					</h3>	
-					<hr>
-					<div class="theme-info panel panel-info">
-						<h4 class="panel-heading"><?php echo $olang->get('text_theme_information'); ?></h4>
-						<div class="panel-body">
-							<?php echo $themeinfo['description'];?>
-						</div>
-					</div>	
-					<div class="theme-info panel panel-default">
-						<h4 class="panel-heading"><?php echo $olang->get('text_support_info'); ?></h4>
-						<div class="panel-body">
-						 <?php echo $themeinfo['support'];?>
-						</div>
-					</div>	
+				<script type="text/javascript">
+					$("#tab-datasample a").click( function(){
+						var flag = false; 
+						if( $(this).attr('rel') == 'override' ){
+							var flag = confirm( '<?php echo $this->language->get('text_message_override_sample'); ?>' );
+						}else if( $(this).attr('rel') == 'install' ){
+							var flag = confirm( '<?php echo $this->language->get('text_message_install_sample'); ?>' );
+						}else {
+							return true; 
+						}
+						if( flag ){
+							var $this = $( this );
+							$this.html('processing');	
+							$.post( $(this).attr('href'), function(data) {
+								// $('.result').html(data);
+								$this.parent().html('done');
+							});
+							return false;
+						}
+						return false; 
+					} );		
+				</script>
+				
+				<?php } ?>
+				
+				<div id="tab-customcode">
+					<h4><?php echo $this->language->get('text_customcss'); ?></h4>
+					<p><i><?php echo $this->language->get('text_explain_custom_css')?></i></p>
+					<textarea name="themecontrol[custom_css]" rows="16" cols="80"><?php echo $module['custom_css'];?></textarea>
+					<h4><?php echo $this->language->get('text_customjavascript'); ?></h4>
+					<p><i><?php echo $this->language->get('text_explain_custom_js')?></i></p>
+					<textarea name="themecontrol[custom_javascript]" rows="16" cols="80"><?php echo $module['custom_javascript'];?></textarea>
+				</div>
+				
+				<div id="tab-support">
+					
+					<h4>Pavo Base Opencart Theme</h4>
+					<p><i>
+					We are proud to announce the next release of our Pav Opencart Framework, version 1.1. 
+					This release coincides with the new version of Opencart released which is version 1.5.5.1. 
+					The Framework built in Bootstrap framework,HTML5 and Css3.It is developed with many features such as Drap and Drop tools to update or sort modules - positions, Custom Fonts, Skins Changer, Responsive Feature, Mega Menu...
+					It is as great solution for developer to develop themes more flexiable, professional and save a lot of time.
+					Let check what are included?
+					
+					</i>
+					</p>
+					
+					<h4>About Pavo Opencart Framework</h4>
+					<div>
+						<p class="pavo-copyright">Pavo is Free Opencart Theme Framework released under license GPL/V2. Powered by <a href="http://www.pavothemes.com" title="PavoThemes - Opencart Theme Clubs">PavoThemes</a></p>
+					</div>
+					<h4>Supports</h4>
+					<div>
+						Follow me on <b>twitter </b>or join my <b>facebook </b>page to get noticed about all theme updates and news!
+						<ul>
+							<li><a href="http://www.pavothemes.com">Forum</a></li>
+							<li><a href="http://www.pavothemes.com">Ticket</a></li>
+							<li><a href="http://www.pavothemes.com">Contact us</a></li>
+							<li>Email: <a href="mailto:pavothemes@gmail.com">pavothemes@gmail.com</a> </li>
+							<li>Skype Support: hatuhn</li>
+							<li><a href="">YouTuBe</a></li>
+						</ul>
+					</div>
+					<h4>Looking for Themes Based on the framework</h4>
+					<ul>
+						<li><a href="http://www.pavothemes.com" title="PavoThemes - Opencart Themes Club">View Our Collection</a></li>
+					</ul>
+					<h4>CheckUpdate</h4>
+					<ul>
+						<li><a href="http://www.pavothemes.com/updater/?product=pav-framework&list=1" title="PavoThemes - Opencart Themes Club">View Our Collection</a></li>
+					</ul>
+					<iframe width="560" height="315" src="http://www.youtube.com/embed/fNEepYl3LAk" frameborder="0" allowfullscreen></iframe>
 				</div>
 	   </div>
     </div></div>
   </div>
-</form></div>
+  
+  
+  </form>
   
 </div>
- 
  <script type="text/javascript"><!--
-
-
-	<?php foreach ($languages as $language) { ?>
-	$('#customtab-content-<?php echo $language['language_id']; ?>').summernote({
-		height: 300
-	});
-	$('#contact_customhtml<?php echo $language['language_id']; ?>').summernote({
-		height: 300
-	});
-	<?php } ?>
-
- 	 
-
-//$('#tabs a').tabs(); 
-//$('.mytabs a').tabs();
-//$('#languages a').tabs();
-//$('#tab-pages-layout a').tabs();
- $('#moduletabs a').click( function(){  
- 	$.cookie("actived_tab", $(this).attr("href") );
- } );
-/* 
-
-*/ 
-// $('#module li:first-child a').tab('show');
-
-$( '.nav-tablangs').each( function(){
-	$(this).find('li:first-child a').tab('show');
+$('#tabs a').tabs(); 
+$('.mytabs a').tabs();
+$('#languages a').tabs();
+ $('#tab-pages-layout a').tabs();
+$('#tabs a').click( function(){
+	$.cookie("actived_tab", $(this).attr("href") );
 } );
 
-
-if( $.cookie("actived_tab") !="undefined" ){ 
-	$('#moduletabs a').each( function(){
-		if( $(this).attr("href") ==  $.cookie("actived_tab") ){ 
-			$(this).parent().tab('show');
-	 		$("#tab-contents > .tab-pane").removeClass('active');
-	 		$(  $.cookie("actived_tab") ).addClass( 'active' );		
+if( $.cookie("actived_tab") !="undefined" ){
+	$('#tabs a').each( function(){
+		if( $(this).attr("href") ==  $.cookie("actived_tab") ){
+			$(this).click();
 			return ;
 		}
 	} );
+	
 }
-
-
 $(document).ready( function(){		
-		$(".save-data").click( function(){ //   alert('fds');
-			// /$('#action_type').val( $(this).attr("rel") );
+		$(".button-action").click( function(){
+			$('#action_type').val( $(this).attr("rel") );
 			var string = 'rand='+Math.random();
 			var hook = '';
 			$(".ui-sortable").each( function(){
@@ -398,28 +658,13 @@ $(document).ready( function(){
 
 			$.ajax({
 			  type: 'POST',
-			  url: '<?php echo str_replace("&amp;","&",$ajax_modules_position);?>&layout_id='+$("#elayout_id").val(),
+			  url: '<?php echo str_replace("&amp;","&",$ajax_modules_position);?>',
 			  data: string+"&"+hook+unhook,
 			  success: function(){
-				 	 $('#sform').submit();
-			 		// window.location.reload(true);
+				$('#sform').submit();
+				// 	window.location.reload(true);
 			  }
 			});
-		return false; 
-	} );
-
-	$("a.ajax-action").click( function(){
-		$(this).append('<span class="ajax-loading">Procesing...</span>');
-		var _a = this;
-		var url = $(this).attr('href');
-		$.ajax({
-			  type: 'POST',
-			  url: url,
-			  data: 'rand='+Math.random(),
-			  success: function(){
-			  	$(".ajax-loading",_a).remove();
-			 }
-		});	 
 		return false; 
 	} );
 } );
@@ -428,7 +673,7 @@ $(".group-change").each( function(){
 	var $this = this;
 	$(".items-group-change",$this).hide();  //  alert( $(".type-fonts",this).val() );
 	$(".group-"+$(".type-fonts",$this).val(), this).show();
- 
+	
 	$(".type-fonts", this).change( function(){
 		$(".items-group-change",$this).hide();
 		$(".group-"+$(this).val(), $this).show();
@@ -436,7 +681,7 @@ $(".group-change").each( function(){
 });
 
 
-$(".custom-popup").click( function(){
+$("#btn-guide").click( function(){
 	$('#dialog').remove();
 	
 	$('#content').prepend('<div id="dialog" style="padding: 3px 0px 0px 0px;"><iframe src="'+$(this).attr('href')+'" style="padding:0; margin: 0; display: block; width: 100%; height: 100%;" frameborder="no" scrolling="auto"></iframe></div>');
@@ -479,10 +724,5 @@ function image_upload(field, thumb) {
 		modal: false
 	});
 };
-
-$("#pavstores").change( function(){
-	window.location = '<?php echo str_replace("&amp;","&",$action ); ?>&store_id='+$(this).val();
-} );
 //--></script> 
 <?php echo $footer; ?>
-

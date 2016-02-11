@@ -1,66 +1,58 @@
-<?php echo $header; ?><?php echo $column_left; ?>
+<?php echo $header; ?>
 <div id="content">
-  <div class="page-header">
-    <div class="container-fluid">
-      <div class="pull-right">
-        <?php if (isset($url_create_new)) { ?>
-        <a href="<?php echo $url_create_new; ?>" data-toggle="tooltip" title="<?php echo $button_create_new_listing; ?>" class="btn btn-success"><i class="fa fa-plus-circle"></i></a>
-        <?php } ?>
-        <?php if (isset($url_delete_links)) { ?>
-        <a href="<?php echo $url_delete_links; ?>" data-toggle="tooltip" title="<?php echo $button_remove_links; ?>" class="btn btn-danger"><i class="fa fa-times-circle"></i></a>
-        <?php } ?>
-        <a href="<?php echo $link_overview; ?>" data-toggle="tooltip" title="<?php echo $button_cancel; ?>" class="btn btn-default"><i class="fa fa-reply"></i></a> </div>
-      <h1><?php echo $text_edit_heading; ?></h1>
-      <ul class="breadcrumb">
+    <div class="breadcrumb">
         <?php foreach ($breadcrumbs as $breadcrumb) { ?>
-        <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
+        <?php echo $breadcrumb['separator'] ?><a href="<?php echo $breadcrumb['href'] ?>"><?php echo $breadcrumb['text'] ?></a>
         <?php } ?>
-      </ul>
     </div>
-  </div>
-  <div class="container-fluid">
-    <?php if ($has_saved_listings) { ?>
-    <div class="well">
-      <div class="row">
-        <div class="col-sm-12">
-          <p><?php echo $text_has_saved_listings; ?></p>
+        
+
+    <div class="box mBottom130">
+        <div class="heading">
+            <h1><?php echo $text_edit_heading; ?></h1>
+            <div class="buttons">
+                <?php if(isset($url_create_new)) : ?>
+                <a onclick="location = '<?php echo $url_create_new; ?>'" class="button"><span><?php echo $button_create_new_listing; ?></span></a>
+                <?php endif; ?>
+                <?php if(isset($url_delete_links)) : ?>
+                <a onclick="location = '<?php echo $url_delete_links; ?>'" class="button"><span><?php echo $button_remove_links;?></span></a>
+                <?php endif; ?>
+                <a onclick="location = '<?php echo $url_return; ?>'" class="button"><span><?php echo $button_return; ?></span></a>
+            </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="pull-right"> <a onclick="location = '<?php echo $url_saved_listings; ?>'" class="btn btn-primary"><?php echo $button_saved_listings; ?></a> </div>
+        <div class="content">
+            <?php if($has_saved_listings) : ?>
+            <p><?php echo $text_has_saved_listings; ?></p><p><a onclick="location = '<?php echo $url_saved_listings; ?>'" class="button"><span><?php echo $button_saved_listings; ?></span></a></p>
+            <?php endif; ?>
+            <table align="left" class="list">
+                <thead>
+                    <tr>
+                        <td class="center" colspan="5">Product links</td>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <td class="left" width="20%"><?php echo $column_name ;?></td>
+                        <td class="left" width="20%"><?php echo $column_model ;?></td>
+                        <td class="left" width="20%"><?php echo $column_combination ;?></td>
+                        <td class="left" width="20%"><?php echo $column_sku ;?></td>
+                        <td class="left" width="20%"><?php echo $column_amazon_sku ;?></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($product_links as $link) : ?>
+                    <tr>
+                        <td class="left"><?php echo $link['product_name']; ?></td>
+                        <td class="left"><?php echo $link['model']; ?></td>
+                        <td class="left"><?php echo $link['combi']; ?></td>
+                        <td class="left"><?php echo $link['sku']; ?></td>
+                        <td class="left"><?php echo $link['amazon_sku']; ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
-      </div>
     </div>
-    <?php } ?>
-    <table class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th class="text-left"><?php echo $column_name; ?></th>
-          <th class="text-left"><?php echo $column_model; ?></th>
-          <th class="text-left"><?php echo $column_combination; ?></th>
-          <th class="text-left"><?php echo $column_sku; ?></th>
-          <th class="text-left"><?php echo $column_amazon_sku; ?></th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (!empty($product_links)) { ?>
-        <?php foreach ($product_links as $link) { ?>
-        <tr>
-          <td class="text-left"><?php echo $link['product_name']; ?></td>
-          <td class="text-left"><?php echo $link['model']; ?></td>
-          <td class="text-left"><?php echo $link['combi']; ?></td>
-          <td class="text-left"><?php echo $link['sku']; ?></td>
-          <td class="text-left"><?php echo $link['amazon_sku']; ?></td>
-        </tr>
-        <?php } ?>
-        <?php } else { ?>
-        <tr>
-          <td colspan="5" class="text-center"><?php echo $text_no_results; ?></td>
-        </tr>
-        <?php } ?>
-      </tbody>
-    </table>
-  </div>
 </div>
+
 <?php echo $footer; ?>

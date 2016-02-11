@@ -66,9 +66,9 @@ class Modelpavsliderlayerslider extends Model {
 	/**
 	 *
 	 */
-	public function getSlidersByGroupId( $groupID, $languageID ){
+	public function getSlidersByGroupId( $groupID ){
 		$query = ' SELECT * FROM '. DB_PREFIX . "pavosliderlayers   ";
-		$query .= ' WHERE group_id='.(int)$groupID .' AND `language_id`='.(int)$languageID.' AND `status` = 1 ORDER BY position ASC';
+		$query .= ' WHERE group_id='.(int)$groupID .' AND `status` = 1 ORDER BY position ASC';
 
 		$query = $this->db->query( $query );
 		return $query->rows;

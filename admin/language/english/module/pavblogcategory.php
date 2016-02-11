@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']       = 'Pav Blog Category Module';
+$_['heading_title']       = '<span style="color:#E1653B">Pav Blog Category Module<span>';
 
 // Text
 $_['text_module']         = 'Modules';

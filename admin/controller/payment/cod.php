@@ -1,9 +1,9 @@
-<?php
+<?php 
 class ControllerPaymentCod extends Controller {
-	private $error = array();
+	private $error = array(); 
 
-	public function index() {
-		$this->load->language('payment/cod');
+	public function index() { 
+		$this->language->load('payment/cod');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -14,97 +14,99 @@ class ControllerPaymentCod extends Controller {
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
-			$this->response->redirect($this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'));
+			$this->redirect($this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'));
 		}
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_edit'] = $this->language->get('text_edit');
-		$data['text_enabled'] = $this->language->get('text_enabled');
-		$data['text_disabled'] = $this->language->get('text_disabled');
-		$data['text_all_zones'] = $this->language->get('text_all_zones');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['entry_order_status'] = $this->language->get('entry_order_status');
-		$data['entry_total'] = $this->language->get('entry_total');
-		$data['entry_geo_zone'] = $this->language->get('entry_geo_zone');
-		$data['entry_status'] = $this->language->get('entry_status');
-		$data['entry_sort_order'] = $this->language->get('entry_sort_order');
+		$this->data['text_enabled'] = $this->language->get('text_enabled');
+		$this->data['text_disabled'] = $this->language->get('text_disabled');
+		$this->data['text_all_zones'] = $this->language->get('text_all_zones');
 
-		$data['help_total'] = $this->language->get('help_total');
+		$this->data['entry_order_status'] = $this->language->get('entry_order_status');		
+		$this->data['entry_total'] = $this->language->get('entry_total');	
+		$this->data['entry_geo_zone'] = $this->language->get('entry_geo_zone');
+		$this->data['entry_status'] = $this->language->get('entry_status');
+		$this->data['entry_sort_order'] = $this->language->get('entry_sort_order');
 
-		$data['button_save'] = $this->language->get('button_save');
-		$data['button_cancel'] = $this->language->get('button_cancel');
+		$this->data['button_save'] = $this->language->get('button_save');
+		$this->data['button_cancel'] = $this->language->get('button_cancel');
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
-		$data['breadcrumbs'] = array();
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_payment'),
-			'href' => $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_payment'),
+			'href'      => $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => ' :: '
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('payment/cod', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('payment/cod', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => ' :: '
 		);
 
-		$data['action'] = $this->url->link('payment/cod', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['action'] = $this->url->link('payment/cod', 'token=' . $this->session->data['token'], 'SSL');
 
-		$data['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL');
+		$this->data['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL');	
 
 		if (isset($this->request->post['cod_total'])) {
-			$data['cod_total'] = $this->request->post['cod_total'];
+			$this->data['cod_total'] = $this->request->post['cod_total'];
 		} else {
-			$data['cod_total'] = $this->config->get('cod_total');
+			$this->data['cod_total'] = $this->config->get('cod_total'); 
 		}
 
 		if (isset($this->request->post['cod_order_status_id'])) {
-			$data['cod_order_status_id'] = $this->request->post['cod_order_status_id'];
+			$this->data['cod_order_status_id'] = $this->request->post['cod_order_status_id'];
 		} else {
-			$data['cod_order_status_id'] = $this->config->get('cod_order_status_id');
-		}
+			$this->data['cod_order_status_id'] = $this->config->get('cod_order_status_id'); 
+		} 
 
 		$this->load->model('localisation/order_status');
 
-		$data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
+		$this->data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
 
 		if (isset($this->request->post['cod_geo_zone_id'])) {
-			$data['cod_geo_zone_id'] = $this->request->post['cod_geo_zone_id'];
+			$this->data['cod_geo_zone_id'] = $this->request->post['cod_geo_zone_id'];
 		} else {
-			$data['cod_geo_zone_id'] = $this->config->get('cod_geo_zone_id');
-		}
+			$this->data['cod_geo_zone_id'] = $this->config->get('cod_geo_zone_id'); 
+		} 
 
-		$this->load->model('localisation/geo_zone');
+		$this->load->model('localisation/geo_zone');						
 
-		$data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
+		$this->data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
 		if (isset($this->request->post['cod_status'])) {
-			$data['cod_status'] = $this->request->post['cod_status'];
+			$this->data['cod_status'] = $this->request->post['cod_status'];
 		} else {
-			$data['cod_status'] = $this->config->get('cod_status');
+			$this->data['cod_status'] = $this->config->get('cod_status');
 		}
 
 		if (isset($this->request->post['cod_sort_order'])) {
-			$data['cod_sort_order'] = $this->request->post['cod_sort_order'];
+			$this->data['cod_sort_order'] = $this->request->post['cod_sort_order'];
 		} else {
-			$data['cod_sort_order'] = $this->config->get('cod_sort_order');
+			$this->data['cod_sort_order'] = $this->config->get('cod_sort_order');
 		}
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
+		$this->template = 'payment/cod.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$this->response->setOutput($this->load->view('payment/cod.tpl', $data));
+		$this->response->setOutput($this->render());
 	}
 
 	protected function validate() {
@@ -112,6 +114,11 @@ class ControllerPaymentCod extends Controller {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 
-		return !$this->error;
+		if (!$this->error) {
+			return true;
+		} else {
+			return false;
+		}	
 	}
 }
+?>

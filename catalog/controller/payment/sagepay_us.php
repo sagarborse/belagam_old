@@ -1,43 +1,45 @@
 <?php
 class ControllerPaymentSagepayUS extends Controller {
-	public function index() {
-		$this->load->language('payment/sagepay_us');
+	protected function index() {
+		$this->language->load('payment/sagepay_us');
 
-		$data['text_credit_card'] = $this->language->get('text_credit_card');
-		$data['text_loading'] = $this->language->get('text_loading');
+		$this->data['text_credit_card'] = $this->language->get('text_credit_card');
+		$this->data['text_wait'] = $this->language->get('text_wait');
 
-		$data['entry_cc_owner'] = $this->language->get('entry_cc_owner');
-		$data['entry_cc_number'] = $this->language->get('entry_cc_number');
-		$data['entry_cc_expire_date'] = $this->language->get('entry_cc_expire_date');
-		$data['entry_cc_cvv2'] = $this->language->get('entry_cc_cvv2');
+		$this->data['entry_cc_owner'] = $this->language->get('entry_cc_owner');
+		$this->data['entry_cc_number'] = $this->language->get('entry_cc_number');
+		$this->data['entry_cc_expire_date'] = $this->language->get('entry_cc_expire_date');
+		$this->data['entry_cc_cvv2'] = $this->language->get('entry_cc_cvv2');
 
-		$data['button_confirm'] = $this->language->get('button_confirm');
+		$this->data['button_confirm'] = $this->language->get('button_confirm');
 
-		$data['months'] = array();
+		$this->data['months'] = array();
 
 		for ($i = 1; $i <= 12; $i++) {
-			$data['months'][] = array(
-				'text'  => strftime('%B', mktime(0, 0, 0, $i, 1, 2000)),
+			$this->data['months'][] = array(
+				'text'  => strftime('%B', mktime(0, 0, 0, $i, 1, 2000)), 
 				'value' => sprintf('%02d', $i)
 			);
 		}
 
 		$today = getdate();
 
-		$data['year_expire'] = array();
+		$this->data['year_expire'] = array();
 
 		for ($i = $today['year']; $i < $today['year'] + 11; $i++) {
-			$data['year_expire'][] = array(
+			$this->data['year_expire'][] = array(
 				'text'  => strftime('%Y', mktime(0, 0, 0, 1, 1, $i)),
-				'value' => strftime('%Y', mktime(0, 0, 0, 1, 1, $i))
+				'value' => strftime('%Y', mktime(0, 0, 0, 1, 1, $i)) 
 			);
 		}
 
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/sagepay_us.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/payment/sagepay_us.tpl', $data);
+			$this->template = $this->config->get('config_template') . '/template/payment/sagepay_us.tpl';
 		} else {
-			return $this->load->view('default/template/payment/sagepay_us.tpl', $data);
-		}
+			$this->template = 'default/template/payment/sagepay_us.tpl';
+		}	
+
+		$this->render();		
 	}
 
 	public function send() {
@@ -76,6 +78,8 @@ class ControllerPaymentSagepayUS extends Controller {
 		$json = array();
 
 		if ($response[1] == 'A') {
+			$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('config_order_status_id'));
+
 			$message  = 'Approval Indicator: ' . $response[1] . "\n";
 			$message .= 'Approval/Error Code: ' . substr($response, 2, 6) . "\n";
 			$message .= 'Approval/Error Message: ' . substr($response, 8, 32) . "\n";
@@ -86,14 +90,14 @@ class ControllerPaymentSagepayUS extends Controller {
 			$message .= 'Reference: ' . substr($response, 46, 10) . "\n";
 			$message .= 'Order Number: ' . substr($response, strpos($response, chr(28)) + 1, strrpos($response, chr(28) - 1)) . "\n";
 
-			$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('sagepay_us_order_status_id'), $message, false);
+			$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('sagepay_us_order_status_id'), $message, false);
 
-			$json['redirect'] = $this->url->link('checkout/success');
+			$json['success'] = $this->url->link('checkout/success');
 		} else {
 			$json['error'] = substr($response, 8, 32);
 		}
 
-		$this->response->addHeader('Content-Type: application/json');
-		$this->response->setOutput(json_encode($json));
-	}
+		$this->response->setOutput(json_encode($json));		
+	}	
 }
+?>

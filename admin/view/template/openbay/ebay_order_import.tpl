@@ -1,56 +1,62 @@
-<?php echo $header; ?><?php echo $column_left; ?>
+<?php echo $header; ?>
 <div id="content">
-  <div class="page-header">
-    <div class="container-fluid">
-      <div class="pull-right"><a href="<?php echo $return; ?>" data-toggle="tooltip" title="<?php echo $button_back; ?>" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
-      <h1><?php echo $heading_title; ?></h1>
-      <ul class="breadcrumb">
+    <div class="breadcrumb">
         <?php foreach ($breadcrumbs as $breadcrumb) { ?>
-        <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
+            <?php echo $breadcrumb['separator']; ?><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a>
         <?php } ?>
-      </ul>
     </div>
-  </div>
-  <div class="container-fluid">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h3 class="panel-title"><i class="fa fa-list"></i> <?php echo $text_pull; ?></h3>
-    </div>
-    <div class="panel-body">
-      <?php if ($validation === true) { ?>
-        <form id="form-ebay-import" class="form-horizontal">
-          <p><?php echo $text_sync_pull_notice; ?></p>
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="button-import"><?php echo $entry_pull_orders; ?></label>
-            <div class="col-sm-10">
-              <a class="btn btn-primary" id="button-import"><?php echo $button_pull_orders; ?></a>
+
+    <div class="box mBottom130"> 
+        <div class="heading">
+            <h1><?php echo $lang_heading; ?></h1>
+            <div class="buttons">
+                <a onclick="location = '<?php echo $return; ?>';" class="button"><span><?php echo $lang_btn_return; ?></span></a>
             </div>
-          </div>
-        </form>
-      <?php }else{ ?>
-        <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $error_validation; ?></div>
-      <?php } ?>
+        </div>
+        <div class="content">
+            <?php if($validation === true) { ?>
+                <table  width="100%" cellspacing="0" cellpadding="2" border="0" class="adminlist">
+                    <tr class="row0">
+                        <td width="230" height="50" valign="middle"><label><?php echo $lang_sync_pull_orders; ?></label></td>
+                        <td><a onclick="importOrders();" class="button" id="importOrders"><span><?php echo $lang_sync_pull_orders_text; ?></span></a><img src="view/image/loading.gif" id="imageLoadingImportOrders" class="displayNone" alt="Loading" /></td>
+                    </tr>
+                </table>
+                <p><?php echo $lang_sync_pull_notice; ?></p>
+            <?php }else{ ?>
+                <div class="warning"><?php echo $lang_error_validation; ?></div>
+            <?php } ?>
+        </div>
     </div>
-  </div>
 </div>
+
 <script type="text/javascript"><!--
-  $('#button-import').bind('click', function() {
-    $.ajax({
-      url: 'index.php?route=openbay/ebay/importOrdersManual&token=<?php echo $token; ?>',
-      beforeSend: function(){
-        $('#button-import').empty().html('<i class="fa fa-cog fa-lg fa-spin"></i>').attr('disabled','disabled');
-      },
-      type: 'post',
-      dataType: 'json',
-      success: function(json) {
-        $('#button-import').empty().removeClass('btn-primary').addClass('btn-success').html('<?php echo $text_complete; ?>');
-        alert('<?php echo $text_ajax_orders_import; ?>');
-      },
-      error: function (xhr, ajaxOptions, thrownError) {
-        $('#button-import').empty().removeClass('btn-primary').addClass('btn-danger').html('<?php echo $text_failed; ?>').removeAttr('disabled');
-        if (xhr.status != 0) { alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText); }
-      }
-    });
-  });
+    function importOrders(){
+        $.ajax({
+                url: 'index.php?route=openbay/openbay/importOrdersManual&token=<?php echo $token; ?>',
+                beforeSend: function(){
+                    $('#importOrders').hide(); 
+                    $('#imageLoadingImportOrders').show();
+                },
+                type: 'post',
+                dataType: 'json',
+                success: function(json) {
+                    $('#importOrders').show(); $('#imageLoadingImportOrders').hide();
+                    alert('<?php echo $lang_ajax_orders_import; ?>');
+                },
+                failure: function(){
+                    $('#imageLoadingImportOrders').hide();
+                    $('#importOrders').show();
+
+                    alert('<?php echo $lang_ajax_load_error; ?>');
+                },
+                error: function(){
+                    $('#imageLoadingImportOrders').hide();
+                    $('#importOrders').show();
+
+                    alert('<?php echo $lang_ajax_load_error; ?>');
+                }
+        });
+    }
 //--></script>
+
 <?php echo $footer; ?>

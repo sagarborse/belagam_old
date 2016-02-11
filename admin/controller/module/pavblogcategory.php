@@ -14,7 +14,7 @@ class ControllerModulepavblogcategory extends Controller {
 	private $error = array(); 
 	
 	public function index() {   
-		$this->response->redirect($this->url->link('module/pavblog/frontmodules', 'mod=pavblogcategory&token=' . $this->session->data['token'], 'SSL'));
+		$this->redirect($this->url->link('module/pavblog/frontmodules', 'mod=pavblogcategory&token=' . $this->session->data['token'], 'SSL'));
 	}
 }
 ?>

@@ -9,7 +9,7 @@
 					<img src="<?php echo "http://www.gravatar.com/avatar/" . md5( strtolower( trim( $comment['email'] ) ) ) . "?d=" . urlencode( $default ) . "&s=60" ?>" align="left"/>
 					</a>
 					<div class="comment"><?php echo utf8_substr( $comment['comment'], 50 ); ?></div>
-					<span class="comment-author"><?php echo $objlang->get('text_postedby');?> <?php echo $comment['user'];?>...</span>
+					<span class="comment-author"><?php echo $this->language->get('text_postedby');?> <?php echo $comment['user'];?>...</span>
 				</div>
 			 <?php } ?>
 		</div>

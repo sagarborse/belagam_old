@@ -1,9 +1,9 @@
-<?php
-class ControllerLocalisationReturnReason extends Controller {
+<?php 
+class ControllerLocalisationReturnReason extends Controller { 
 	private $error = array();
 
 	public function index() {
-		$this->load->language('localisation/return_reason');
+		$this->language->load('localisation/return_reason');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -12,8 +12,8 @@ class ControllerLocalisationReturnReason extends Controller {
 		$this->getList();
 	}
 
-	public function add() {
-		$this->load->language('localisation/return_reason');
+	public function insert() {
+		$this->language->load('localisation/return_reason');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -38,14 +38,14 @@ class ControllerLocalisationReturnReason extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+			$this->redirect($this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'));
 		}
 
 		$this->getForm();
 	}
 
-	public function edit() {
-		$this->load->language('localisation/return_reason');
+	public function update() {
+		$this->language->load('localisation/return_reason');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -70,14 +70,14 @@ class ControllerLocalisationReturnReason extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+			$this->redirect($this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'));
 		}
 
 		$this->getForm();
 	}
 
 	public function delete() {
-		$this->load->language('localisation/return_reason');
+		$this->language->load('localisation/return_reason');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -104,7 +104,7 @@ class ControllerLocalisationReturnReason extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+			$this->redirect($this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'));
 		}
 
 		$this->getList();
@@ -143,73 +143,74 @@ class ControllerLocalisationReturnReason extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['breadcrumbs'] = array();
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'),
+			'separator' => ' :: '
 		);
 
-		$data['add'] = $this->url->link('localisation/return_reason/add', 'token=' . $this->session->data['token'] . $url, 'SSL');
-		$data['delete'] = $this->url->link('localisation/return_reason/delete', 'token=' . $this->session->data['token'] . $url, 'SSL');
+		$this->data['insert'] = $this->url->link('localisation/return_reason/insert', 'token=' . $this->session->data['token'] . $url, 'SSL');
+		$this->data['delete'] = $this->url->link('localisation/return_reason/delete', 'token=' . $this->session->data['token'] . $url, 'SSL');	
 
-		$data['return_reasons'] = array();
+		$this->data['return_reasons'] = array();
 
-		$filter_data = array(
+		$data = array(
 			'sort'  => $sort,
 			'order' => $order,
-			'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-			'limit' => $this->config->get('config_limit_admin')
+			'start' => ($page - 1) * $this->config->get('config_admin_limit'),
+			'limit' => $this->config->get('config_admin_limit')
 		);
 
 		$return_reason_total = $this->model_localisation_return_reason->getTotalReturnReasons();
 
-		$results = $this->model_localisation_return_reason->getReturnReasons($filter_data);
+		$results = $this->model_localisation_return_reason->getReturnReasons($data);
 
 		foreach ($results as $result) {
-			$data['return_reasons'][] = array(
-				'return_reason_id' => $result['return_reason_id'],
-				'name'             => $result['name'],
-				'edit'             => $this->url->link('localisation/return_reason/edit', 'token=' . $this->session->data['token'] . '&return_reason_id=' . $result['return_reason_id'] . $url, 'SSL')
+			$action = array();
+
+			$action[] = array(
+				'text' => $this->language->get('text_edit'),
+				'href' => $this->url->link('localisation/return_reason/update', 'token=' . $this->session->data['token'] . '&return_reason_id=' . $result['return_reason_id'] . $url, 'SSL')
 			);
-		}
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_list'] = $this->language->get('text_list');
-		$data['text_no_results'] = $this->language->get('text_no_results');
-		$data['text_confirm'] = $this->language->get('text_confirm');
+			$this->data['return_reasons'][] = array(
+				'return_reason_id' => $result['return_reason_id'],
+				'name'          => $result['name'],
+				'selected'      => isset($this->request->post['selected']) && in_array($result['return_reason_id'], $this->request->post['selected']),
+				'action'        => $action
+			);
+		}	
 
-		$data['column_name'] = $this->language->get('column_name');
-		$data['column_action'] = $this->language->get('column_action');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['button_add'] = $this->language->get('button_add');
-		$data['button_edit'] = $this->language->get('button_edit');
-		$data['button_delete'] = $this->language->get('button_delete');
+		$this->data['text_no_results'] = $this->language->get('text_no_results');
+
+		$this->data['column_name'] = $this->language->get('column_name');
+		$this->data['column_action'] = $this->language->get('column_action');		
+
+		$this->data['button_insert'] = $this->language->get('button_insert');
+		$this->data['button_delete'] = $this->language->get('button_delete');
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
 		if (isset($this->session->data['success'])) {
-			$data['success'] = $this->session->data['success'];
+			$this->data['success'] = $this->session->data['success'];
 
 			unset($this->session->data['success']);
 		} else {
-			$data['success'] = '';
-		}
-
-		if (isset($this->request->post['selected'])) {
-			$data['selected'] = (array)$this->request->post['selected'];
-		} else {
-			$data['selected'] = array();
+			$this->data['success'] = '';
 		}
 
 		$url = '';
@@ -224,7 +225,7 @@ class ControllerLocalisationReturnReason extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['sort_name'] = $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . '&sort=name' . $url, 'SSL');
+		$this->data['sort_name'] = $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . '&sort=name' . $url, 'SSL');
 
 		$url = '';
 
@@ -239,43 +240,42 @@ class ControllerLocalisationReturnReason extends Controller {
 		$pagination = new Pagination();
 		$pagination->total = $return_reason_total;
 		$pagination->page = $page;
-		$pagination->limit = $this->config->get('config_limit_admin');
+		$pagination->limit = $this->config->get('config_admin_limit');
+		$pagination->text = $this->language->get('text_pagination');
 		$pagination->url = $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
 
-		$data['pagination'] = $pagination->render();
+		$this->data['pagination'] = $pagination->render();
 
-		$data['results'] = sprintf($this->language->get('text_pagination'), ($return_reason_total) ? (($page - 1) * $this->config->get('config_limit_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_limit_admin')) > ($return_reason_total - $this->config->get('config_limit_admin'))) ? $return_reason_total : ((($page - 1) * $this->config->get('config_limit_admin')) + $this->config->get('config_limit_admin')), $return_reason_total, ceil($return_reason_total / $this->config->get('config_limit_admin')));
+		$this->data['sort'] = $sort;
+		$this->data['order'] = $order;
 
-		$data['sort'] = $sort;
-		$data['order'] = $order;
+		$this->template = 'localisation/return_reason_list.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
-
-		$this->response->setOutput($this->load->view('localisation/return_reason_list.tpl', $data));
+		$this->response->setOutput($this->render());
 	}
 
 	protected function getForm() {
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_form'] = !isset($this->request->get['return_reason_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
-		
-		$data['entry_name'] = $this->language->get('entry_name');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['button_save'] = $this->language->get('button_save');
-		$data['button_cancel'] = $this->language->get('button_cancel');
+		$this->data['entry_name'] = $this->language->get('entry_name');
+
+		$this->data['button_save'] = $this->language->get('button_save');
+		$this->data['button_cancel'] = $this->language->get('button_cancel');
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
 		if (isset($this->error['name'])) {
-			$data['error_name'] = $this->error['name'];
+			$this->data['error_name'] = $this->error['name'];
 		} else {
-			$data['error_name'] = array();
+			$this->data['error_name'] = array();
 		}
 
 		$url = '';
@@ -292,43 +292,47 @@ class ControllerLocalisationReturnReason extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['breadcrumbs'] = array();
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL'),
+			'separator' => ' :: '
 		);
 
 		if (!isset($this->request->get['return_reason_id'])) {
-			$data['action'] = $this->url->link('localisation/return_reason/add', 'token=' . $this->session->data['token'] . $url, 'SSL');
+			$this->data['action'] = $this->url->link('localisation/return_reason/insert', 'token=' . $this->session->data['token'] . $url, 'SSL');
 		} else {
-			$data['action'] = $this->url->link('localisation/return_reason/edit', 'token=' . $this->session->data['token'] . '&return_reason_id=' . $this->request->get['return_reason_id'] . $url, 'SSL');
+			$this->data['action'] = $this->url->link('localisation/return_reason/update', 'token=' . $this->session->data['token'] . '&return_reason_id=' . $this->request->get['return_reason_id'] . $url, 'SSL');
 		}
 
-		$data['cancel'] = $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL');
+		$this->data['cancel'] = $this->url->link('localisation/return_reason', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
 		$this->load->model('localisation/language');
 
-		$data['languages'] = $this->model_localisation_language->getLanguages();
+		$this->data['languages'] = $this->model_localisation_language->getLanguages();
 
 		if (isset($this->request->post['return_reason'])) {
-			$data['return_reason'] = $this->request->post['return_reason'];
+			$this->data['return_reason'] = $this->request->post['return_reason'];
 		} elseif (isset($this->request->get['return_reason_id'])) {
-			$data['return_reason'] = $this->model_localisation_return_reason->getReturnReasonDescriptions($this->request->get['return_reason_id']);
+			$this->data['return_reason'] = $this->model_localisation_return_reason->getReturnReasonDescriptions($this->request->get['return_reason_id']);
 		} else {
-			$data['return_reason'] = array();
+			$this->data['return_reason'] = array();
 		}
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
+		$this->template = 'localisation/return_reason_form.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$this->response->setOutput($this->load->view('localisation/return_reason_form.tpl', $data));
+		$this->response->setOutput($this->render());	
 	}
 
 	protected function validateForm() {
@@ -337,12 +341,16 @@ class ControllerLocalisationReturnReason extends Controller {
 		}
 
 		foreach ($this->request->post['return_reason'] as $language_id => $value) {
-			if ((utf8_strlen($value['name']) < 3) || (utf8_strlen($value['name']) > 128)) {
+			if ((utf8_strlen($value['name']) < 3) || (utf8_strlen($value['name']) > 32)) {
 				$this->error['name'][$language_id] = $this->language->get('error_name');
 			}
 		}
 
-		return !$this->error;
+		if (!$this->error) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	protected function validateDelete() {
@@ -357,9 +365,14 @@ class ControllerLocalisationReturnReason extends Controller {
 
 			if ($return_total) {
 				$this->error['warning'] = sprintf($this->language->get('error_return'), $return_total);
-			}
+			}  
 		}
 
-		return !$this->error;
+		if (!$this->error) { 
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
+?>

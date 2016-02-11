@@ -2,146 +2,99 @@
 final class Openbay {
 	private $registry;
 	private $installed_modules = array();
-	public $installed_markets = array();
 
 	public function __construct($registry) {
 		$this->registry = $registry;
-
-		$this->getInstalled();
-
-		foreach ($this->installed_markets as $market) {
-			$class = ucfirst($market);
-			$this->{$market} = new $class($registry);
-		}
-
-		$this->logger = new Log('openbay.log');
+		$this->ebay = new Ebay($registry);
+		$this->amazon = new Amazon($registry);
+		$this->amazonus = new Amazonus($registry);
 	}
 
 	public function __get($name) {
 		return $this->registry->get($name);
 	}
 
-	public function log($data, $write = true) {
-		if ($this->logging == 1) {
-			if (function_exists('getmypid')) {
-				$process_id = getmypid();
-				$data = $process_id . ' - ' . $data;
-			}
+	public function orderNew($order_id) {
+		/**
+		 * Once and order has been imported from external marketplace and
+		 * and order_id has been created, this method should be called.
+		 *
+		 */
 
-			if ($write == true) {
-				$this->logger->write($data);
-			}
+		// eBay Module
+		if ($this->config->get('openbay_status') == 1) {
+			$this->ebay->orderNew($order_id);
+		}
+
+		// Amazon EU Module
+		if ($this->config->get('amazon_status') == 1) {
+			$this->amazon->orderNew($order_id);
+		}
+
+		// Amazon US Module
+		if ($this->config->get('amazonus_status') == 1) {
+			$this->amazonus->orderNew($order_id);
+		}
+
+		/**
+		 * If a 3rd party module needs to be notified about a new order
+		 * so it can update the stock then they should add a method to their
+		 * application here with the order id so they can get the info about it.
+		 * i.e. $this->mylibraryfile->newOrderMethod($order_id);
+		 */
+	}
+
+	public function productUpdateListen($productId, $data) {
+		/**
+		 * This call is performed after the product has been updated.
+		 * The $data variable holds all of the information that has
+		 * been sent through the $_POST.
+		 */
+
+		// eBay Module
+		if ($this->config->get('openbay_status') == 1) {
+			$this->ebay->productUpdateListen($productId, $data);
+		}
+
+		// Amazon Module
+		if ($this->config->get('amazon_status') == 1) {
+			$this->amazon->productUpdateListen($productId, $data);
+		}
+
+		// Amazon US Module
+		if ($this->config->get('amazonus_status') == 1) {
+			$this->amazonus->productUpdateListen($productId, $data);
 		}
 	}
 
-	public function encrypt($msg, $k, $base64 = false) {
-		$td = mcrypt_module_open('rijndael-256', '', 'ctr', '');
-
-		if (!$td) {
-			return false;
-		}
-
-		$iv = mcrypt_create_iv(32, MCRYPT_RAND);
-
-		if (mcrypt_generic_init($td, $k, $iv) !== 0) {
-			return false;
-		}
-
-		$msg = mcrypt_generic($td, $msg);
-		$msg = $iv . $msg;
-		$mac = $this->pbkdf2($msg, $k, 1000, 32);
-		$msg .= $mac;
-
-		mcrypt_generic_deinit($td);
-		mcrypt_module_close($td);
-
-		if ($base64) {
-			$msg = base64_encode($msg);
-		}
-
-		return $msg;
-	}
-
-	public function decrypt($msg, $k, $base64 = false) {
-		if ($base64) {
-			$msg = base64_decode($msg);
-		}
-
-		if (!$td = mcrypt_module_open('rijndael-256', '', 'ctr', '')) {
-			return false;
-		}
-
-		$iv = substr($msg, 0, 32);
-		$mo = strlen($msg) - 32;
-		$em = substr($msg, $mo);
-		$msg = substr($msg, 32, strlen($msg) - 64);
-		$mac = $this->pbkdf2($iv . $msg, $k, 1000, 32);
-
-		if ($em !== $mac) {
-			return false;
-		}
-
-		if (mcrypt_generic_init($td, $k, $iv) !== 0) {
-			return false;
-		}
-
-		$msg = mdecrypt_generic($td, $msg);
-		$msg = unserialize($msg);
-
-		mcrypt_generic_deinit($td);
-		mcrypt_module_close($td);
-
-		return $msg;
-	}
-
-	public function pbkdf2($p, $s, $c, $kl, $a = 'sha256') {
-		$hl = strlen(hash($a, null, true));
-		$kb = ceil($kl / $hl);
-		$dk = '';
-
-		for ($block = 1; $block <= $kb; $block++) {
-
-			$ib = $b = hash_hmac($a, $s . pack('N', $block), $p, true);
-
-			for ($i = 1; $i < $c; $i++)
-				$ib ^= ($b = hash_hmac($a, $b, $p, true));
-
-			$dk .= $ib;
-		}
-
-		return substr($dk, 0, $kl);
-	}
-
-	private function getInstalled() {
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "extension WHERE `type` = 'openbay'");
-
-		foreach ($query->rows as $result) {
-			$this->installed_markets[] = $result['code'];
-		}
-	}
-
-	public function getInstalledMarkets() {
-		return $this->installed_markets;
-	}
-
-	public function putStockUpdateBulk($product_id_array, $end_inactive = false) {
+	public function putStockUpdateBulk($productIdArray, $endInactive = false) {
 		/**
 		 * putStockUpdateBulk
 		 *
 		 * Takes an array of product id's where stock has been modified
 		 *
-		 * @param $product_id_array
+		 * @param $productIdArray
 		 */
 
-		foreach ($this->installed_markets as $market) {
-			if ($this->config->get($market . '_status') == 1) {
-				$this->{$market}->putStockUpdateBulk($product_id_array, $end_inactive);
-			}
+		// eBay Module
+		if ($this->config->get('openbay_status') == 1) {
+			$this->ebay->putStockUpdateBulk($productIdArray, $endInactive);
+		}
+
+		// Amazon EU Module
+		if ($this->config->get('amazon_status') == 1) {
+			$this->amazon->putStockUpdateBulk($productIdArray, $endInactive);
+		}
+
+		// Amazon US Module
+		if ($this->config->get('amazonus_status') == 1) {
+			$this->amazonus->putStockUpdateBulk($productIdArray, $endInactive);
 		}
 	}
 
 	public function testDbColumn($table, $column) {
-		$res = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . $table . "` LIKE '" . $column . "'");
+		//check profile table for default column
+		$res = $this->db->query("SHOW COLUMNS FROM `".DB_PREFIX.$table."` LIKE '".$column."'");
 		if($res->num_rows != 0) {
 			return true;
 		}else{
@@ -214,6 +167,7 @@ final class Openbay {
 	public function getTaxRate($class_id) {
 		$rates = $this->getTaxRates($class_id);
 		$percentage = 0.00;
+
 		foreach($rates as $rate) {
 			if($rate['type'] == 'P') {
 				$percentage += $rate['rate'];
@@ -224,7 +178,7 @@ final class Openbay {
 	}
 
 	public function getZoneId($name, $country_id) {
-		$query = $this->db->query("SELECT `zone_id` FROM `" . DB_PREFIX . "zone` WHERE `country_id` = '" . (int)$country_id . "' AND status = '1' AND `name` = '" . $this->db->escape($name) . "'");
+		$query = $this->db->query("SELECT `zone_id` FROM `" . DB_PREFIX . "zone` WHERE `country_id` = '" . (int)$country_id . "' AND status = '1' AND `name` = '".$this->db->escape($name)."'");
 
 		if($query->num_rows > 0) {
 			return $query->row['zone_id'];
@@ -238,7 +192,7 @@ final class Openbay {
 		$order_info = $this->model_checkout_order->getOrder($order_id);
 
 		$language = new Language($order_info['language_directory']);
-		$language->load('default');
+		$language->load($order_info['language_filename']);
 		$language->load('mail/order');
 
 		$order_status = $this->db->query("SELECT `name` FROM " . DB_PREFIX . "order_status WHERE order_status_id = '" . (int)$order_status_id . "' AND language_id = '" . (int)$this->config->get('config_language_id') . "' LIMIT 1")->row['name'];
@@ -261,7 +215,7 @@ final class Openbay {
 		foreach ($order_product_query->rows as $product) {
 			$text .= $product['quantity'] . 'x ' . $product['name'] . ' (' . $product['model'] . ') ' . html_entity_decode($this->currency->format($product['total'] + ($this->config->get('config_tax') ? ($product['tax'] * $product['quantity']) : 0), $order_info['currency_code'], $order_info['currency_value']), ENT_NOQUOTES, 'UTF-8') . "\n";
 
-			$order_option_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . (int)$product['order_product_id'] . "'");
+			$order_option_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . $product['order_product_id'] . "'");
 
 			foreach ($order_option_query->rows as $option) {
 				if ($option['type'] != 'file') {
@@ -270,7 +224,7 @@ final class Openbay {
 					$value = utf8_substr($option['value'], 0, utf8_strrpos($option['value'], '.'));
 				}
 
-				$text .= chr(9) . '-' . $option['name'] . ' ' . (utf8_strlen($value) > 20) ? utf8_substr($value, 0, 20) . '..' : $value . "\n";
+				$text .= chr(9) . '-' . $option['name'] . ' ' . (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value) . "\n";
 			}
 		}
 
@@ -313,36 +267,62 @@ final class Openbay {
 		$emails = explode(',', $this->config->get('config_alert_emails'));
 
 		foreach ($emails as $email) {
-			if ($email && preg_match('/^[^\@]+@.*.[a-z]{2,15}$/i', $email)) {
+			if ($email && preg_match('/^[^\@]+@.*\.[a-z]{2,6}$/i', $email)) {
 				$mail->setTo($email);
 				$mail->send();
 			}
 		}
 	}
 
-	public function orderDelete($order_id) {
+	public function deleteProduct($product_id) {
+		// eBay Module
+		if ($this->config->get('openbay_status') == 1) {
+			$this->ebay->deleteProduct($product_id);
+		}
+
+		// Amazon Module
+		if ($this->config->get('amazon_status') == 1) {
+			$this->amazon->deleteProduct($product_id);
+		}
+
+		// Amazon US Module
+		if ($this->config->get('amazonus_status') == 1) {
+			$this->amazonus->deleteProduct($product_id);
+		}
+	}
+
+	public function deleteOrder($order_id) {
 		/**
-		 * Called when an order is deleted in the admin
-		 * Use it to add stock back to the marketplaces
+		 * Called when an order is deleted - usually by the admin. Helpful to loop over the products to add the stock back to the markets.
 		 */
-		foreach ($this->installed_markets as $market) {
-			if ($this->config->get($market . '_status') == 1) {
-				$this->{$market}->orderDelete($order_id);
-			}
+		// eBay Module
+		if ($this->config->get('openbay_status') == 1) {
+			$this->ebay->deleteOrder($order_id);
+		}
+
+		// Amazon Module
+		if ($this->config->get('amazon_status') == 1) {
+			$this->amazon->deleteOrder($order_id);
+		}
+
+		// Amazon US Module
+		if ($this->config->get('amazonus_status') == 1) {
+			$this->amazonus->deleteOrder($order_id);
 		}
 	}
 
 	public function getProductModelNumber($product_id, $sku = null) {
 		if($sku != null) {
-			$qry = $this->db->query("SELECT `sku` FROM `" . DB_PREFIX . "product_option_relation` WHERE `product_id` = '" . (int)$product_id . "' AND `var` = '" . $this->db->escape($sku) . "'");
+			$qry = $this->db->query("SELECT `sku` FROM `" . DB_PREFIX . "product_option_relation` WHERE `product_id` = '".(int)$product_id."' AND `var` = '".$this->db->escape($sku)."'");
 
 			if($qry->num_rows > 0) {
 				return $qry->row['sku'];
 			}else{
 				return false;
 			}
+
 		}else{
-			$qry = $this->db->query("SELECT `model` FROM `" . DB_PREFIX . "product` WHERE `product_id` = '" . (int)$product_id . "' LIMIT 1");
+			$qry = $this->db->query("SELECT `model` FROM `" . DB_PREFIX . "product` WHERE `product_id` = '".(int)$product_id."' LIMIT 1");
 
 			if($qry->num_rows > 0) {
 				return $qry->row['model'];
@@ -369,7 +349,7 @@ final class Openbay {
 	}
 
 	public function getUserByEmail($email) {
-		$qry = $this->db->query("SELECT * FROM `" . DB_PREFIX . "customer` WHERE `email` = '" . $this->db->escape($email) . "'");
+		$qry = $this->db->query("SELECT * FROM `" . DB_PREFIX . "customer` WHERE `email` = '".$this->db->escape($email)."'");
 
 		if($qry->num_rows){
 			return $qry->row['customer_id'];
@@ -429,3 +409,4 @@ final class Openbay {
 		return $product_option_data;
 	}
 }
+?>

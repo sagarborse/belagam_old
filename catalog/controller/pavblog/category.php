@@ -13,13 +13,11 @@
 	class ControllerPavblogCategory extends Controller {
 	
 		private $mparams = '';
-		private $mdata = array();
-
+		
+		/**
+		 *
+		 */
 		public function preload(){
-
-			$this->mdata['objlang'] = $this->language;
-			$this->mdata['objurl'] = $this->url;
-			
 			$this->load->model('pavblog/blog');
 			$this->load->model('pavblog/comment');
 			$this->load->model('tool/image'); 	
@@ -111,8 +109,8 @@
 				$limit =  (int)$this->mparams->get( 'cat_limit_leading_blog' ) +  (int)$this->mparams->get( 'cat_limit_secondary_blog' );
 			}
 			
-			$this->mdata['breadcrumbs'] = array();
-			$this->mdata['breadcrumbs'][] = array(
+			$this->data['breadcrumbs'] = array();
+			$this->data['breadcrumbs'][] = array(
 				'text'      => $this->language->get('text_home'),
 				'href'      => $this->url->link('common/home'),
 				'separator' => false
@@ -146,7 +144,7 @@
 				$children[$key]=$sub;
 			}
 		//	echo '<pre>'.print_r( $children,1 ); die;
-			$this->mdata['children'] = $children; 
+			$this->data['children'] = $children; 
 
 			$data = array(
 				'filter_category_id' => $category_id,
@@ -168,7 +166,7 @@
 				$title = $category_info['meta_title'] ? $category_info['meta_title']:$category_info['title']; 
 				$this->document->setTitle( $title ); 
 
-				$this->mdata['breadcrumbs'][] = array(
+				$this->data['breadcrumbs'][] = array(
 					'text'      => $category_info['title'],
 					'href'      => $this->url->link('pavblog/category', 'id=' .  $category_id),      		
 					'separator' => $this->language->get('text_separator')
@@ -190,12 +188,12 @@
 				}
 				
 				
-				$this->mdata['heading_title'] = $category_info['title'];
-				$this->mdata['button_continue'] = $this->language->get('button_continue');
+				$this->data['heading_title'] = $category_info['title'];
+				$this->data['button_continue'] = $this->language->get('button_continue');
 				
-				$this->mdata['description'] = html_entity_decode($category_info['description'], ENT_QUOTES, 'UTF-8');
+				$this->data['description'] = html_entity_decode($category_info['description'], ENT_QUOTES, 'UTF-8');
 				
-				$this->mdata['continue'] = $this->url->link('common/home');
+				$this->data['continue'] = $this->url->link('common/home');
 				$limit_leading_blogs = (int)$this->mparams->get( 'cat_limit_leading_blog' );
 
 				$type = array('l'=>'thumb_large','s'=>'thumb_small');
@@ -238,11 +236,11 @@
 				$secondary_blogs 	 = array_splice( $blogs, $limit_leading_blogs, count($blogs) );
 		
 				
-				$this->mdata['total'] = $total;
-			 	$this->mdata['config'] = $this->mparams;
-				$this->mdata['leading_blogs'] = $leading_blogs;
-				$this->mdata['secondary_blogs'] = $secondary_blogs;
-				$this->mdata['category_rss'] =  $this->url->link( 'pavblog/category/rss', "id=".$category_id );
+				$this->data['total'] = $total;
+			 	$this->data['config'] = $this->mparams;
+				$this->data['leading_blogs'] = $leading_blogs;
+				$this->data['secondary_blogs'] = $secondary_blogs;
+				$this->data['category_rss'] =  $this->url->link( 'pavblog/category/rss', "id=".$category_id );
 				
 				$pagination = new Pagination();
 				$pagination->total = $total;
@@ -251,24 +249,27 @@
 				$pagination->text = $this->language->get('text_pagination');
 				$pagination->url = $this->url->link('pavblog/category', 'id=' . $this->request->get['id'] . $url . '&page={page}');
 				
-				$this->mdata['pagination'] = $pagination->render();
+				$this->data['pagination'] = $pagination->render();
  
-
-				$this->mdata['column_left'] = $this->load->controller('common/column_left');
-				$this->mdata['column_right'] = $this->load->controller('common/column_right');
-				$this->mdata['content_top'] = $this->load->controller('common/content_top');
-				$this->mdata['content_bottom'] = $this->load->controller('common/content_bottom');
-				$this->mdata['footer'] = $this->load->controller('common/footer');
-				$this->mdata['header'] = $this->load->controller('common/header');
-				
+			
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/pavblog/category.tpl')) {
-					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/pavblog/category.tpl', $this->mdata));
+					$this->template = $this->config->get('config_template') . '/template/pavblog/category.tpl';
 				} else {
-					$this->response->setOutput($this->load->view('default/template/pavblog/category.tpl', $this->mdata));
+					$this->template = 'default/template/pavblog/category.tpl';
 				}
-
+				
+				$this->children = array(
+					'common/column_left',
+					'common/column_right',
+					'common/content_top',
+					'common/content_bottom',
+					'common/footer',
+					'common/header'
+				);
+							
+				$this->response->setOutput($this->render());
 			} else {
-				$this->mdata['breadcrumbs'][] = array(
+				$this->data['breadcrumbs'][] = array(
 					'text'      => $this->language->get('text_error'),
 					'href'      => $this->url->link('information/information', 'category_id=' . $category_id),
 					'separator' => $this->language->get('text_separator')
@@ -276,26 +277,30 @@
 					
 				$this->document->setTitle($this->language->get('text_error'));
 				
-				$this->mdata['heading_title'] = $this->language->get('text_error');
+				$this->data['heading_title'] = $this->language->get('text_error');
 
-				$this->mdata['text_error'] = $this->language->get('text_error');
+				$this->data['text_error'] = $this->language->get('text_error');
 
-				$this->mdata['button_continue'] = $this->language->get('button_continue');
+				$this->data['button_continue'] = $this->language->get('button_continue');
 
-				$this->mdata['continue'] = $this->url->link('common/home');
-
-				$this->mdata['column_left'] = $this->load->controller('common/column_left');
-				$this->mdata['column_right'] = $this->load->controller('common/column_right');
-				$this->mdata['content_top'] = $this->load->controller('common/content_top');
-				$this->mdata['content_bottom'] = $this->load->controller('common/content_bottom');
-				$this->mdata['footer'] = $this->load->controller('common/footer');
-				$this->mdata['header'] = $this->load->controller('common/header');
+				$this->data['continue'] = $this->url->link('common/home');
 
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/error/not_found.tpl')) {
-					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/error/not_found.tpl', $this->mdata));
+					$this->template = $this->config->get('config_template') . '/template/error/not_found.tpl';
 				} else {
-					$this->response->setOutput($this->load->view('default/template/error/not_found.tpl', $this->mdata));
+					$this->template = 'default/template/error/not_found.tpl';
 				}
+				
+				$this->children = array(
+					'common/column_left',
+					'common/column_right',
+					'common/content_top',
+					'common/content_bottom',
+					'common/footer',
+					'common/header'
+				);
+						
+				$this->response->setOutput($this->render());
 			}
 		}
 		

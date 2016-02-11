@@ -1,16 +1,19 @@
 <?php
 class Log {
-	private $handle;
-
+	private $filename;
+	
 	public function __construct($filename) {
-		$this->handle = fopen(DIR_LOGS . $filename, 'a');
-	}
-
-	public function write($message) {
-		fwrite($this->handle, date('Y-m-d G:i:s') . ' - ' . print_r($message, true) . "\n");
+		$this->filename = $filename;
 	}
 	
-	public function __destruct() {
-		fclose($this->handle);
+	public function write($message) {
+		$file = DIR_LOGS . $this->filename;
+		
+		$handle = fopen($file, 'a+'); 
+		
+		fwrite($handle, date('Y-m-d G:i:s') . ' - ' . print_r($message, true)  . "\n");
+			
+		fclose($handle); 
 	}
 }
+?>

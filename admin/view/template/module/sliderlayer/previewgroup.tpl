@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <?php 
 $typoFile = 	HTTP_CATALOG."catalog/view/theme/default/stylesheet/sliderlayer/css/typo.css";	
-if( file_exists( DIR_CATALOG ."view/theme/". $objconfig->get('config_template')."/stylesheet/sliderlayer/css/typo.css" ) ){
-	$typoFile = 	HTTP_CATALOG."catalog/view/theme/". $objconfig->get('config_template')."/stylesheet/sliderlayer/css/typo.css";	
+if( file_exists( DIR_CATALOG ."view/theme/". $this->config->get('config_template')."/stylesheet/sliderlayer/css/typo.css" ) ){
+	$typoFile = 	HTTP_CATALOG."catalog/view/theme/". $this->config->get('config_template')."/stylesheet/sliderlayer/css/typo.css";	
 }
 		
 ?>
@@ -13,17 +13,29 @@ if( file_exists( DIR_CATALOG ."view/theme/". $objconfig->get('config_template').
 ######################################
 -->
 <head>
-	<script type="text/javascript" src="view/javascript/jquery/jquery-2.1.1.min.js"></script>
-	<script type="text/javascript" src="view/javascript/jquery/ui/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="<?php echo HTTP_CATALOG;?>catalog/view/javascript/layerslider/jquery.themepunch.plugins.min.js"></script>
-	<script type="text/javascript" src="<?php echo HTTP_CATALOG;?>catalog/view/javascript/layerslider/jquery.themepunch.revolution.js"></script>
-	<link rel="stylesheet" href="<?php echo $typoFile; ?>" type="text/css"/>
-	<style>
-		.rev_slider{ position: relative; overflow: hidden; }
-		.bannercontainer { position: relative;margin: 18px auto }
-	</style>
-</head>
+    <!-- get jQuery from the google apis -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="view/javascript/jquery/ui/jquery-ui-1.8.16.custom.min.js"></script>
+ 
 
+
+<script type="text/javascript" src="<?php echo HTTP_CATALOG;?>catalog/view/javascript/layerslider/jquery.themepunch.plugins.min.js"></script>
+<script type="text/javascript" src="<?php echo HTTP_CATALOG;?>catalog/view/javascript/layerslider/jquery.themepunch.revolution.js"></script>
+
+<link rel="stylesheet" href="<?php echo $typoFile;?>" type="text/css"/>
+
+</head>
+<style>
+
+	.rev_slider{
+		position: relative;
+		overflow: hidden;
+
+	}
+	.bannercontainer {
+		position: relative;margin: 18px auto
+	}
+</style>
 
 
 <!--

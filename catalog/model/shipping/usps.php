@@ -1,7 +1,7 @@
 <?php
 class ModelShippingUsps extends Model {
 	public function getQuote($address) {
-		$this->load->language('shipping/usps');
+		$this->language->load('shipping/usps');
 
 		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('usps_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
 
@@ -50,6 +50,8 @@ class ModelShippingUsps extends Model {
 
 				// Calculate girth based on usps calculation
 				$xml .= '		<Girth>' . (round(((float)$this->config->get('usps_length') + (float)$this->config->get('usps_width') * 2 + (float)$this->config->get('usps_height') * 2), 1)) . '</Girth>';
+
+
 				$xml .=	'		<Machinable>' . ($this->config->get('usps_machinable') ? 'true' : 'false') . '</Machinable>';
 				$xml .=	'	</Package>';
 				$xml .= '</RateV4Request>';
@@ -323,11 +325,9 @@ class ModelShippingUsps extends Model {
 
 				curl_close($curl);
 
-				// strip reg, trade and ** out, updated 9-11-2013
-				$result = str_replace('&amp;lt;sup&amp;gt;&amp;#174;&amp;lt;/sup&amp;gt;', '', $result);
-				$result = str_replace('&amp;lt;sup&amp;gt;&amp;#8482;&amp;lt;/sup&amp;gt;', '', $result);
-				$result = str_replace('&amp;lt;sup&amp;gt;&amp;#174;&amp;lt;/sup&amp;gt;', '', $result);
-
+				// strip reg, trade and ** out 01-02-2011
+				$result = str_replace('&amp;lt;sup&amp;gt;&amp;amp;reg;&amp;lt;/sup&amp;gt;', '', $result);
+				$result = str_replace('&amp;lt;sup&amp;gt;&amp;amp;trade;&amp;lt;/sup&amp;gt;', '', $result);
 				$result = str_replace('**', '', $result);
 				$result = str_replace("\r\n", '', $result);
 				$result = str_replace('\"', '"', $result);
@@ -472,3 +472,4 @@ class ModelShippingUsps extends Model {
 		return $method_data;
 	}
 }
+?>

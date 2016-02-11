@@ -1,262 +1,12 @@
 <?php
 class ModelOpenbayOpenbay extends Model {
-	private $url = 'https://account.openbaypro.com/';
-	private $error;
-
-	public function updateV2Test() {
-		$this->error = array();
-
-		$this->openbay->log('Starting update test');
-
-		$web_root = preg_replace('/system\/$/', '', DIR_SYSTEM);
-
-		if (!function_exists("exception_error_handler")) {
-			function exception_error_handler($errno, $errstr, $errfile, $errline ) {
-				throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-			}
-		}
-
-		set_error_handler('exception_error_handler');
-
-		// check for mkdir enabled
-		if (!function_exists('mkdir')) {
-			$this->error[] = $this->language->get('error_mkdir');
-		}
-
-		// create a tmp folder
-		if (!is_dir($web_root . '/system/download/tmp')) {
-			try {
-				mkdir($web_root . '/system/download/tmp');
-			} catch(ErrorException $ex) {
-				$this->error[] = $ex->getMessage();
-			}
-		}
-
-		// create tmp file
-		try {
-			$tmp_file = fopen($web_root . '/system/download/tmp/test_file.php', 'w+');
-		} catch(ErrorException $ex) {
-			$this->error[] = $ex->getMessage();
-		}
-
-		// open and write over tmp file
-		try {
-			$output  = '<?php' . "\n";
-			$output  .= '$test = \'12345\';' . "\n";
-			$output  .= 'echo $test;' . "\n";
-
-			fwrite($tmp_file, $output);
-			fclose($tmp_file);
-		} catch(ErrorException $ex) {
-			$this->error[] = $ex->getMessage();
-		}
-
-		// try and read the file
-
-		// remove tmp file
-		try {
-			unlink($web_root . '/system/download/tmp/test_file.php');
-		} catch(ErrorException $ex) {
-			$this->error[] = $ex->getMessage();
-		}
-
-		// delete tmp folder
-		try {
-			rmdir($web_root . '/system/download/tmp');
-		} catch(ErrorException $ex) {
-			$this->error[] = $ex->getMessage();
-		}
-
-		// reset to the OC error handler
-		restore_error_handler();
-
-		$this->openbay->log('Finished update test');
-
-		if (!$this->error) {
-			$this->openbay->log('Finished update test - no errors');
-			return array('error' => 0, 'response' => '', 'percent_complete' => 20, 'status_message' => $this->language->get('text_check_new'));
-		} else {
-			$this->openbay->log('Finished update test - errors: ' . print_r($this->error));
-			return array('error' => 1, 'response' => $this->error);
-		}
-	}
-
-	public function updateV2CheckVersion($beta = 0) {
-		$current_version = $this->config->get('openbay_version');
-
-		$this->openbay->log('Start check version, beta: ' . $beta . ', current: ' . $current_version);
-
-		$post = array('version' => 2, 'beta' => $beta);
-
-		$data = $this->call('update/version/', $post);
-
-		if ($this->lasterror == true) {
-			$this->openbay->log('Check version error: ' . $this->lastmsg);
-
-			return array('error' => 1, 'response' => $this->lastmsg . ' (' . VERSION . ')');
-		} else {
-			if ($data['version'] > $current_version) {
-				$this->openbay->log('Check version new available: ' . $data['version']);
-				return array('error' => 0, 'response' => $data['version'], 'percent_complete' => 40, 'status_message' => $this->language->get('text_downloading'));
-			} else {
-				$this->openbay->log('Check version - already latest');
-				return array('error' => 1, 'response' => $this->language->get('text_version_ok') . $current_version);
-			}
-		}
-	}
-
-	public function updateV2Download($beta = 0) {
-		$this->openbay->log('Downloading');
-
-		$web_root = preg_replace('/system\/$/', '', DIR_SYSTEM);
-
-		$local_file = $web_root . 'system/download/openbaypro_update.zip';
-		$handle = fopen($local_file,"w+");
-
-		$post = array('version' => 2, 'beta' => $beta);
-
-		$defaults = array(
-			CURLOPT_POST => 1,
-			CURLOPT_HEADER => 0,
-			CURLOPT_URL => $this->url . 'update/download/',
-			CURLOPT_USERAGENT => 'OpenBay Pro update script',
-			CURLOPT_FRESH_CONNECT => 1,
-			CURLOPT_RETURNTRANSFER => 1,
-			CURLOPT_FORBID_REUSE => 1,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_SSL_VERIFYPEER => 0,
-			CURLOPT_SSL_VERIFYHOST => 0,
-			CURLOPT_POSTFIELDS => http_build_query($post, '', "&"),
-			CURLOPT_FILE => $handle
-		);
-
-		$ch = curl_init();
-		curl_setopt_array($ch, $defaults);
-		curl_exec($ch);
-
-		$curl_error = curl_error ($ch);
-
-		$this->openbay->log('Download errors: ' . $curl_error);
-
-		curl_close($ch);
-
-		return array('error' => 0, 'response' => $curl_error, 'percent_complete' => 60, 'status_message' => $this->language->get('text_extracting'));
-	}
-
-	public function updateV2Extract() {
-		$this->error = array();
-
-		$web_root = preg_replace('/system\/$/', '', DIR_SYSTEM);
-
-		if (!function_exists("exception_error_handler")) {
-			function exception_error_handler($errno, $errstr, $errfile, $errline ) {
-				throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-			}
-		}
-
-		set_error_handler('exception_error_handler');
-
-		try {
-			$zip = new ZipArchive();
-
-			if ($zip->open($web_root . 'system/download/openbaypro_update.zip')) {
-				$zip->extractTo($web_root);
-				$zip->close();
-			} else {
-				$this->openbay->log('Unable to extract update files');
-
-				$this->error[] = $this->language->get('text_fail_patch');
-			}
-		} catch(ErrorException $ex) {
-			$this->openbay->log('Unable to extract update files');
-			$this->error[] = $ex->getMessage();
-		}
-
-		// reset to the OC error handler
-		restore_error_handler();
-
-		if (!$this->error) {
-			return array('error' => 0, 'response' => '', 'percent_complete' => 80, 'status_message' => $this->language->get('text_remove_files'));
-		} else {
-			return array('error' => 1, 'response' => $this->error);
-		}
-	}
-
-	public function updateV2Remove($beta = 0) {
-		$this->error = array();
-
-		$web_root = preg_replace('/system\/$/', '', DIR_SYSTEM);
-
-		if (!function_exists("exception_error_handler")) {
-			function exception_error_handler($errno, $errstr, $errfile, $errline ) {
-				throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-			}
-		}
-
-		$this->openbay->log('Get files to remove, beta: ' . $beta);
-
-		$post = array('beta' => $beta);
-
-		$files = $this->call('update/getRemoveList/', $post);
-
-		$this->openbay->log("Remove Files: " . print_r($files, 1));
-
-		if (!empty($files['asset']) && is_array($files['asset'])) {
-			foreach($files['asset'] as $file) {
-				$filename = $web_root . implode('/', $file['locations']['location']) . '/' . $file['name'];
-
-				if (file_exists($filename)) {
-					try {
-						unlink($filename);
-					} catch(ErrorException $ex) {
-						$this->openbay->log('Unable to remove file: ' . $filename . ', ' . $ex->getMessage());
-						$this->error[] = $filename;
-					}
-				}
-			}
-		}
-
-		// reset to the OC error handler
-		restore_error_handler();
-
-		if (!$this->error) {
-			return array('error' => 0, 'response' => '', 'percent_complete' => 90, 'status_message' => $this->language->get('text_running_patch'));
-		} else {
-			$response_error = '<p>' . $this->language->get('error_file_delete') . '</p>';
-			$response_error .= '<ul>';
-
-			foreach($this->error as $error_file) {
-				$response_error .= '<li>' . $error_file . '</li>';
-			}
-
-			$response_error .= '</ul>';
-
-			return array('error' => 1, 'response' => $response_error, 'percent_complete' => 90, 'status_message' => $this->language->get('text_running_patch'));
-		}
-	}
-
-	public function updateV2UpdateVersion($beta = 0) {
-		$post = array('version' => 2, 'beta' => $beta);
-
-		$data = $this->call('update/version/', $post);
-
-		if ($this->lasterror == true) {
-			$this->openbay->log('Update version: ' . $this->lastmsg);
-
-			return array('error' => 1, 'response' => $this->lastmsg . ' (' . VERSION . ')');
-		} else {
-			$settings = $this->model_setting_setting->getSetting('openbay');
-			$settings['openbay_version'] = $data['version'];
-			$this->model_setting_setting->editSetting('openbay', $settings);
-			return array('error' => 0, 'response' => $data['version'], 'percent_complete' => 100, 'status_message' => $this->language->get('text_updated_ok') . $data['version']);
-		}
-	}
+	private $url = 'http://account.openbaypro.com/';
 
 	public function setUrl($url) {
 		$this->url = $url;
 	}
 
-	public function updateTest() {
+	public function ftpTestConnection() {
 		$this->load->language('extension/openbay');
 
 		$data = $this->request->post;
@@ -266,13 +16,13 @@ class ModelOpenbayOpenbay extends Model {
 		$data['rootpath'] = $data['openbay_ftp_rootpath'];
 
 		if (empty($data['user'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_username'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_username'));
 		}
 		if (empty($data['pw'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_password'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_password'));
 		}
 		if (empty($data['server'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_server'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_server'));
 		}
 
 		$connection = @ftp_connect($data['server']);
@@ -310,23 +60,23 @@ class ModelOpenbayOpenbay extends Model {
 				ftp_close($connection);
 
 				if ($folder_error_admin == true) {
-					return array('connection' => false, 'msg' => $this->language->get('error_no_admin'));
+					return array('connection' => false, 'msg' => $this->language->get('update_okcon_noadmin'));
 				} else {
 					if ($folder_error == true) {
-						return array('connection' => false, 'msg' => $this->language->get('error_no_files'), 'dir' => json_encode($directory_list));
+						return array('connection' => false, 'msg' => $this->language->get('update_okcon_nofiles'), 'dir' => json_encode($directory_list));
 					} else {
-						return array('connection' => true, 'msg' => $this->language->get('text_connection_ok'));
+						return array('connection' => true, 'msg' => $this->language->get('update_okcon'));
 					}
 				}
 			} else {
-				return array('connection' => false, 'msg' => $this->language->get('error_ftp_login'));
+				return array('connection' => false, 'msg' => $this->language->get('update_failed_user'));
 			}
 		} else {
-			return array('connection' => false, 'msg' => $this->language->get('error_ftp_connect'));
+			return array('connection' => false, 'msg' => $this->language->get('update_failed_connect'));
 		}
 	}
 
-	public function update() {
+	public function ftpUpdateModule() {
 		/*
 		 * Disable error reporting due to noticed thrown when directories are checked
 		 * It will cause constant loading icon otherwise.
@@ -347,16 +97,16 @@ class ModelOpenbayOpenbay extends Model {
 		$data['beta'] = ((isset($data['openbay_ftp_beta']) && $data['openbay_ftp_beta'] == 1) ? 1 : 0);
 
 		if (empty($data['user'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_username'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_username'));
 		}
 		if (empty($data['pw'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_password'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_password'));
 		}
 		if (empty($data['server'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_server'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_server'));
 		}
 		if (empty($data['adminDir'])) {
-			return array('connection' => false, 'msg' => $this->language->get('error_admin'));
+			return array('connection' => false, 'msg' => $this->language->get('update_error_admindir'));
 		}
 
 		$connection = @ftp_connect($data['server']);
@@ -395,7 +145,7 @@ class ModelOpenbayOpenbay extends Model {
 
 					foreach ($files['asset']['file'] as $file) {
 						$dir = '';
-						$dir_level = 0;
+						$dirLevel = 0;
 						if (isset($file['locations']['location']) && is_array($file['locations']['location'])) {
 							foreach ($file['locations']['location'] as $location) {
 								$updatelog .= "Current location: " . $dir . "\n";
@@ -410,13 +160,13 @@ class ModelOpenbayOpenbay extends Model {
 								$updatelog .= "ftp_pwd output: " . ftp_pwd($connection) . "\n";
 
 								if (@ftp_chdir($connection, $location)) {
-									$dir_level++;
+									$dirLevel++;
 								} else {
 									if (@ftp_mkdir($connection, $location)) {
 										$updatelog .= "Created directory: " . $dir . "\n";
 
 										ftp_chdir($connection, $location);
-										$dir_level++;
+										$dirLevel++;
 									} else {
 										$updatelog .= "FAILED TO CREATE DIRECTORY: " . $dir . "\n";
 									}
@@ -426,29 +176,30 @@ class ModelOpenbayOpenbay extends Model {
 
 						$filedata = base64_decode($this->call('update/getFileContent/', array('file' => implode('/', $file['locations']['location']) . '/' . $file['name'], 'beta' => $data['beta'])));
 
-						$tmp_file = DIR_CACHE . 'openbay.tmp';
+						$tmpFile = DIR_CACHE . 'openbay.tmp';
 
-						$fp = fopen($tmp_file, 'w');
+						$fp = fopen($tmpFile, 'w');
 						fwrite($fp, $filedata);
 						fclose($fp);
 
-						if (ftp_put($connection, $file['name'], $tmp_file, FTP_BINARY)) {
+						if (ftp_put($connection, $file['name'], $tmpFile, FTP_BINARY)) {
 							$updatelog .= "Updated file: " . $dir . $file['name'] . "\n";
 						} else {
 							$updatelog .= "FAILED TO UPDATE FILE: " . $dir . $file['name'] . "\n";
 						}
 
-						unlink($tmp_file);
 
-						while ($dir_level != 0) {
+						unlink($tmpFile);
+
+						while ($dirLevel != 0) {
 							ftp_cdup($connection);
-							$dir_level--;
+							$dirLevel--;
 						}
 					}
 
-					$openbay_settings = $this->model_setting_setting->getSetting('openbay');
+					$openbay_settings = $this->model_setting_setting->getSetting('openbaymanager');
 					$openbay_settings['openbay_version'] = $files['version'];
-					$this->model_setting_setting->editSetting('openbay', $openbay_settings);
+					$this->model_setting_setting->editSetting('openbaymanager', $openbay_settings);
 
 					@ftp_close($connection);
 
@@ -456,11 +207,11 @@ class ModelOpenbayOpenbay extends Model {
 					 * Run the patch files
 					 */
 					$this->load->model('openbay/ebay_patch');
-					$this->model_openbay_ebay_patch->patch(false);
+					$this->model_openbay_ebay_patch->runPatch(false);
 					$this->load->model('openbay/amazon_patch');
-					$this->model_openbay_amazon_patch->patch(false);
+					$this->model_openbay_amazon_patch->runPatch(false);
 					$this->load->model('openbay/amazonus_patch');
-					$this->model_openbay_amazonus_patch->patch(false);
+					$this->model_openbay_amazonus_patch->runPatch(false);
 
 					/**
 					 * File remove operation (clean up old files)
@@ -475,7 +226,7 @@ class ModelOpenbayOpenbay extends Model {
 						$directory_list = ftp_nlist($connection, $data['rootpath']);
 					}
 
-					$files_update = $files;
+					$filesUpdate = $files;
 					$files = $this->call('update/getRemoveList/', $send);
 
 					$updatelog .= "Remove Files: " . print_r($files, 1);
@@ -483,7 +234,7 @@ class ModelOpenbayOpenbay extends Model {
 					if (!empty($files['asset']) && is_array($files['asset'])) {
 						foreach ($files['asset'] as $file) {
 							$dir = '';
-							$dir_level = 0;
+							$dirLevel = 0;
 							$error = false;
 
 							if (!empty($file['locations'])) {
@@ -498,7 +249,7 @@ class ModelOpenbayOpenbay extends Model {
 
 									if (@ftp_chdir($connection, $location)) {
 										$updatelog .= $location . "/ found\n";
-										$dir_level++;
+										$dirLevel++;
 									} else {
 										// folder does not exist, therefore, file does not exist.
 										$updatelog .= "$location not found\n";
@@ -521,9 +272,9 @@ class ModelOpenbayOpenbay extends Model {
 								}
 							}
 
-							while ($dir_level != 0) {
+							while ($dirLevel != 0) {
 								ftp_cdup($connection);
-								$dir_level--;
+								$dirLevel--;
 							}
 						}
 					}
@@ -535,12 +286,12 @@ class ModelOpenbayOpenbay extends Model {
 
 				$this->writeUpdateLog($updatelog . "\n\n\nErrors:\n" . $output);
 
-				return array('connection' => true, 'msg' => sprintf($this->language->get('text_updated'), $files_update['version']), 'version' => $files_update['version']);
+				return array('connection' => true, 'msg' => sprintf($this->language->get('update_success'), $filesUpdate['version']), 'version' => $filesUpdate['version']);
 			} else {
-				return array('connection' => false, 'msg' => $this->language->get('error_ftp_login'));
+				return array('connection' => false, 'msg' => $this->language->get('update_failed_user'));
 			}
 		} else {
-			return array('connection' => false, 'msg' => $this->language->get('error_ftp_connect'));
+			return array('connection' => false, 'msg' => $this->language->get('update_failed_connect'));
 		}
 	}
 
@@ -549,19 +300,9 @@ class ModelOpenbayOpenbay extends Model {
 		return $data;
 	}
 
-	public function version() {
+	public function getVersion() {
 		$data = $this->call('update/getStableVersion/');
-
-		if ($this->lasterror == true) {
-			$data = array(
-				'error' => true,
-				'msg' => $this->lastmsg . ' (' . VERSION . ')',
-			);
-
-			return $data;
-		} else {
-			return $data;
-		}
+		return $data;
 	}
 
 	public function faqGet($route) {
@@ -609,28 +350,28 @@ class ModelOpenbayOpenbay extends Model {
 		}
 	}
 
-	public function requirementTest() {
-		$error = array();
-
-		if (!function_exists('mcrypt_encrypt')) {
-			$error[] = $this->language->get('lang_error_mcrypt');
+	public function checkMcrypt() {
+		if (function_exists('mcrypt_encrypt')) {
+			return true;
+		} else {
+			return false;
 		}
+	}
 
-		if (!function_exists('mb_detect_encoding')) {
-			$error[] = $this->language->get('lang_error_mbstring');
+	public function checkMbstings() {
+		if (function_exists('mb_detect_encoding')) {
+			return true;
+		} else {
+			return false;
 		}
+	}
 
-		if (!function_exists('ftp_connect')) {
-			$error[] = $this->language->get('lang_error_ftpconnect');
+	public function checkFtpenabled() {
+		if (function_exists('ftp_connect')) {
+			return true;
+		} else {
+			return false;
 		}
-
-		$root_directory = preg_replace('/catalog\/$/', '', DIR_CATALOG);
-
-		if (file_exists($root_directory . '/vqmod/xml/ebay.xml') || file_exists($root_directory . '/vqmod/xml/amazon.xml') || file_exists($root_directory . '/vqmod/xml/amazonus.xml') || file_exists($root_directory . '/vqmod/xml/play.xml') || file_exists($root_directory . '/vqmod/xml/openbay.xml')) {
-			$error[] = $this->language->get('lang_error_vqmod');
-		}
-
-		return $error;
 	}
 
 	private function call($call, array $post = null, array $options = array(), $content_type = 'json') {
@@ -641,7 +382,9 @@ class ModelOpenbayOpenbay extends Model {
 		}
 
 		$data = array(
+			'token' => '',
 			'language' => $this->config->get('openbay_language'),
+			'secret' => '',
 			'server' => 1,
 			'domain' => $domain,
 			'openbay_version' => (int)$this->config->get('openbay_version'),
@@ -670,6 +413,7 @@ class ModelOpenbayOpenbay extends Model {
 		curl_setopt_array($ch, ($options + $defaults));
 		$result = curl_exec($ch);
 		curl_close($ch);
+
 
 		if ($content_type == 'json') {
 			$encoding = mb_detect_encoding($result);
@@ -702,7 +446,7 @@ class ModelOpenbayOpenbay extends Model {
 	}
 
 	public function writeUpdateLog($data) {
-		$file = DIR_LOGS . 'openbay_update_' . date('Y_m_d_G_i_s') . ' . log';
+		$file = DIR_LOGS . 'openbay_update_' . date('Y_m_d_G_i_s') . '.log';
 
 		$handle = fopen($file, 'w+');
 		fwrite($handle, "** Update started: " . date('Y-m-d G:i:s') . " **" . "\n");
@@ -755,9 +499,9 @@ class ModelOpenbayOpenbay extends Model {
 
 		if ($data['filter_market_name'] == 'ebay') {
 			if ($data['filter_market_id'] == 0) {
-				$sql .= " AND (ebay.ebay_listing_id IS NULL OR ebay2.listing_status = 0)";
+				$sql .= " AND ebay.ebay_listing_id IS NULL OR ebay2.listing_status = 0";
 			} else {
-				$sql .= " AND (ebay.ebay_listing_id IS NOT NULL AND ebay.status = 1)";
+				$sql .= " AND ebay.ebay_listing_id IS NOT NULL AND ebay.status = 1";
 			}
 		}
 
@@ -875,9 +619,9 @@ class ModelOpenbayOpenbay extends Model {
 
 		if ($data['filter_market_name'] == 'ebay') {
 			if ($data['filter_market_id'] == 0) {
-				$sql .= " AND (ebay.ebay_listing_id IS NULL OR ebay2.listing_status = 0)";
+				$sql .= " AND ebay.ebay_listing_id IS NULL OR ebay2.listing_status = 0";
 			} else {
-				$sql .= " AND (ebay.ebay_listing_id IS NOT NULL AND ebay.status = 1)";
+				$sql .= " AND ebay.ebay_listing_id IS NOT NULL AND ebay.status = 1";
 			}
 		}
 
@@ -942,7 +686,7 @@ class ModelOpenbayOpenbay extends Model {
 		}
 
 		if (isset($data['filter_manufacturer']) && !is_null($data['filter_manufacturer'])) {
-			$sql .= " AND p.manufacturer_id = '" . (int)$data['filter_manufacturer'] . "'";
+			$sql .= " AND p.manufacturer = '" . (int)$data['filter_manufacturer'] . "'";
 		}
 
 		$sql .= " GROUP BY p.product_id";
@@ -984,45 +728,5 @@ class ModelOpenbayOpenbay extends Model {
 
 		return $query->rows;
 	}
-
-	public function addOrderHistory($order_id, $data, $store_id = 0) {
-		$json = array();
-
-		$this->load->model('setting/store');
-
-		$store_info = $this->model_setting_store->getStore($store_id);
-
-		if ($store_info) {
-			$url = $store_info['ssl'];
-		} else {
-			$url = HTTPS_CATALOG;
-		}
-
-		if (isset($this->session->data['cookie'])) {
-			$curl = curl_init();
-
-			// Set SSL if required
-			if (substr($url, 0, 5) == 'https') {
-				curl_setopt($curl, CURLOPT_PORT, 443);
-			}
-
-			curl_setopt($curl, CURLOPT_HEADER, false);
-			curl_setopt($curl, CURLINFO_HEADER_OUT, true);
-			curl_setopt($curl, CURLOPT_USERAGENT, $this->request->server['HTTP_USER_AGENT']);
-			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($curl, CURLOPT_FORBID_REUSE, false);
-			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl, CURLOPT_URL, $url . 'index.php?route=api/order/history&order_id=' . $order_id);
-			curl_setopt($curl, CURLOPT_POST, true);
-			curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-			curl_setopt($curl, CURLOPT_COOKIE, session_name() . '=' . $this->session->data['cookie'] . ';');
-
-			$json = curl_exec($curl);
-
-			curl_close($curl);
-		}
-
-		return $json;
-	}
 }
+?>

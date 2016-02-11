@@ -8,10 +8,10 @@
 *******************************************************/
 
 // Heading
-$_['heading_title'] = 'Pav Blog Management';
+$_['heading_title']       = '<b style="color:#E1653B;font-size:110%">Pav Blog Management</b>';
 
 // Text
-$_['text_treemenu'] = 'Tree Category Management';
+$_['text_treemenu']     = 'Tree Category Management';
  $_['text_menu_assignment'] = 'Module Assignment';
 $_['text_module']         = 'Modules';
 $_['text_success']        = 'Success: You have modified module Category!';
@@ -33,10 +33,7 @@ $_['text_create_new'] = 'Create New Category';
 $_['text_edit_menu'] = 'Edit: %s  (ID:%s)';
 $_['all_page']   = 'All Page';
 $_['text_seo_data'] = 'SEO Data';
-$_['entry_keyword'] = '<b>SEO Keyword</b>';
-
-$_['help_entry_keyword'] = '<i>*Do not use spaces instead replace spaces with - and make sure the keyword is globally unique.</i>';
-
+$_['entry_keyword'] = '<b>SEO Keyword</b><p><i>*Do not use spaces instead replace spaces with - and make sure the keyword is globally unique.</i></p>';
 $_['text_keyword_listing_blogs_page'] = 'Key Word - Listing Blog Page<p><i>Keyword using for listing blog by tag or by user</i>:<br> Example: http://www.domain.com/blogs?tag=opencart</p>';
 
 $_['text_image_manager']   = 'Images Management';
@@ -99,12 +96,12 @@ $_['error_missing_title'] = 'Please Enter Menu Title in each language tabs';
 $_['text_explain_drapanddrop'] = 'To sort orders or update parent-child, you drap and drop expected menu, then click to Update button to Save';
 /***/
 $_['menu_dashboard'] = "Dashboard";
-$_['menu_manage_categories'] = "Categories";
+$_['menu_manage_categories'] = "Manage Categories";
 $_['menu_manage_blogs'] = "Manage Blogs";
 $_['menu_addblog'] = "Add Blog";
 $_['menu_comment'] = "Comments";
 $_['menu_module_setting'] = "General Setting";
-$_['menu_information'] = "Info";
+$_['menu_information'] = "Information";
 /* DASHBOARD PAGE **/
 $_['panel_page_heading_title'] = 'Dashboard';
 $_['text_quickicons'] = 'Quick Icons';
@@ -112,18 +109,6 @@ $_['module_latest'] = 'Blog Latest';
 $_['module_comment'] = 'Blog Comment';
 $_['module_category'] = 'Blog Category Menu';
 $_['text_modules_urls'] = 'URLs Format';
-
-$_['latest_blog'] = 'Latest Blog';
-$_['most_read'] = 'Most Read';
-$_['latest_comment'] = 'Latest Comment';
-
-$_['databroad_categories'] = 'Categories';
-$_['databroad_add_category'] = 'Add Category';
-$_['databroad_blogs'] = 'Blogs';
-$_['databroad_add_blog'] = 'Add Blog';
-$_['databroad_comment'] = 'Comment';
-$_['databroad_modules_setting'] = 'Modules Setting';
-
 /** CATEGORY PAGE **/
 $_['category_page_heading_title'] = "Categories Management";
 $_['text_tree_category_menu'] = "Categories Tree Menu"; 
@@ -140,8 +125,6 @@ $_['text_hits'] = 'Hits';
 $_['entry_tags'] = 'Tags';
 $_['text_explain_tags'] = 'example: fashion, smart,funny';
 $_['text_facebook_id_explain'] = 'Register A Comment Box, Then Get Application ID in Script Or Register Facebook Application ID to moderate comments';
-
-$_['text_error'] = 'Sorry, We are updating, please come back late. Thanks';
 /** BLOG PAGE **/
 $_['blog_page_heading_title'] = "Blog Edit/Create New"; 
 $_['text_general'] = "General"; 
@@ -237,35 +220,6 @@ $_['tab_pavblogcomment'] = 'Latest comment module Setting';
 $_['tab_pavbloglatest'] = 'Latest module Setting';
 $_['text_showcase']	= 'Showcase';
 $_['menu_frontend_module_setting'] = 'Frontend Modules';
-
-$_['error_missing_description'] = 'Missing Blog Description';
-$_['error_missing_content'] = 'Missing Blog Content';
-
-
-$_['text_save'] = 'save';
-$_['text_success_update_tree'] = 'Success: You have modified Tree-Items!';
-$_['text_edit'] = 'Edit';
-
-$_['entry_user'] = 'User';
-$_['entry_email'] = 'Email';
-$_['entry_comment'] = 'Comment';
-
-// Pavblogcategory
-$_['button_module_add'] = 'Add module';
-
-// PavblogComment
-$_['entry_carousel']    = 'Limit Items:';
-
-// PavBlogLatest
-$_['entry_prefixclass'] = 'Prefix Class';
-$_['entry_tabs'] = 'Type List Products';
-
-$_['text_latest'] = 'Latest';
-$_['text_featured'] = 'Featured';
-$_['text_mostviewed'] = 'Most View';
-
-$_['create_module'] = 'Create Module';
-$_['entry_module_name'] = 'Module Name';
 
 
 ?>

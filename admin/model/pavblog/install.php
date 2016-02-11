@@ -18,42 +18,12 @@ class ModelPavbloginstall extends Model {
 		$query = $this->db->query( $sql );
 		
 		if( count($query->rows) <=0 ){ 
-			$file = (DIR_APPLICATION).'model/sample/module.php';
-			
-			if( file_exists($file) ){
-				require_once( $file );
-		 		$sample = new ModelSampleModule( $this->registry );
-		 	    $result = $sample->installSampleQuery( $this->config->get('config_template'),'pavblog', true );
-				$result = $sample->installSample( $this->config->get('config_template'),'pavblogcategory', true );
-				$result = $sample->installSample( $this->config->get('config_template'),'pavblogcomment', true );
-				$result = $sample->installSample( $this->config->get('config_template'),'pavbloglatest', true );
-			}
-		}	
-
-		$sql = " SHOW TABLES LIKE '".DB_PREFIX."pavblog_blog'";
-		$query = $this->db->query( $sql );
-		if( count($query->rows) <=0 ){ 
-			$this->createTables();
+			$this->createTables();		
 			$this->createDataSample();
 			$this->createDefaultConfig();
 		}
-		$sql = " SELECT * FROM ".DB_PREFIX."extension WHERE `code` IN('pavblogcategory','pavblogcomment','pavbloglatest')";
-		$query = $this->db->query( $sql );
-		if($query->num_rows <= 0){
-			$this->installModules();
-		}
 	}
-	public function installModules(){
-		$sql1 = "DELETE FROM ".DB_PREFIX."extension WHERE `code` IN('pavblogcategory','pavblogcomment','pavbloglatest')";
-		$this->db->query($sql1);
-		$sql = array();
-		$sql[] = "INSERT INTO `".DB_PREFIX."extension` SET `type`='module', `code`='pavblogcategory'";
-		$sql[] = "INSERT INTO `".DB_PREFIX."extension` SET `type`='module', `code`='pavblogcomment'";
-		$sql[] = "INSERT INTO `".DB_PREFIX."extension` SET `type`='module', `code`='pavbloglatest'";
-		foreach( $sql as $q ){
-			$query = $this->db->query( $q );
-		}
-	}
+	
 	public function createTables(){
 		$sql =array();
 		$sql[] = "

@@ -1,7 +1,7 @@
 <?php
 class ControllerReportProductViewed extends Controller {
-	public function index() {
-		$this->load->language('report/product_viewed');
+	public function index() {     
+		$this->language->load('report/product_viewed');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -17,116 +17,105 @@ class ControllerReportProductViewed extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['breadcrumbs'] = array();
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('report/product_viewed', 'token=' . $this->session->data['token'] . $url, 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('report/product_viewed', 'token=' . $this->session->data['token'] . $url, 'SSL'),
+			'separator' => ' :: '
 		);
 
 		$this->load->model('report/product');
 
-		$filter_data = array(
-			'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-			'limit' => $this->config->get('config_limit_admin')
+		$data = array(
+			'start' => ($page - 1) * $this->config->get('config_admin_limit'),
+			'limit' => $this->config->get('config_admin_limit')
 		);
 
-		$data['products'] = array();
+		$product_viewed_total = $this->model_report_product->getTotalProductsViewed($data); 
 
-		$product_viewed_total = $this->model_report_product->getTotalProductsViewed();
+		$product_views_total = $this->model_report_product->getTotalProductViews(); 
 
-		$results = $this->model_report_product->getProductsViewed($filter_data);
+		$this->data['products'] = array();
+
+		$results = $this->model_report_product->getProductsViewed($data);
 
 		foreach ($results as $result) {
 			if ($result['viewed']) {
-				$percent = round($result['viewed'] / $product_viewed_total * 100, 2);
+				$percent = round($result['viewed'] / $product_views_total * 100, 2);
 			} else {
 				$percent = 0;
 			}
 
-			$data['products'][] = array(
+			$this->data['products'][] = array(
 				'name'    => $result['name'],
 				'model'   => $result['model'],
 				'viewed'  => $result['viewed'],
-				'percent' => $percent . '%'
+				'percent' => $percent . '%'			
 			);
 		}
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_list'] = $this->language->get('text_list');
-		$data['text_no_results'] = $this->language->get('text_no_results');
-		$data['text_confirm'] = $this->language->get('text_confirm');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['column_name'] = $this->language->get('column_name');
-		$data['column_model'] = $this->language->get('column_model');
-		$data['column_viewed'] = $this->language->get('column_viewed');
-		$data['column_percent'] = $this->language->get('column_percent');
+		$this->data['text_no_results'] = $this->language->get('text_no_results');
 
-		$data['button_reset'] = $this->language->get('button_reset');
+		$this->data['column_name'] = $this->language->get('column_name');
+		$this->data['column_model'] = $this->language->get('column_model');
+		$this->data['column_viewed'] = $this->language->get('column_viewed');
+		$this->data['column_percent'] = $this->language->get('column_percent');
 
-		$url = '';
+		$this->data['button_reset'] = $this->language->get('button_reset');
+
+		$url = '';		
 
 		if (isset($this->request->get['page'])) {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['reset'] = $this->url->link('report/product_viewed/reset', 'token=' . $this->session->data['token'] . $url, 'SSL');
-
-		if (isset($this->session->data['error'])) {
-			$data['error_warning'] = $this->session->data['error'];
-
-			unset($this->session->data['error']);
-		} elseif (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
-		} else {
-			$data['error_warning'] = '';
-		}
+		$this->data['reset'] = $this->url->link('report/product_viewed/reset', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
 		if (isset($this->session->data['success'])) {
-			$data['success'] = $this->session->data['success'];
+			$this->data['success'] = $this->session->data['success'];
 
 			unset($this->session->data['success']);
 		} else {
-			$data['success'] = '';
+			$this->data['success'] = '';
 		}
 
 		$pagination = new Pagination();
 		$pagination->total = $product_viewed_total;
 		$pagination->page = $page;
-		$pagination->limit = $this->config->get('config_limit_admin');
+		$pagination->limit = $this->config->get('config_admin_limit');
+		$pagination->text = $this->language->get('text_pagination');
 		$pagination->url = $this->url->link('report/product_viewed', 'token=' . $this->session->data['token'] . '&page={page}', 'SSL');
 
-		$data['pagination'] = $pagination->render();
-		$limit = $this->config->get('config_limit_admin');
+		$this->data['pagination'] = $pagination->render();
 
-		$data['results'] = sprintf($this->language->get('text_pagination'), ($pagination->total) ? (($page - 1) * $limit) + 1 : 0, ((($page - 1) * $limit) > ($pagination->total - $limit)) ? $pagination->total : ((($page - 1) * $limit) + $limit), $pagination->total, ceil($pagination->total / $limit));
+		$this->template = 'report/product_viewed.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
-
-		$this->response->setOutput($this->load->view('report/product_viewed.tpl', $data));
+		$this->response->setOutput($this->render());
 	}
 
 	public function reset() {
-		$this->load->language('report/product_viewed');
+		$this->language->load('report/product_viewed');
 
-		if (!$this->user->hasPermission('modify', 'report/product_viewed')) {
-			$this->session->data['error'] = $this->language->get('error_permission');
-		} else {
-			$this->load->model('report/product');
+		$this->load->model('report/product');
 
-			$this->model_report_product->reset();
+		$this->model_report_product->reset();
 
-			$this->session->data['success'] = $this->language->get('text_success');
-		}
+		$this->session->data['success'] = $this->language->get('text_success');
 
-		$this->response->redirect($this->url->link('report/product_viewed', 'token=' . $this->session->data['token'], 'SSL'));
+		$this->redirect($this->url->link('report/product_viewed', 'token=' . $this->session->data['token'], 'SSL'));
 	}
 }
+?>

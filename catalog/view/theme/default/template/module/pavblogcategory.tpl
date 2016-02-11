@@ -1,7 +1,9 @@
 <div class="box ">
 	<div class="box-heading"><?php echo $heading_title; ?></div>
 	<div class="box-content" id="pav-categorymenu" >
+
 		 <?php echo $tree;?>
+		 
 	</div>
  </div>
 <script>

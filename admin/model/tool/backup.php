@@ -29,8 +29,6 @@ class ModelToolBackup extends Model {
 	}
 
 	public function backup($tables) {
-		$this->event->trigger('pre.admin.backup', $tables);
-
 		$output = '';
 
 		foreach ($tables as $table) {
@@ -65,7 +63,7 @@ class ModelToolBackup extends Model {
 						$value = str_replace('\'', '\\\'',	$value);
 						$value = str_replace('\\\n', '\n',	$value);
 						$value = str_replace('\\\r', '\r',	$value);
-						$value = str_replace('\\\t', '\t',	$value);
+						$value = str_replace('\\\t', '\t',	$value);			
 
 						$values .= '\'' . $value . '\', ';
 					}
@@ -77,8 +75,7 @@ class ModelToolBackup extends Model {
 			}
 		}
 
-		$this->event->trigger('post.admin.backup');
-
-		return $output;
+		return $output;	
 	}
 }
+?>

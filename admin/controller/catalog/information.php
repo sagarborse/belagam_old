@@ -1,9 +1,9 @@
 <?php
-class ControllerCatalogInformation extends Controller {
+class ControllerCatalogInformation extends Controller { 
 	private $error = array();
 
 	public function index() {
-		$this->load->language('catalog/information');
+		$this->language->load('catalog/information');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -12,8 +12,8 @@ class ControllerCatalogInformation extends Controller {
 		$this->getList();
 	}
 
-	public function add() {
-		$this->load->language('catalog/information');
+	public function insert() {
+		$this->language->load('catalog/information');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -38,14 +38,14 @@ class ControllerCatalogInformation extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+			$this->redirect($this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'));
 		}
 
 		$this->getForm();
 	}
 
-	public function edit() {
-		$this->load->language('catalog/information');
+	public function update() {
+		$this->language->load('catalog/information');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -70,14 +70,14 @@ class ControllerCatalogInformation extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+			$this->redirect($this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'));
 		}
 
 		$this->getForm();
 	}
 
 	public function delete() {
-		$this->load->language('catalog/information');
+		$this->language->load('catalog/information');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -104,7 +104,7 @@ class ControllerCatalogInformation extends Controller {
 				$url .= '&page=' . $this->request->get['page'];
 			}
 
-			$this->response->redirect($this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+			$this->redirect($this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'));
 		}
 
 		$this->getList();
@@ -142,76 +142,77 @@ class ControllerCatalogInformation extends Controller {
 		if (isset($this->request->get['page'])) {
 			$url .= '&page=' . $this->request->get['page'];
 		}
-		
-		$data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'] = array();
+
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'),
+			'separator' => ' :: '
 		);
-		
-		$data['add'] = $this->url->link('catalog/information/add', 'token=' . $this->session->data['token'] . $url, 'SSL');
-		$data['delete'] = $this->url->link('catalog/information/delete', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
-		$data['informations'] = array();
+		$this->data['insert'] = $this->url->link('catalog/information/insert', 'token=' . $this->session->data['token'] . $url, 'SSL');
+		$this->data['delete'] = $this->url->link('catalog/information/delete', 'token=' . $this->session->data['token'] . $url, 'SSL');	
 
-		$filter_data = array(
+		$this->data['informations'] = array();
+
+		$data = array(
 			'sort'  => $sort,
 			'order' => $order,
-			'start' => ($page - 1) * $this->config->get('config_limit_admin'),
-			'limit' => $this->config->get('config_limit_admin')
+			'start' => ($page - 1) * $this->config->get('config_admin_limit'),
+			'limit' => $this->config->get('config_admin_limit')
 		);
 
 		$information_total = $this->model_catalog_information->getTotalInformations();
 
-		$results = $this->model_catalog_information->getInformations($filter_data);
+		$results = $this->model_catalog_information->getInformations($data);
 
 		foreach ($results as $result) {
-			$data['informations'][] = array(
+			$action = array();
+
+			$action[] = array(
+				'text' => $this->language->get('text_edit'),
+				'href' => $this->url->link('catalog/information/update', 'token=' . $this->session->data['token'] . '&information_id=' . $result['information_id'] . $url, 'SSL')
+			);
+
+			$this->data['informations'][] = array(
 				'information_id' => $result['information_id'],
 				'title'          => $result['title'],
 				'sort_order'     => $result['sort_order'],
-				'edit'           => $this->url->link('catalog/information/edit', 'token=' . $this->session->data['token'] . '&information_id=' . $result['information_id'] . $url, 'SSL')
+				'selected'       => isset($this->request->post['selected']) && in_array($result['information_id'], $this->request->post['selected']),
+				'action'         => $action
 			);
-		}
+		}	
 
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_list'] = $this->language->get('text_list');
-		$data['text_no_results'] = $this->language->get('text_no_results');
-		$data['text_confirm'] = $this->language->get('text_confirm');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['column_title'] = $this->language->get('column_title');
-		$data['column_sort_order'] = $this->language->get('column_sort_order');
-		$data['column_action'] = $this->language->get('column_action');
+		$this->data['text_no_results'] = $this->language->get('text_no_results');
 
-		$data['button_add'] = $this->language->get('button_add');
-		$data['button_edit'] = $this->language->get('button_edit');
-		$data['button_delete'] = $this->language->get('button_delete');
+		$this->data['column_title'] = $this->language->get('column_title');
+		$this->data['column_sort_order'] = $this->language->get('column_sort_order');
+		$this->data['column_action'] = $this->language->get('column_action');		
+
+		$this->data['button_insert'] = $this->language->get('button_insert');
+		$this->data['button_delete'] = $this->language->get('button_delete');
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
 		if (isset($this->session->data['success'])) {
-			$data['success'] = $this->session->data['success'];
+			$this->data['success'] = $this->session->data['success'];
 
 			unset($this->session->data['success']);
 		} else {
-			$data['success'] = '';
-		}
-
-		if (isset($this->request->post['selected'])) {
-			$data['selected'] = (array)$this->request->post['selected'];
-		} else {
-			$data['selected'] = array();
+			$this->data['success'] = '';
 		}
 
 		$url = '';
@@ -226,8 +227,8 @@ class ControllerCatalogInformation extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['sort_title'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . '&sort=id.title' . $url, 'SSL');
-		$data['sort_sort_order'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . '&sort=i.sort_order' . $url, 'SSL');
+		$this->data['sort_title'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . '&sort=id.title' . $url, 'SSL');
+		$this->data['sort_sort_order'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . '&sort=i.sort_order' . $url, 'SSL');
 
 		$url = '';
 
@@ -242,83 +243,65 @@ class ControllerCatalogInformation extends Controller {
 		$pagination = new Pagination();
 		$pagination->total = $information_total;
 		$pagination->page = $page;
-		$pagination->limit = $this->config->get('config_limit_admin');
+		$pagination->limit = $this->config->get('config_admin_limit');
+		$pagination->text = $this->language->get('text_pagination');
 		$pagination->url = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
 
-		$data['pagination'] = $pagination->render();
+		$this->data['pagination'] = $pagination->render();
 
-		$data['results'] = sprintf($this->language->get('text_pagination'), ($information_total) ? (($page - 1) * $this->config->get('config_limit_admin')) + 1 : 0, ((($page - 1) * $this->config->get('config_limit_admin')) > ($information_total - $this->config->get('config_limit_admin'))) ? $information_total : ((($page - 1) * $this->config->get('config_limit_admin')) + $this->config->get('config_limit_admin')), $information_total, ceil($information_total / $this->config->get('config_limit_admin')));
+		$this->data['sort'] = $sort;
+		$this->data['order'] = $order;
 
-		$data['sort'] = $sort;
-		$data['order'] = $order;
+		$this->template = 'catalog/information_list.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
-
-		$this->response->setOutput($this->load->view('catalog/information_list.tpl', $data));
+		$this->response->setOutput($this->render());
 	}
 
 	protected function getForm() {
-		$data['heading_title'] = $this->language->get('heading_title');
-		
-		$data['text_form'] = !isset($this->request->get['information_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
-		$data['text_default'] = $this->language->get('text_default');
-		$data['text_enabled'] = $this->language->get('text_enabled');
-		$data['text_disabled'] = $this->language->get('text_disabled');
+		$this->data['heading_title'] = $this->language->get('heading_title');
 
-		$data['entry_title'] = $this->language->get('entry_title');
-		$data['entry_description'] = $this->language->get('entry_description');
-		$data['entry_meta_title'] = $this->language->get('entry_meta_title');
-		$data['entry_meta_description'] = $this->language->get('entry_meta_description');
-		$data['entry_meta_keyword'] = $this->language->get('entry_meta_keyword');
-		$data['entry_keyword'] = $this->language->get('entry_keyword');
-		$data['entry_store'] = $this->language->get('entry_store');
-		$data['entry_bottom'] = $this->language->get('entry_bottom');
-		$data['entry_sort_order'] = $this->language->get('entry_sort_order');
-		$data['entry_status'] = $this->language->get('entry_status');
-		$data['entry_layout'] = $this->language->get('entry_layout');
+		$this->data['text_default'] = $this->language->get('text_default');
+		$this->data['text_enabled'] = $this->language->get('text_enabled');
+		$this->data['text_disabled'] = $this->language->get('text_disabled');
 
-		$data['help_keyword'] = $this->language->get('help_keyword');
-		$data['help_bottom'] = $this->language->get('help_bottom');
+		$this->data['entry_title'] = $this->language->get('entry_title');
+		$this->data['entry_description'] = $this->language->get('entry_description');
+		$this->data['entry_store'] = $this->language->get('entry_store');
+		$this->data['entry_keyword'] = $this->language->get('entry_keyword');
+		$this->data['entry_bottom'] = $this->language->get('entry_bottom');
+		$this->data['entry_sort_order'] = $this->language->get('entry_sort_order');
+		$this->data['entry_status'] = $this->language->get('entry_status');
+		$this->data['entry_layout'] = $this->language->get('entry_layout');
 
-		$data['button_save'] = $this->language->get('button_save');
-		$data['button_cancel'] = $this->language->get('button_cancel');
+		$this->data['button_save'] = $this->language->get('button_save');
+		$this->data['button_cancel'] = $this->language->get('button_cancel');
 
-		$data['tab_general'] = $this->language->get('tab_general');
-		$data['tab_data'] = $this->language->get('tab_data');
-		$data['tab_design'] = $this->language->get('tab_design');
+		$this->data['tab_general'] = $this->language->get('tab_general');
+		$this->data['tab_data'] = $this->language->get('tab_data');
+		$this->data['tab_design'] = $this->language->get('tab_design');
 
 		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
+			$this->data['error_warning'] = $this->error['warning'];
 		} else {
-			$data['error_warning'] = '';
+			$this->data['error_warning'] = '';
 		}
 
 		if (isset($this->error['title'])) {
-			$data['error_title'] = $this->error['title'];
+			$this->data['error_title'] = $this->error['title'];
 		} else {
-			$data['error_title'] = array();
+			$this->data['error_title'] = array();
 		}
 
 		if (isset($this->error['description'])) {
-			$data['error_description'] = $this->error['description'];
+			$this->data['error_description'] = $this->error['description'];
 		} else {
-			$data['error_description'] = array();
+			$this->data['error_description'] = array();
 		}
 
-		if (isset($this->error['meta_title'])) {
-			$data['error_meta_title'] = $this->error['meta_title'];
-		} else {
-			$data['error_meta_title'] = array();
-		}
-		
-		if (isset($this->error['keyword'])) {
-			$data['error_keyword'] = $this->error['keyword'];
-		} else {
-			$data['error_keyword'] = '';
-		}
-		
 		$url = '';
 
 		if (isset($this->request->get['sort'])) {
@@ -333,105 +316,109 @@ class ControllerCatalogInformation extends Controller {
 			$url .= '&page=' . $this->request->get['page'];
 		}
 
-		$data['breadcrumbs'] = array();
+		$this->data['breadcrumbs'] = array();
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('text_home'),
+			'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),     		
+			'separator' => false
 		);
 
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL')
+		$this->data['breadcrumbs'][] = array(
+			'text'      => $this->language->get('heading_title'),
+			'href'      => $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL'),
+			'separator' => ' :: '
 		);
-		
+
 		if (!isset($this->request->get['information_id'])) {
-			$data['action'] = $this->url->link('catalog/information/add', 'token=' . $this->session->data['token'] . $url, 'SSL');
+			$this->data['action'] = $this->url->link('catalog/information/insert', 'token=' . $this->session->data['token'] . $url, 'SSL');
 		} else {
-			$data['action'] = $this->url->link('catalog/information/edit', 'token=' . $this->session->data['token'] . '&information_id=' . $this->request->get['information_id'] . $url, 'SSL');
+			$this->data['action'] = $this->url->link('catalog/information/update', 'token=' . $this->session->data['token'] . '&information_id=' . $this->request->get['information_id'] . $url, 'SSL');
 		}
 
-		$data['cancel'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL');
+		$this->data['cancel'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'] . $url, 'SSL');
 
 		if (isset($this->request->get['information_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
 			$information_info = $this->model_catalog_information->getInformation($this->request->get['information_id']);
 		}
 
-		$data['token'] = $this->session->data['token'];
+		$this->data['token'] = $this->session->data['token'];
 
 		$this->load->model('localisation/language');
 
-		$data['languages'] = $this->model_localisation_language->getLanguages();
+		$this->data['languages'] = $this->model_localisation_language->getLanguages();
 
 		if (isset($this->request->post['information_description'])) {
-			$data['information_description'] = $this->request->post['information_description'];
+			$this->data['information_description'] = $this->request->post['information_description'];
 		} elseif (isset($this->request->get['information_id'])) {
-			$data['information_description'] = $this->model_catalog_information->getInformationDescriptions($this->request->get['information_id']);
+			$this->data['information_description'] = $this->model_catalog_information->getInformationDescriptions($this->request->get['information_id']);
 		} else {
-			$data['information_description'] = array();
+			$this->data['information_description'] = array();
 		}
 
 		$this->load->model('setting/store');
 
-		$data['stores'] = $this->model_setting_store->getStores();
+		$this->data['stores'] = $this->model_setting_store->getStores();
 
 		if (isset($this->request->post['information_store'])) {
-			$data['information_store'] = $this->request->post['information_store'];
+			$this->data['information_store'] = $this->request->post['information_store'];
 		} elseif (isset($this->request->get['information_id'])) {
-			$data['information_store'] = $this->model_catalog_information->getInformationStores($this->request->get['information_id']);
+			$this->data['information_store'] = $this->model_catalog_information->getInformationStores($this->request->get['information_id']);
 		} else {
-			$data['information_store'] = array(0);
-		}
+			$this->data['information_store'] = array(0);
+		}		
 
 		if (isset($this->request->post['keyword'])) {
-			$data['keyword'] = $this->request->post['keyword'];
+			$this->data['keyword'] = $this->request->post['keyword'];
 		} elseif (!empty($information_info)) {
-			$data['keyword'] = $information_info['keyword'];
+			$this->data['keyword'] = $information_info['keyword'];
 		} else {
-			$data['keyword'] = '';
+			$this->data['keyword'] = '';
 		}
 
 		if (isset($this->request->post['bottom'])) {
-			$data['bottom'] = $this->request->post['bottom'];
+			$this->data['bottom'] = $this->request->post['bottom'];
 		} elseif (!empty($information_info)) {
-			$data['bottom'] = $information_info['bottom'];
+			$this->data['bottom'] = $information_info['bottom'];
 		} else {
-			$data['bottom'] = 0;
+			$this->data['bottom'] = 0;
 		}
 
 		if (isset($this->request->post['status'])) {
-			$data['status'] = $this->request->post['status'];
+			$this->data['status'] = $this->request->post['status'];
 		} elseif (!empty($information_info)) {
-			$data['status'] = $information_info['status'];
+			$this->data['status'] = $information_info['status'];
 		} else {
-			$data['status'] = true;
+			$this->data['status'] = 1;
 		}
 
 		if (isset($this->request->post['sort_order'])) {
-			$data['sort_order'] = $this->request->post['sort_order'];
+			$this->data['sort_order'] = $this->request->post['sort_order'];
 		} elseif (!empty($information_info)) {
-			$data['sort_order'] = $information_info['sort_order'];
+			$this->data['sort_order'] = $information_info['sort_order'];
 		} else {
-			$data['sort_order'] = '';
+			$this->data['sort_order'] = '';
 		}
 
 		if (isset($this->request->post['information_layout'])) {
-			$data['information_layout'] = $this->request->post['information_layout'];
+			$this->data['information_layout'] = $this->request->post['information_layout'];
 		} elseif (isset($this->request->get['information_id'])) {
-			$data['information_layout'] = $this->model_catalog_information->getInformationLayouts($this->request->get['information_id']);
+			$this->data['information_layout'] = $this->model_catalog_information->getInformationLayouts($this->request->get['information_id']);
 		} else {
-			$data['information_layout'] = array();
+			$this->data['information_layout'] = array();
 		}
 
 		$this->load->model('design/layout');
 
-		$data['layouts'] = $this->model_design_layout->getLayouts();
+		$this->data['layouts'] = $this->model_design_layout->getLayouts();
 
-		$data['header'] = $this->load->controller('common/header');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['footer'] = $this->load->controller('common/footer');
+		$this->template = 'catalog/information_form.tpl';
+		$this->children = array(
+			'common/header',
+			'common/footer'
+		);
 
-		$this->response->setOutput($this->load->view('catalog/information_form.tpl', $data));
+		$this->response->setOutput($this->render());
 	}
 
 	protected function validateForm() {
@@ -447,31 +434,17 @@ class ControllerCatalogInformation extends Controller {
 			if (utf8_strlen($value['description']) < 3) {
 				$this->error['description'][$language_id] = $this->language->get('error_description');
 			}
-
-			if ((utf8_strlen($value['meta_title']) < 3) || (utf8_strlen($value['meta_title']) > 255)) {
-				$this->error['meta_title'][$language_id] = $this->language->get('error_meta_title');
-			}
-		}
-
-		if (utf8_strlen($this->request->post['keyword']) > 0) {
-			$this->load->model('catalog/url_alias');
-
-			$url_alias_info = $this->model_catalog_url_alias->getUrlAlias($this->request->post['keyword']);
-
-			if ($url_alias_info && isset($this->request->get['information_id']) && $url_alias_info['query'] != 'information_id=' . $this->request->get['information_id']) {
-				$this->error['keyword'] = sprintf($this->language->get('error_keyword'));
-			}
-
-			if ($url_alias_info && !isset($this->request->get['information_id'])) {
-				$this->error['keyword'] = sprintf($this->language->get('error_keyword'));
-			}
 		}
 
 		if ($this->error && !isset($this->error['warning'])) {
 			$this->error['warning'] = $this->language->get('error_warning');
 		}
 
-		return !$this->error;
+		if (!$this->error) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	protected function validateDelete() {
@@ -494,10 +467,6 @@ class ControllerCatalogInformation extends Controller {
 				$this->error['warning'] = $this->language->get('error_affiliate');
 			}
 
-			if ($this->config->get('config_return_id') == $information_id) {
-				$this->error['warning'] = $this->language->get('error_return');
-			}
-
 			$store_total = $this->model_setting_store->getTotalStoresByInformationId($information_id);
 
 			if ($store_total) {
@@ -505,6 +474,11 @@ class ControllerCatalogInformation extends Controller {
 			}
 		}
 
-		return !$this->error;
+		if (!$this->error) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
+?>

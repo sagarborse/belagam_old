@@ -1,100 +1,116 @@
-<?php
-	echo $header;
-	echo $column_left;
-?>
-<div id="content">
-
-	<div class="page-header">
-		<div class="container-fluid">
-			<?php /*  ?>
-			<div class="pull-right">
-				<a onclick="$('#form').submit();" class="btn btn-primary"><?php echo $objlang->get("button_save"); ?></a>
-			</div>
-			<?php */  ?>
-			<h1><?php echo $heading_title; ?></h1>
-			<ul class="breadcrumb">
-				<?php foreach ($breadcrumbs as $breadcrumb) { ?>
-				<li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
-				<?php } ?>
-			</ul>
-		</div>
-	</div><!-- end div .page-header -->
-
-	<div id="page-content" class="container-fluid">
-		<?php if ($error_warning) { ?>
-		<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php if( is_array($error_warning) ) { echo implode("<br>",$error_warning); } else { echo $error_warning; } ?>
-			<button type="button" class="close" data-dismiss="alert">&times;</button>
-		</div>
+<?php  echo $header;  ?>
+ <div id="content">
+	  <div class="breadcrumb">
+		<?php foreach ($breadcrumbs as $breadcrumb) { ?>
+		<?php echo $breadcrumb['separator']; ?><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a>
 		<?php } ?>
-		<?php if (isset($success) && !empty($success)) { ?>
-		<div class="alert alert-success"><i class="fa fa-check-circle"></i> <?php echo $success; ?>
-			<button type="button" class="close" data-dismiss="alert">&times;</button>
-		</div>
-		<?php } ?>
-
-		<div id="ajaxloading" class="hide">
-			<div class="alert alert-warning" role="alert"><?php echo $objlang->get('text_process_request'); ?></div>
-		</div>
-
-		<div class="toolbar"><?php require( dirname(__FILE__).'/toolbar.tpl' ); ?></div>
-		<!-- tools bar blog -->
-
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h3 class="panel-title"><i class="fa fa-pencil"></i> <?php echo $heading_title; ?></h3>
+	  </div>
+	  <?php if ($error_warning) { ?>
+	  <div class="warning"><?php echo $error_warning; ?></div>
+	  <?php } ?>
+		<div class="box">
+		   
+		   <div class="toolbar"><?php require( dirname(__FILE__).'/toolbar.tpl' ); ?></div>
+		  
+			<div class="heading">
+			  <h1><img src="view/image/module.png" alt="" /> <?php echo $heading_title; ?></h1>
+				<div class="buttons">
+				  <a onclick="$('#form').submit();" class="button"><?php echo $this->language->get("button_save"); ?></a>
+				</div>  
 			</div>
 			
-			<div class="panel-body">	
-				
+			<div class="content"><form action="<?php echo $action;?>" method="post" id="form">
 				<div class="box-columns">
 					
-					<ul class="nav nav-tabs" id="grouptab">
-						<li><a href="#tab-module-pavblogcategory" role="tab" data-toggle="tab"><?php echo $objlang->get("tab_pavblogcategory"); ?></a></li>
-						<li><a href="#tab-module-pavblogcomment" role="tab" data-toggle="tab"><?php echo $objlang->get("tab_pavblogcomment"); ?></a></li>
-						<li><a href="#tab-module-pavbloglatest" role="tab" data-toggle="tab"><?php echo $objlang->get("tab_pavbloglatest"); ?></a></li>
-					</ul>
 
-					<div class="tab-content">
-
-						<div id="tab-module-pavblogcategory" class="tab-pane">
-							<?php require(dirname(__FILE__).'/modules/pavblogcategory.tpl'); ?>
+					<div class="module-setting-tabs htabs">
+						<div id="tabs" class="nav-setting pavhtabs">
+							<?php
+								if(!empty($layout_modules)){
+									foreach($layout_modules as $key=>$modules){
+										$key = trim($key);
+										?>
+										<a href="#tab-module-<?php echo $key ?>"><?php echo $this->language->get("tab_".strtolower($key)); ?></a>
+										<?php
+									}
+								}
+							?>
 						</div>
-
-						<div id="tab-module-pavblogcomment" class="tab-pane">
-							<?php require(dirname(__FILE__).'/modules/pavblogcomment.tpl'); ?>
-						</div>
-
-						<div id="tab-module-pavbloglatest" class="tab-pane">
-							<?php require(dirname(__FILE__).'/modules/pavbloglatest.tpl'); ?>
-						</div>
-
-				 	</div><!-- end div.tab-content -->
-
-				</div><!-- end div.box-columns -->
+					</div>	
+						<div class="clearfix clear"></div>						
+					 <?php
+						if(!empty($layout_modules)){
+							foreach($layout_modules as $key=>$item_module){
+								//check the module is not installed
+								if(!is_array($item_module)){
+									$install_link = $this->url->link('extension/module/install', "extension=$key&token=" . $this->session->data['token'], 'SSL');
+									?>
+									<div id="tab-module-<?php echo $key;?>">
+										<div class="tab-inner">
+											<p><?php echo $this->language->get("module_not_installed"); ?><a  class="install_button" href="<?php echo $install_link; ?>"><?php echo $this->language->get("install");?></a></p>
+											<div class="clear"></div>
+										</div>
+									</div>
+									<?php
+								}else{
+									$modules_tpl = dirname(__FILE__).'/modules/'.trim($key).'.tpl';
+									$modules = $item_module;
+									$module_key = $key;
+									?>
+									<div id="tab-module-<?php echo $key;?>">
+										<div class="tab-inner">
+											<input type="hidden" name="pavblog_frontmodules[modules][]" value="<?php echo $key;?>"/>
+											<?php
+											if( file_exists($modules_tpl) ){
+												require_once($modules_tpl);
+											}
+											?>
+											<div class="clear"></div>
+										</div>
+									</div>
+									
+									<?php
+								}
+								
+							}
+						}
+					?>
+					
+				</div>
+				
+				
 			</div>
-			<!-- end div.panel-body -->
-
-		</div>
-		<!-- end div.panel -->
-
-	</div><!-- end div #page-content -->
-</div><!-- end div #content -->
-<script type="text/javascript">
-	$('#grouptab li:first-child a').tab('show');
-
-	// Save Tab When click
-	$('#grouptab a').click( function(){
-		$.cookie("sactived_tab", $(this).attr("href") );
-	});
-
-	if( $.cookie("sactived_tab") !="undefined" ){
-		$('#grouptab a').each( function(){ 
-			if( $(this).attr("href") ==  $.cookie("sactived_tab") ){
-				$(this).click();
-				return ;
-			}
+		</div>	
+		
+		
+ </div>
+  
+ <script type="text/javascript">
+	$(".pavhtabs a").tabs();
+	$(".pavmodshtabs a").tabs();
+	function __submit( val ){
+		$("#action_mode").val( val );
+		$("#form").submit();
+	}
+	var split = location.search.replace('?', '').split('&').map(function(val){
+		  return val.split('=');
 		});
+	var mod_key = "";
+	if(split.length){
+		for(i=0;i<split.length;i++){
+			if(split[i][0] == "mod"){
+				mod_key = "#tab-module-"+split[i][1];
+				break;
+			}
+		}
 	}
 
-</script>
+	$('#tabs a').each( function(){
+		if( $(this).attr("href") ==  mod_key ){
+			$(this).click();
+			return ;
+		}
+	} );
+ </script>
+ 
 <?php echo $footer; ?>

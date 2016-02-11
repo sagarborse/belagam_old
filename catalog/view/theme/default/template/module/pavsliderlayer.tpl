@@ -16,7 +16,7 @@
 						
 						 
 						<ul>
-								<?php foreach( $sliders as $_key => $slider )  { 
+								<?php foreach( $sliders as $slider )  { 
 										$link = $slider['params']['slider_link'] ?' data-link="'.$slider['params']['slider_link'].'"':'';
 										$sliderDelay = (int)$slider['params']['slider_delay']?'data-delay="'.(int)$slider['params']['slider_delay'].'"':"";
 									?>
@@ -35,7 +35,7 @@
 								<div class="caption fade fullscreenvideo" data-autoplay="true" data-x="0" data-y="0" data-speed="500" data-start="10" data-easing="easeOutBack"><iframe src="<?php echo $vurl;?>?title=0&amp;byline=0&amp;portrait=0;api=1" width="100%" height="100%"></iframe></div>
 										<?php }elseif( $slider['main_image'] ) { ?>
 											
-											<img src="<?php echo $slider['main_image']; ?>"  alt="Image <?php echo $_key; ?>"/>
+											<img src="<?php echo $slider['main_image']; ?>" >
 										<?php } ?>
 										
 										<?php
@@ -74,12 +74,12 @@
 											 data-start="<?php echo $layer['time_start']; ?>"
 											 data-easing="easeOutExpo" <?php echo $endeffect;?> >
 											 	<?php if( $type=='image') { ?> 
-											 	<img src="<?php echo $url."image/".$layer['layer_content'];?>" alt="<?php echo $layer['layer_content']; ?>" />
+											 	<img src="<?php echo $url."image/".$layer['layer_content'];?>">
 												 	<?php } else if( $type == 'video' ) { ?>
 													 	<?php if( $layer['layer_video_type'] == 'vimeo')  { ?>
-												 		<iframe src="http://player.vimeo.com/video/<?php echo $layer['layer_video_id'];?>?wmode=transparent&amp;title=0&amp;byline=0&amp;portrait=0;api=1" width="<?php echo $layer['layer_video_width'];?>" height="<?php echo $layer['layer_video_height'];?>"></iframe>
+												 		<iframe src="http://player.vimeo.com/video/<?php echo $layer['layer_video_id'];?>?title=0&amp;byline=0&amp;portrait=0;api=1" width="<?php echo $layer['layer_video_width'];?>" height="<?php echo $layer['layer_video_height'];?>"></iframe>
 												 		<?php } else { ?>
-												 			<iframe width="<?php echo $layer['layer_video_width'];?>" height="<?php echo $layer['layer_video_height'];?>" src="http://www.youtube.com/embed/<?php echo $layer['layer_video_id'];?>?wmode=transparent" frameborder="0" allowfullscreen="1"></iframe>
+												 			<iframe width="<?php echo $layer['layer_video_width'];?>" height="<?php echo $layer['layer_video_height'];?>" src="http://www.youtube.com/embed/<?php echo $layer['layer_video_id'];?>" frameborder="0" allowfullscreen></iframe>
 											 		<?php } ?>
 											 <?php	} else { ?>
 											 	<?php echo html_entity_decode( str_replace( '_ASM_', '&', $layer['layer_caption']) , ENT_QUOTES, 'UTF-8'); ?>

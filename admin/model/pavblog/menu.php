@@ -58,20 +58,6 @@ class Modelpavblogmenu extends Model {
 		$output = $this->genTree( $parent, 1 );
 		return $output;
 	}
-
-	public function getOption( $id=null, $selected=1){
-		if( !$this->children ) {
-			$childs = $this->getChild( $id );
-			foreach($childs as $child ){
-				$this->children[$child['parent_id']][] = $child;	
-			}
-		}
-	
-		$output ='<option value="1">ROOT</option>';	
-		$output .= $this->genOption( 1 ,1, $selected );
-	
-		return $output ;
-	}
 	
 	public function getDropdown( $id=null, $selected=1, $name="pavblog_category[parent_id]" ){
 		if( !$this->children ) {
@@ -90,14 +76,13 @@ class Modelpavblogmenu extends Model {
 	
 	public function genOption( $parent, $level=0, $selected ){
 		$output = '';
-		if( $this->hasChild($parent)){
+		if( $this->hasChild($parent) ){
 			$data = $this->getNodes( $parent );
 			
 			foreach( $data as $menu ){
 				$select = $selected == $menu['category_id'] ? 'selected="selected"':"";
 				$output .= '<option value="'.$menu['category_id'].'" '.$select.'>'.str_repeat("-",$level) ." ".$menu['title'].' (ID:'.$menu['category_id'].')</option>';
-				if($menu['category_id'] > 1)
-					$output .= $this->genOption(  $menu['category_id'],$level+1, $selected );
+				$output .= $this->genOption(  $menu['category_id'],$level+1, $selected );
 			}				
 		}
 		
@@ -125,7 +110,7 @@ class Modelpavblogmenu extends Model {
  
 	}
 	public function genTree( $parent, $level ){
-		if( $this->hasChild($parent)){
+		if( $this->hasChild($parent) ){
 			$data = $this->getNodes( $parent );
 			$t = $level == 1?" sortable":"";
 			$output = '<ol class="level'.$level. $t.' ">';
@@ -133,8 +118,7 @@ class Modelpavblogmenu extends Model {
 			foreach( $data as $menu ){
 				$output .='<li id="list_'.$menu['category_id'].'">
 				<div><span class="disclose"><span></span></span>'.($menu['title']?$menu['title']:"").' (ID:'.$menu['category_id'].') <span class="quickedit" rel="id_'.$menu['category_id'].'">E</span><span class="quickdel" rel="id_'.$menu['category_id'].'">D</span></div>';
-				if($menu['category_id'] > 1)
-					$output .= $this->genTree( $menu['category_id'], $level+1 );
+				$output .= $this->genTree( $menu['category_id'], $level+1 );
 				$output .= '</li>';
 			}	
 			

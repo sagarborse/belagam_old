@@ -10,22 +10,16 @@
 /**
  * class ControllerpavblogBlog 
  */
-class ControllerPavblogBlogs extends Controller {
+	class ControllerpavblogBlogs extends Controller {
 	
 		private $mparams = '';
-
-		private $mdata = array();
 		
 		public function preload(){
 		
-			$this->mdata['objlang'] = $this->language;
-			$this->mdata['objurl'] = $this->url;
-
 			$this->load->model('tool/image'); 			
-			$this->load->language('module/pavblog');
+			$this->language->load('module/pavblog');
 			$this->load->model("pavblog/blog");
 			$this->load->model("pavblog/comment");
-
 			$mparams = $this->config->get( 'pavblog' );
 			$default = $this->model_pavblog_blog->getDefaultConfig();
 			
@@ -91,7 +85,7 @@ class ControllerPavblogBlogs extends Controller {
 			$page = 1;
 			$limit = (int)$this->mparams->get('rss_limit_item')?(int)$this->mparams->get('rss_limit_item'):100;
 			
-			$this->mdata = array(
+			$data = array(
 				'filter_category_id' => '',
 				'sort'               => 'b.created',
 				'order'              => 'ASC',
@@ -99,7 +93,7 @@ class ControllerPavblogBlogs extends Controller {
 				'limit'              => $limit
 			);
 
-			$blogs = $this->getModel('blog')->getListBlogs(  $this->mdata );
+			$blogs = $this->getModel('blog')->getListBlogs(  $data );
 			
 
 			foreach( $blogs as $blog ){
@@ -132,6 +126,16 @@ class ControllerPavblogBlogs extends Controller {
 		public function index() {  
 			 
 			$this->preload();
+			 
+			
+			$this->data['breadcrumbs'] = array();
+			
+			$this->data['breadcrumbs'][] = array(
+				'text'      => $this->language->get('text_home'),
+				'href'      => $this->url->link('common/home'),
+				'separator' => false
+			);
+		 
 			
 			if (isset($this->request->get['filter'])) {
 				$filter = $this->request->get['filter'];
@@ -166,7 +170,7 @@ class ControllerPavblogBlogs extends Controller {
 
 			$this->load->model("pavblog/category");
 			$users = $this->getModel('category')->getUsers();
-			$this->mdata['config']	 = $this->mparams; 
+			$this->data['config']	 = $this->mparams; 
 			
 			if( isset($this->request->get['tag']) ){
 				$filter_tag = $this->request->get['tag'];
@@ -174,7 +178,7 @@ class ControllerPavblogBlogs extends Controller {
 				$filter_tag = '';
 			}
 			
-			$this->mdata = array(
+			$data = array(
 				'filter_category_id' => '',
 				'filter_filter'      => $filter, 
 				'filter_tag'  		 => $filter_tag,
@@ -185,20 +189,20 @@ class ControllerPavblogBlogs extends Controller {
 			);
 			
 			if( $filter || $filter_tag ){
-				$this->mdata['heading_title'] = $this->language->get('filter_blog_header_title');
+				$this->data['heading_title'] = $this->language->get('filter_blog_header_title');
 			} else {
-				$this->mdata['heading_title'] = $this->language->get('blogs_latest_header_title');
-				$this->mdata['sort'] = 'b.created';
+				$this->data['heading_title'] = $this->language->get('blogs_latest_header_title');
+				$data['sort'] = 'b.created';
 				$order = 'DESC';
 			}
 			
 		
-			$blogs = $this->getModel( 'blog' )->getListBlogs(  $this->mdata );
+			$blogs = $this->getModel( 'blog' )->getListBlogs(  $data );
 			
 			if ($blogs) {
 				
 				
-				$total = $this->getModel( 'blog' )->getTotal( $this->mdata );
+				$total = $this->getModel( 'blog' )->getTotal( $data );
 				
 				$url = '';
 				
@@ -216,9 +220,9 @@ class ControllerPavblogBlogs extends Controller {
 				
 				if (isset($this->request->get['tag'])) {
 					$url .= '&tag=' . $this->request->get['tag'];
-					$this->mdata['heading_title'] = sprintf($this->mdata['heading_title'] , "tag: ".$this->request->get['tag']);
+					$this->data['heading_title'] = sprintf($this->data['heading_title'] , "tag: ".$this->request->get['tag']);
 				}
-				$this->document->setTitle( $this->mdata['heading_title'] );
+				$this->document->setTitle( $this->data['heading_title'] );
 				
 				
 				$limit_leading_blogs = (int)$this->mparams->get( 'cat_limit_leading_blog' );
@@ -254,10 +258,10 @@ class ControllerPavblogBlogs extends Controller {
 				$secondary_blogs 	 = array_splice( $blogs, $limit_leading_blogs, count($blogs) );
 		
 				
-			 	$this->mdata['config'] = $this->mparams;
-				$this->mdata['leading_blogs'] = $leading_blogs;
-				$this->mdata['secondary_blogs'] = $secondary_blogs;
-				$this->mdata['latest_rss'] =  $this->url->link( 'pavblog/blogs/rss' );
+			 	$this->data['config'] = $this->mparams;
+				$this->data['leading_blogs'] = $leading_blogs;
+				$this->data['secondary_blogs'] = $secondary_blogs;
+				$this->data['latest_rss'] =  $this->url->link( 'pavblog/blogs/rss' );
 				
 				$pagination = new Pagination();
 				$pagination->total = $total;
@@ -266,37 +270,27 @@ class ControllerPavblogBlogs extends Controller {
 				$pagination->text = $this->language->get('text_pagination');
 				$pagination->url = $this->url->link('pavblog/blogs',  $url . '&page={page}');
 				
-				$this->mdata['pagination'] = $pagination->render();
-
-				$this->mdata['column_left'] = $this->load->controller('common/column_left');
-				$this->mdata['column_right'] = $this->load->controller('common/column_right');
-				$this->mdata['content_top'] = $this->load->controller('common/content_top');
-				$this->mdata['content_bottom'] = $this->load->controller('common/content_bottom');
-				$this->mdata['footer'] = $this->load->controller('common/footer');
-				$this->mdata['header'] = $this->load->controller('common/header');
-
-				$this->mdata['objlang'] = $this->language;
-				$this->mdata['objurl'] = $this->url;
-
-				$this->mdata['breadcrumbs'][] = array(
-					'text'      => $this->language->get('text_home'),
-					'href'      => $this->url->link('common/home'),
-				);
-				$this->mdata['breadcrumbs'][] = array(
-					'text'      => $this->language->get('text_blogs'),
-					'href'      => $this->url->link('pavblog/blogs'),
-				);
-
+				$this->data['pagination'] = $pagination->render();
+				
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/pavblog/blogs.tpl')) {
-					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/pavblog/blogs.tpl', $this->mdata));
+					$this->template = $this->config->get('config_template') . '/template/pavblog/blogs.tpl';
 				} else {
-					$this->response->setOutput($this->load->view('default/template/pavblog/blogs.tpl', $this->mdata));
+					$this->template = 'default/template/pavblog/blogs.tpl';
 				}
 				
-
+				$this->children = array(
+					'common/column_left',
+					'common/column_right',
+					'common/content_top',
+					'common/content_bottom',
+					'common/footer',
+					'common/header'
+				);
+							
+				$this->response->setOutput($this->render());
 			} else {
 				$category_id = isset($this->request->get["id"])?$this->request->get["id"]:0;
-				$this->mdata['breadcrumbs'][] = array(
+				$this->data['breadcrumbs'][] = array(
 					'text'      => $this->language->get('text_error'),
 					'href'      => $this->url->link('information/information', 'category_id=' . $category_id),
 					'separator' => $this->language->get('text_separator')
@@ -304,38 +298,30 @@ class ControllerPavblogBlogs extends Controller {
 					
 				$this->document->setTitle($this->language->get('text_error'));
 				
-				$this->mdata['heading_title'] = $this->language->get('text_error');
+				$this->data['heading_title'] = $this->language->get('text_error');
 
-				$this->mdata['text_error'] = $this->language->get('text_error');
+				$this->data['text_error'] = $this->language->get('text_error');
 
-				$this->mdata['button_continue'] = $this->language->get('button_continue');
+				$this->data['button_continue'] = $this->language->get('button_continue');
 				
-				$this->mdata['continue'] = $this->url->link('common/home');
-
-				$this->mdata['column_left'] = $this->load->controller('common/column_left');
-				$this->mdata['column_right'] = $this->load->controller('common/column_right');
-				$this->mdata['content_top'] = $this->load->controller('common/content_top');
-				$this->mdata['content_bottom'] = $this->load->controller('common/content_bottom');
-				$this->mdata['footer'] = $this->load->controller('common/footer');
-				$this->mdata['header'] = $this->load->controller('common/header');
-
-				$this->mdata['objlang'] = $this->language;
-				$this->mdata['objurl'] = $this->url;
-
-				$this->mdata['breadcrumbs'][] = array(
-					'text'      => $this->language->get('text_home'),
-					'href'      => $this->url->link('common/home'),
-				);
-				$this->mdata['breadcrumbs'][] = array(
-					'text'      => $this->language->get('text_blogs'),
-					'href'      => $this->url->link('pavblog/blogs'),
-				);
+				$this->data['continue'] = $this->url->link('common/home');
 
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/error/not_found.tpl')) {
-					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/error/not_found.tpl', $this->mdata));
+					$this->template = $this->config->get('config_template') . '/template/error/not_found.tpl';
 				} else {
-					$this->response->setOutput($this->load->view('default/template/error/not_found.tpl', $this->mdata));
+					$this->template = 'default/template/error/not_found.tpl';
 				}
+				
+				$this->children = array(
+					'common/column_left',
+					'common/column_right',
+					'common/content_top',
+					'common/content_bottom',
+					'common/footer',
+					'common/header'
+				);
+						
+				$this->response->setOutput($this->render());
 			}
 		}
 		

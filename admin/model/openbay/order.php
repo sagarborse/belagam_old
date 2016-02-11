@@ -1,31 +1,7 @@
 <?php
 class ModelOpenbayOrder extends Model {
 	public function getTotalOrders($data = array()) {
-		$sql = "SELECT COUNT(*) AS `total` FROM `" . DB_PREFIX . "order` AS o";
-
-		if ($this->config->get('ebay_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "ebay_order eo ON o.order_id = eo.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) eo ";
-		}
-
-		if ($this->config->get('openbay_amazon_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "amazon_order ao ON o.order_id = ao.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) ao ";
-		}
-
-		if ($this->config->get('openbay_amazonus_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "amazonus_order auso ON o.order_id = auso.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) auso ";
-		}
-
-		if ($this->config->get('etsy_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "etsy_order eto ON o.order_id = eto.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) eto ";
-		}
+		$sql = "SELECT COUNT(*) AS `total` FROM `" . DB_PREFIX . "order`";
 
 		if (isset($data['filter_order_status_id']) && !is_null($data['filter_order_status_id'])) {
 			$sql .= " WHERE `order_status_id` = '" . (int)$data['filter_order_status_id'] . "'";
@@ -34,7 +10,7 @@ class ModelOpenbayOrder extends Model {
 		}
 
 		if (!empty($data['filter_order_id'])) {
-			$sql .= " AND o.`order_id` = '" . (int)$data['filter_order_id'] . "'";
+			$sql .= " AND `order_id` = '" . (int)$data['filter_order_id'] . "'";
 		}
 
 		if (!empty($data['filter_customer'])) {
@@ -45,41 +21,13 @@ class ModelOpenbayOrder extends Model {
 			$sql .= " AND DATE(`date_added`) = DATE('" . $this->db->escape($data['filter_date_added']) . "')";
 		}
 
-		if (!empty($data['filter_channel'])) {
-			$sql .= " AND IF(eto.order_id IS NULL, IF(ao.order_id IS NULL, IF(auso.order_id IS NULL, IF(eo.order_id IS NULL, 'web', 'ebay'), 'amazonus'), 'amazon'), 'etsy') = '" . $this->db->escape($data['filter_channel']) . "'";
-		}
-
 		$query = $this->db->query($sql);
 
 		return $query->row['total'];
 	}
 
 	public function getOrders($data = array()) {
-		$sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.currency_code, o.currency_value, o.date_added, IF(eto.order_id IS NULL, IF(ao.order_id IS NULL, IF(auso.order_id IS NULL, IF(eo.order_id IS NULL, 'web', 'ebay'), 'amazonus'), 'amazon'), 'etsy') AS channel FROM `" . DB_PREFIX . "order` o";
-
-		if ($this->config->get('ebay_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "ebay_order eo ON eo.order_id = o.order_id";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) eo ";
-		}
-
-		if ($this->config->get('openbay_amazon_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "amazon_order ao ON ao.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) ao ";
-		}
-
-		if ($this->config->get('openbay_amazonus_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "amazonus_order auso ON auso.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) auso ";
-		}
-
-		if ($this->config->get('etsy_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "etsy_order eto ON eto.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) eto ";
-		}
+		$sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.currency_code, o.currency_value, o.date_added FROM `" . DB_PREFIX . "order` o";
 
 		if (isset($data['filter_order_status_id']) && !is_null($data['filter_order_status_id'])) {
 			$sql .= " WHERE o.order_status_id = '" . (int)$data['filter_order_status_id'] . "'";
@@ -99,16 +47,11 @@ class ModelOpenbayOrder extends Model {
 			$sql .= " AND DATE(o.date_added) = DATE('" . $this->db->escape($data['filter_date_added']) . "')";
 		}
 
-		if (!empty($data['filter_channel'])) {
-			$sql .= " HAVING channel = '" . $this->db->escape($data['filter_channel']) . "'";
-		}
-
 		$sort_data = array(
 			'o.order_id',
 			'customer',
 			'status',
 			'o.date_added',
-			'channel',
 		);
 
 		if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
@@ -141,36 +84,32 @@ class ModelOpenbayOrder extends Model {
 	}
 
 	public function getOrder($order_id) {
-		$sql = "SELECT o.order_id, o.order_status_id, o.shipping_method, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.currency_code, o.currency_value, o.date_added, IF(eto.order_id IS NULL, IF(ao.order_id IS NULL, IF(auso.order_id IS NULL, IF(eo.order_id IS NULL, 'web', 'ebay'), 'amazonus'), 'amazon'), 'etsy') AS channel FROM `" . DB_PREFIX . "order` o";
-
-		if ($this->config->get('ebay_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "ebay_order eo ON eo.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) eo ";
-		}
-
-		if ($this->config->get('openbay_amazon_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "amazon_order ao ON ao.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) ao ";
-		}
-
-		if ($this->config->get('openbay_amazonus_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "amazonus_order auso ON auso.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) auso ";
-		}
-
-		if ($this->config->get('etsy_status')) {
-			$sql .= " LEFT JOIN " . DB_PREFIX . "etsy_order eto ON eto.order_id = o.order_id ";
-		} else {
-			$sql .= " JOIN (SELECT NULL AS order_id) eto ";
-		}
-
-		$sql .= " WHERE `o`.`order_id` = '" . (int)$order_id . "'";
-
-		$sql = $this->db->query($sql);
+		$sql = $this->db->query("SELECT o.order_id, o.order_status_id, o.shipping_method, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.currency_code, o.currency_value, o.date_added FROM `" . DB_PREFIX . "order` o WHERE `o`.`order_id` = '".(int)$order_id."' LIMIT 1");
 
 		return $sql->row;
 	}
+
+	public function findOrderChannel($order_id) {
+
+		if($this->config->get('amazon_status') == 1){
+			if($this->openbay->amazon->getOrder($order_id) != false){
+				return 'Amazon';
+			}
+		}
+
+		if($this->config->get('amazonus_status') == 1){
+			if($this->openbay->amazonus->getOrder($order_id) != false){
+				return 'amazonus';
+			}
+		}
+
+		if($this->config->get('openbay_status') == 1){
+			if($this->openbay->ebay->isEbayOrder($order_id) != false){
+				return 'eBay';
+			}
+		}
+
+		return 'Web';
+	}
 }
+?>

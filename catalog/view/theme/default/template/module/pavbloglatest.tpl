@@ -16,10 +16,9 @@
 								<img src="<?php echo $blog['thumb'];?>" title="<?php echo $blog['title'];?>" align="left"/>
 								<?php } ?>
 								<div class="description">
-										<?php $blog['description'] = strip_tags($blog['description']); ?>
 										<?php echo utf8_substr( $blog['description'],0, 200 );?>...
 								</div>
-								<a href="<?php echo $blog['link'];?>" class="readmore"><?php echo $objlang->get('text_readmore');?></a>
+								<a href="<?php echo $blog['link'];?>" class="readmore"><?php echo $this->language->get('text_readmore');?></a>
 							</div>	
 						</div>
 			</div>

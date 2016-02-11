@@ -1,367 +1,245 @@
-<?php echo $header; ?><?php echo $column_left; ?>
+<?php echo $header; ?>
 <div id="content">
-  <div class="page-header">
-    <div class="container-fluid">
-      <div class="pull-right">
-        <a data-toggle="tooltip" title="<?php echo $button_save; ?>" class="btn btn-primary" onclick="$('#form').submit();"><i class="fa fa-check-circle"></i></a>
-        <a href="<?php echo $cancel; ?>" data-toggle="tooltip" title="<?php echo $button_cancel; ?>" class="btn btn-default"><i class="fa fa-reply"></i></a>
-      </div>
-      <h1><?php echo $heading_title; ?></h1>
-      <ul class="breadcrumb">
+    <div class="breadcrumb">
         <?php foreach ($breadcrumbs as $breadcrumb) { ?>
-        <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
+        <?php echo $breadcrumb['separator']; ?><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a>
         <?php } ?>
-      </ul>
     </div>
-  </div>
-  <div class="container-fluid">
     <?php if ($error_warning) { ?>
-      <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $error_warning; ?></div>
+    <div class="warning" style="margin-bottom:10px;"><?php echo $error_warning; ?></div>
     <?php } ?>
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="fa fa-list"></i> <?php echo $text_manage; ?></h3>
-      </div>
-      <div class="panel-body">
-        <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" id="form" class="form-horizontal">
-        <input type="hidden" name="type" value="<?php echo $type; ?>" />
-        <input type="hidden" name="ebay_profile_id" value="<?php echo $ebay_profile_id; ?>" />
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#tab-general" data-toggle="tab"><?php echo $tab_general; ?></a></li>
-          <li><a href="#tab-shipping" data-toggle="tab"><?php echo $tab_shipping; ?></a></li>
-        </ul>
-        <div class="tab-content">
-          <div class="tab-pane active" id="tab-general">
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_profile_default; ?></label>
-              <div class="col-sm-10">
-                <input type="hidden" name="default" value="0" />
-                <input type="checkbox" name="default" value="1" <?php if ($default == 1){ echo 'checked="checked"'; } ?> />
-              </div>
+    <div class="box">
+        <div class="heading">
+            <h1><?php echo $page_title; ?></h1>
+            <div class="buttons">
+                <a onclick="$('#form').submit();" class="button"><span><?php echo $lang_btn_save; ?></span></a>
+                <a onclick="location = '<?php echo $cancel; ?>';" class="button"><span><?php echo $lang_btn_cancel; ?></span></a>
             </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label" for="name"><?php echo $text_profile_name; ?></label>
-              <div class="col-sm-10">
-                <input type="text" name="name" value="<?php if (isset($name)){ echo $name; } ?>" placeholder="<?php echo $text_profile_name; ?>" id="name" class="form-control" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label" for="description"><?php echo $text_profile_desc; ?></label>
-              <div class="col-sm-10">
-                <textarea name="description" class="form-control" rows="3" id="description"><?php if (isset($description)){ echo $description; } ?></textarea>
-              </div>
-            </div>
-          </div>
-          <div class="tab-pane" id="tab-shipping">
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_postcode; ?></label>
-              <div class="col-sm-10">
-                <input type="text" name="data[postcode]" id="postcode" value="<?php if (isset($data['postcode'])){ echo $data['postcode']; } ?>" placeholder="<?php echo $text_shipping_postcode; ?>" class="form-control" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_location; ?></label>
-              <div class="col-sm-10">
-                <input type="text" name="data[location]" id="location" value="<?php if (isset($data['location'])){ echo $data['location']; } ?>" placeholder="<?php echo $text_shipping_location; ?>" class="form-control" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_dispatch_country; ?></label>
-              <div class="col-sm-10">
-                <select name="data[country]" class="form-control" id="country">
-                  <?php foreach($setting['countries'] as $country){ ?>
-                    <?php echo '<option value="'.$country['code'].'"'.(isset($data['country']) && $data['country'] == $country['code'] ? ' selected' : '').'>'.$country['name'].'</option>'; ?>
-                  <?php } ?>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_despatch; ?></label>
-              <div class="col-sm-10">
-                <select name="data[dispatch_time]" class="form-control" id="dispatch_time">
-                  <?php foreach($setting['dispatch_times'] as $dis){ ?>
-                    <?php echo '<option value="'.$dis['DispatchTimeMax'].'"'.(isset($data['dispatch_time']) && $data['dispatch_time'] == $dis['DispatchTimeMax'] ? ' selected' : '').'>'.$dis['Description'].'</option>'; ?>
-                  <?php } ?>
-                </select>
-                <span class="help-block"><?php echo $text_shipping_despatch_help; ?></span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_getitfast; ?></label>
-              <div class="col-sm-10">
-                <input type="hidden" name="data[get_it_fast]" value="0" />
-                <input type="checkbox" name="data[get_it_fast]" value="1" id="get_it_fast" <?php if (isset($data['get_it_fast']) && $data['get_it_fast'] == 1){ echo 'checked="checked"'; } ?> />
-              </div>
-            </div>
-            <?php if ($cod_surcharge == 1) { ?>
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_cod; ?></label>
-              <div class="col-sm-10">
-                <input type="text" name="data[cod_cost]" value="<?php if (isset($data['cod_cost'])){ echo $data['cod_cost']; } ?>" placeholder="<?php echo $text_shipping_cod; ?>" class="form-control" />
-              </div>
-            </div>
-            <?php } ?>
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_type_nat; ?></label>
-              <div class="col-sm-10">
-                <select name="data[national][shipping_type]" class="form-control" id="shipping-type-national">
-                  <?php echo $setting['shipping_types']['flat'] == 1 ? '<option value="flat"'.(isset($data['national']['shipping_type']) && $data['national']['shipping_type'] == 'flat' ? ' selected' : '').'>'.$text_shipping_flat.'</option>' : ''; ?>
-                  <?php echo $setting['shipping_types']['calculated'] == 1 ? '<option value="calculated"'.(isset($data['national']['shipping_type']) && $data['national']['shipping_type'] == 'calculated' ? ' selected' : '').'>'.$text_shipping_calculated.'</option>' : ''; ?>
-                  <?php echo $setting['shipping_types']['freight'] == 1 ? '<option value="freight"'.(isset($data['national']['shipping_type']) && $data['national']['shipping_type'] == 'freight' ? ' selected' : '').'>'.$text_shipping_freight.'</option>' : ''; ?>
-                </select>
-              </div>
-            </div>
-
-            <div id="national-container-flat" style="display:none;" class="shipping-national-container">
-              <div class="form-group">
-                <div class="col-sm-2">
-                  <div class="row">
-                    <div class="col-sm-12 text-right">
-                      <p><label class="control-label text-right"><?php echo $text_shipping_nat; ?></label></p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-12 text-right">
-                      <p><a class="btn btn-primary" onclick="addShipping('national', 'flat');" id="add-national-flat"><i class="fa fa-plus-circle"></i> <?php echo $button_add; ?></a></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-10">
-                  <div class="row">
-                    <div class="col-sm-12" id="options-national-flat"><?php echo $html_national_flat; ?></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <?php if ($setting['shipping_types']['calculated'] == 1) { ?>
-            <div id="national-container-calculated" style="display:none;" class="shipping-national-container">
-              <div class="form-group">
-                <label class="col-sm-2 control-label"><?php echo $text_shipping_handling_nat; ?></label>
-                <div class="col-sm-10">
-                  <input type="text" name="data[national][calculated][handling_fee]" id="national-handling-fee" class="form-control" value="<?php echo $data['national']['calculated']['handling_fee']; ?>" />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="col-sm-2">
-                  <div class="row">
-                    <div class="col-sm-12 text-right">
-                      <p><label class="control-label text-right"><?php echo $text_shipping_nat; ?></label></p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-12 text-right">
-                      <p><a class="btn btn-primary" onclick="addShipping('national', 'calculated');" id="add-national-calculated"><i class="fa fa-plus-circle"></i> <?php echo $button_add; ?></a></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-10">
-                  <div class="row">
-                    <div class="col-sm-12" id="options-national-calculated"><?php echo $html_national_calculated; ?></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <?php } ?>
-
-            <?php if ($setting['shipping_types']['freight'] == 1) { ?>
-            <div id="national-container-freight" style="display:none;" class="shipping-national-container">
-              <div class="form-group">
-                <label class="col-sm-2 control-label"><?php echo $text_shipping_in_desc; ?></label>
-                <div class="col-sm-10">
-                  <input type="hidden" name="data[national][freight][in_description]" value="0" />
-                  <input type="checkbox" name="data[national][freight][in_description]" value="1" <?php if (isset($data['national']['freight']['in_description']) && $data['national']['freight']['in_description'] == 1){ echo 'checked="checked"'; } ?> />
-                </div>
-              </div>
-            </div>
-            <?php } ?>
-
-            <div class="form-group">
-              <label class="col-sm-2 control-label"><?php echo $text_shipping_type_int; ?></label>
-              <div class="col-sm-10">
-                <select name="data[international][shipping_type]" class="form-control" id="shipping-type-international">
-                  <?php echo $setting['shipping_types']['flat'] == 1 ? '<option value="flat"'.(isset($data['international']['shipping_type']) && $data['international']['shipping_type'] == 'flat' ? ' selected' : '').'>'.$text_shipping_flat.'</option>' : ''; ?>
-                  <?php echo $setting['shipping_types']['calculated'] == 1 ? '<option value="calculated"'.(isset($data['international']['shipping_type']) && $data['international']['shipping_type'] == 'calculated' ? ' selected' : '').'>'.$text_shipping_calculated.'</option>' : ''; ?>
-                </select>
-              </div>
-            </div>
-
-            <div id="international-container-flat" style="display:none;" class="shipping-international-container">
-              <div class="form-group">
-                <div class="col-sm-2">
-                  <div class="row">
-                    <div class="col-sm-12 text-right">
-                      <p><label class="control-label text-right"><?php echo $text_shipping_intnat; ?></label></p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-12 text-right">
-                      <p><a class="btn btn-primary" onclick="addShipping('international', 'flat');" id="add-international-flat"><i class="fa fa-plus-circle"></i> <?php echo $button_add; ?></a></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-10">
-                  <div class="row">
-                    <div class="col-sm-12" id="options-international-flat">
-                      <?php echo $html_international_flat; ?>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <?php if ($setting['shipping_types']['calculated'] == 1) { ?>
-              <div id="international-container-calculated" style="display:none;" class="shipping-international-container">
-                <div class="form-group">
-                  <label class="col-sm-2 control-label"><?php echo $text_shipping_handling_nat; ?></label>
-                  <div class="col-sm-10">
-                    <input type="text" name="data[international][calculated][handling_fee]" id="international-handling-fee" class="form-control" value="<?php echo $data['international']['calculated']['handling_fee']; ?>" />
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="col-sm-2">
-                    <div class="row">
-                      <div class="col-sm-12 text-right">
-                        <p><label class="control-label text-right"><?php echo $text_shipping_intnat; ?></label></p>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-sm-12 text-right">
-                        <p><a class="btn btn-primary" onclick="addShipping('international', 'calculated');" id="add-international-calculated"><i class="fa fa-plus-circle"></i> <?php echo $button_add; ?></a></p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-10">
-                    <div class="row">
-                      <div class="col-sm-12" id="options-international-calculated">
-                        <?php echo $html_international_calculated; ?>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            <?php } ?>
-          </div>
         </div>
-      </form>
-      </div>
+        <div class="content">
+            <div id="tabs" class="htabs">
+                <a href="#tab-general"><?php echo $lang_tab_general; ?></a>    
+                <a href="#tab-shipping"><?php echo $lang_tab_shipping; ?></a>
+            </div>
+            <form action="<?php echo $btn_save; ?>" method="post" enctype="multipart/form-data" id="form">
+                <input type="hidden" name="type" value="<?php echo $type; ?>" />
+                <input type="hidden" name="ebay_profile_id" value="<?php echo $ebay_profile_id; ?>" />
+
+                <div id="tab-general">
+                    <table class="form">
+                        <tr>
+                            <td><?php echo $lang_profile_default; ?></td>
+                            <td>
+                                <input type="hidden" name="default" value="0" />
+                                <input type="checkbox" name="default" value="1" <?php if($default == 1){ echo 'checked="checked"'; } ?> />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><?php echo $lang_profile_name; ?></td>
+                            <td><input type="text" name="name" class="width400" value="<?php if(isset($name)){ echo $name; } ?>"></td>
+                        </tr>
+                        <tr>
+                            <td><?php echo $lang_profile_desc; ?></td>
+                            <td>
+                                <textarea name="description" cols="40" rows="5" class="width400"><?php if(isset($description)){ echo $description; } ?></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div id="tab-shipping">
+                    <table class="form">
+                        <tr>
+                            <td><label><?php echo $lang_shipping_postcode; ?></label></td>
+                            <td><input type="text" name="data[postcode]" id="postcode" class="width100" maxlength="" value="<?php if(isset($data['postcode'])){ echo $data['postcode']; } ?>" /></td>
+                        </tr>
+                        <tr>
+                            <td><label><?php echo $lang_shipping_location; ?></label></td>
+                            <td><input type="text" name="data[location]" id="location" class="width100" maxlength="" value="<?php if(isset($data['location'])){ echo $data['location']; } ?>" /></td>
+                        </tr>
+                        <tr>
+                            <td><label><?php echo $lang_shipping_dispatch_country; ?></label></td>
+                            <td>
+                                <select name="data[country]" id="country" class="width100">
+                                    <?php foreach($setting['countries'] as $country){ ?>
+                                    <option value="<?php echo $country['code'];?>"
+                                    <?php if(isset($data['country']) && $data['country'] == $country['code']){ echo' selected'; } ?>
+                                    ><?php echo $country['name'];?></option>
+                                    <?php } ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label><?php echo $lang_shipping_despatch; ?></label></td>
+                            <td>
+                                <select name="data[dispatch_time]" id="dispatch_time" class="width100">
+                                    <?php foreach($setting['dispatch_times'] as $dis){ ?>
+                                        <option value="<?php echo $dis['DispatchTimeMax'];?>" 
+                                        <?php if(isset($data['dispatch_time']) && $data['dispatch_time'] == $dis['DispatchTimeMax']){ echo' selected'; } ?>
+                                        ><?php echo $dis['Description'];?></option>
+                                    <?php } ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><?php echo $lang_shipping_in_desc; ?></td>
+                            <td>
+                                <input type="hidden" name="data[shipping_in_desc]" value="0" />
+                                <input type="checkbox" name="data[shipping_in_desc]" value="1" id="shipping_in_desc" <?php if(isset($data['shipping_in_desc']) && $data['shipping_in_desc'] == 1){ echo 'checked="checked"'; } ?> />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><?php echo $lang_shipping_getitfast; ?></td>
+                            <td>
+                                <input type="hidden" name="data[get_it_fast]" value="0" />
+                                <input type="checkbox" name="data[get_it_fast]" value="1" id="get_it_fast" <?php if(isset($data['get_it_fast']) && $data['get_it_fast'] == 1){ echo 'checked="checked"'; } ?> />
+                            </td>
+                        </tr>
+                        <tr class="shipping_table_rows">
+                            <td valign="top">
+                                <label><?php echo $lang_shipping_nat; ?></label>
+                                <p style="text-align:left; margin-right:10px;"><a class="button" onclick="addShipping('national');"><span><?php echo $lang_btn_add; ?></span></a></p>
+                            </td>
+                            <td id="nationalBtn">
+                                <input type="hidden" name="data[count_national]" value="<?php echo $data['shipping_national_count']; ?>" id="count_national" />
+                                <?php
+                                if(isset($data['shipping_national']) && is_array($data['shipping_national'])){
+                                    foreach($data['shipping_national'] as $key => $service){
+                                        echo'<p class="shipping_national_'.$key.'" style="border-top:1px dotted; margin:0; padding:5px 0;"><label><strong>'.$lang_shipping_service.'</strong><label>';
+
+                                        echo'<input type="hidden" name="data[service_national]['.$key.']" value="'.$service['id'].'" /> '.$service['name'].'</p>';
+
+                                        echo'<p class="shipping_national_'.$key.'"><label>'.$lang_shipping_first.'</label>';
+                                        echo'<input type="text" name="data[price_national]['.$key.']" style="width:50px;" value="'.$service['price'].'" />';
+                                        echo'&nbsp;&nbsp;<label>'.$lang_shipping_add.'</label>';
+                                        echo'<input type="text" name="data[priceadditional_national]['.$key.']" style="width:50px;" value="'.$service['additional'].'" />&nbsp;&nbsp;<a onclick="removeShipping(\'national\',\''.$key.'\');" class="button"><span>'.$lang_btn_remove.'</span></a></p>';
+                                    }
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                        <tr class="shipping_table_rows">
+                            <td valign="top">
+                                <label><?php echo $lang_shipping_intnat; ?></label>
+                                <p style="text-align:left; margin-right:10px;"><a class="button" onclick="addShipping('international');"><span><?php echo $lang_btn_add; ?></span></a></p>
+                            </td>
+                            <td id="internationalBtn">
+                                <input type="hidden" name="data[count_international]" value="<?php echo $data['shipping_international_count']; ?>" id="count_international" />
+                                <?php
+                                if(isset($data['shipping_international']) && is_array($data['shipping_international'])){
+                                    foreach($data['shipping_international'] as $key => $service){
+                                        echo'<p class="shipping_international_'.$key.'" style="border-top:1px dotted; margin:0; padding:8px 0;"><label><strong>'.$lang_shipping_service.'</strong><label>';
+
+                                        echo'<input type="hidden" name="data[service_international]['.$key.']" value="'.$service['id'].'" /> '.$service['name'].'</p>';
+
+                                        echo'<h5 style="margin:5px 0;" class="shipping_international_'.$key.'">Ship to zones</h5>';
+                                        echo'<div style="border:1px solid #000; background-color:#F5F5F5; width:100%; min-height:40px; margin-bottom:10px; display:inline-block;" class="shipping_international_'.$key.'">';
+
+                                        echo'<div style="display:inline; float:left; padding:10px 6px;line-height:20px; height:20px;">';
+                                        echo'<input type="checkbox" name="data[shipto_international]['.$key.'][]" value="Worldwide" '.(in_array("Worldwide", $service["shipto"]) ? ' checked="checked"' : '').'/> Worldwide</div>';
+
+                                        foreach($shipping_international_zones as $zone){
+                                            echo'<div style="display:inline; float:left; padding:10px 6px;line-height:20px; height:20px;">';
+                                            echo'<input type="checkbox" name="data[shipto_international]['.$key.'][]" value="'.$zone['shipping_location'].'" ';
+                                            if(in_array($zone['shipping_location'], $service['shipto'])){ echo' checked="checked"'; }
+                                            echo'/> '.$zone['description'].'</div>';
+                                        }
+                                        echo'</div>';
+
+                                        echo'<div style="clear:both;" class="shipping_international_'.$key.'"></div>';
+                                        echo'<p class="shipping_international_'.$key.'"><label>'.$lang_shipping_first.'</label>';
+                                        echo'<input type="text" name="data[price_international]['.$key.']" style="width:50px;" value="'.$service['price'].'" />';
+                                        echo'&nbsp;&nbsp;<label>'.$lang_shipping_add.'</label>';
+                                        echo'<input type="text" name="data[priceadditional_international]['.$key.']" style="width:50px;" value="'.$service['additional'].'" />&nbsp;&nbsp;<a onclick="removeShipping(\'international\',\''.$key.'\');" class="button"><span>'.$lang_btn_remove.'</span></a></p>';
+                                        echo'<div style="clear:both;"></div>';
+                                    }
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
+
 <script type="text/javascript"><!--
-  $(document).ready(function() {
-    changeNationalType();
-    changeInternationalType();
-  });
+    function addShipping(id) {
+        if (id == 'national') {
+            var loc = '0';
+        } else {
+            var loc = '1';
+        }
 
-  $('#shipping-type-national').bind('change', function() {
-    changeNationalType();
-  });
+        var count = $('#count_' + id).val();
+        count = parseInt(count);
 
-  $('#shipping-type-international').bind('change', function() {
-    changeInternationalType();
-  });
+        $.ajax({
+            url: 'index.php?route=openbay/openbay/getShippingService&token=<?php echo $token; ?>&loc=' + loc,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                html = '';
+                html += '<p class="shipping_' + id + '_' + count + '" style="border-top:1px dotted; margin:0; padding:8px 0;"><label><strong><?php echo $lang_shipping_service; ?></strong> <label><select name="data[service_' + id + '][' + count + ']">';
 
-  function changeNationalType() {
-    var shipping_type = $('#shipping-type-national').val();
+                $.each(data.svc, function(key, val) {
+                    html += '<option value="' + val.ShippingService + '">' + val.description + '</option>';
+                });
 
-    $('.shipping-national-container').hide();
-    $('#national-container-'+shipping_type).fadeIn();
-  }
+                html += '</select></p>';
 
-  function changeInternationalType() {
-    var shipping_type = $('#shipping-type-international').val();
+                if(id == 'international'){
+                    html += '<h5 style="margin:5px 0;" class="shipping_' + id + '_' + count + '">Ship to zones</h5>';
+                    html += '<div style="border:1px solid #000; background-color:#F5F5F5; width:100%; min-height:40px; margin-bottom:10px; display:inline-block;" class="shipping_' + id + '_' + count + '">';
+                    html += '<div style="display:inline; float:left; padding:10px 6px;line-height:20px; height:20px;">';
+                    html += '<input type="checkbox" name="data[shipto_international][' + count + '][]" value="Worldwide" /> Worldwide</div>';
+                    
+                    <?php foreach($shipping_international_zones as $zone){ ?>
+                        html += '<div style="display:inline; float:left; padding:10px 6px;line-height:20px; height:20px;">';
+                        html += '<input type="checkbox" name="data[shipto_international][' + count + '][]" value="<?php echo $zone['shipping_location']; ?>" /> <?php echo $zone['description']; ?></div>';
+                    <?php } ?>
+                    
+                    html += '</div>';
+                    html += '<div style="clear:both;" class="shipping_' + id + '_' + count + '"></div>';
+                }
+                
+                
+                html += '<p class="shipping_' + id + '_' + count + '"><label><?php echo $lang_shipping_first; ?></label><input type="text" name="data[price_' + id + '][' + count + ']" style="width:50px;" value="0.00" />';
+                html += '&nbsp;&nbsp;<label><?php echo $lang_shipping_add; ?></label><input type="text" name="data[priceadditional_' + id + '][' + count + ']" style="width:50px;" value="0.00" />&nbsp;&nbsp;<a onclick="removeShipping(\'' + id + '\',\'' + count + '\');" class="button"><span><?php echo $lang_btn_remove; ?></span></a></p>';
+                html += '<div style="clear:both;" class="shipping_' + id + '_' + count + '"></div>';                
 
-    $('.shipping-international-container').hide();
-    $('#international-container-'+shipping_type).fadeIn();
-  }
+                $('#' + id + 'Btn').append(html);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+          }
+        });
 
-  function addShipping(id, type) {
-    if (id == 'national') {
-        var loc = '0';
-    } else {
-        var loc = '1';
+        $('#count_' + id).val(count + 1);
     }
 
-    var count = $('#' + type + '_count_' + id).val();
-    count = parseInt(count);
+    function removeShipping(id, count) {
+        $('.shipping_' + id + '_' + count).remove();
+    }
 
-    $.ajax({
-      url: 'index.php?route=openbay/ebay/getShippingService&token=<?php echo $token; ?>&loc=' + loc + '&type=' + type,
-      beforeSend: function(){
-        $('#add-' + id + '-' + type).empty().html('<i class="fa fa-cog fa-lg fa-spin"></i>').attr('disabled','disabled');
-      },
-      type: 'GET',
-      dataType: 'json',
-      success: function(data) {
-        html = '';
-        html += '<div class="well" id="' + id + '_' + type + '_' + count + '">';
-          html += '<div class="row form-group">';
-            html += '<div class="col-sm-1 text-right">';
-              html += '<label class="control-label"><?php echo $text_shipping_service; ?><label>';
-            html += '</div>';
-            html += '<div class="col-sm-11">';
-              html += '<select name="data[' + id + '][' + type + '][service_id][' + count + ']" class="form-control">';
-                $.each(data.service, function(key, val) {
-                  html += '<option value="' + key + '">' + val.description + '</option>';
-                });
-              html += '</select>';
-            html += '</div>';
-          html += '</div>';
-          if (id == 'international') {
-            html += '<div class="row form-group">';
-              html += '<div class="col-sm-1 text-right">';
-                html += '<label class="control-label"><?php echo $text_shipping_zones; ?></label>';
-              html += '</div>';
-              html += '<div class="col-sm-10">';
-                html += '<label class="checkbox-inline">';
-                  html += '<input type="checkbox" name="data[' + id + '][' + type + '][shipto][' + count + '][]" value="Worldwide" />';
-                  html += ' <?php echo $text_shipping_worldwide; ?>';
-                html += '</label>';
-                <?php foreach($shipping_international_zones as $zone) { ?>
-                  html += '<label class="checkbox-inline">';
-                    html += '<input type="checkbox" name="data[' + id + '][' + type + '][shipto][' + count + '][]" value="<?php echo $zone['shipping_location']; ?>" />';
-                    html += ' <?php echo $zone['description']; ?>';
-                  html += '</label>';
-                <?php } ?>
-              html += '</div>';
-            html += '</div>';
-          }
-          html += '<div class="row form-group">';
-            if (type != 'calculated') {
-              html += '<div class="col-sm-1 text-right">';
-                html += '<label class="control-label"><?php echo $text_shipping_first; ?></label>';
-              html += '</div>';
-              html += '<div class="col-sm-3">';
-                html += '<input type="text" name="data[' + id + '][' + type + '][price][' + count + ']" class="form-control" value="0.00" class="form-control" />';
-              html += '</div>';
-              html += '<div class="col-sm-2 text-right">';
-                html += '<label class="control-label"><?php echo $text_shipping_add; ?></label>';
-              html += '</div>';
-              html += '<div class="col-sm-3">';
-                html += '<input type="text" name="data[' + id + '][' + type + '][price_additional][' + count + ']" class="form-control" value="0.00" />';
-              html += '</div>';
-            }
-            html += '<div class="col-sm-3 pull-right text-right">';
-              html += '<a onclick="removeShipping(\'' + id + '\',\'' + count + '\',\''+type+'\');" class="btn btn-danger"><i class="fa fa-minus-circle"></i> <?php echo $button_delete; ?></a>';
-            html += '</div>';
-          html += '</div>';
-        html += '</div>';
+    $('#tabs a').tabs();
 
-        $('#options-' + id + '-' + type).append(html);
-        $('#add-' + id + '-' + type).empty().html('<i class="fa fa-plus-circle"></i> <?php echo $button_add; ?>').removeAttr('disabled');
-      },
-      error: function (xhr, ajaxOptions, thrownError) {
-        $('#add-shipping-'+id).empty().html('<i class="fa fa-plus-circle"></i> <?php echo $button_add; ?>').removeAttr('disabled');
-        if (xhr.status != 0) { alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText); }
-      }
+    $('#shipping_in_desc').change(function() {
+        updateDisplayShippingOptions();
     });
 
-    $('#' + type + '_count_' + id).val(count + 1);
-  }
+    function updateDisplayShippingOptions() {
+        if ($('#shipping_in_desc').is(':checked')) {
+            $('.shipping_table_rows').hide();
+        } else {
+            $('.shipping_table_rows').show();
+        }
+    }
 
-  function removeShipping(id, count, type) {
-    $('#' + id + '_' + type + '_' + count).remove();
-  }
+    $(document).ready(function() {
+        updateDisplayShippingOptions();
+    });
 //--></script>
+
 <?php echo $footer; ?>

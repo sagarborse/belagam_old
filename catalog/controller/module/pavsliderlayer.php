@@ -6,21 +6,17 @@
  * @copyright	Copyright (C) 2013 PavoThemes.com <@emai:pavothemes@gmail.com>.All rights reserved.
  * @license		GNU General Public License version 2
 *******************************************************/
-error_reporting(-1);
-ini_set('display_errors', 'On');
-class ControllermodulePavsliderlayer extends Controller {
 
-	protected $mdata = array();
- 
-	public function index( $setting ) { 
+class Controllermodulepavsliderlayer extends Controller {
+	protected function index( $setting ) {
 
 		static $module = 0;
-
+		
 		$this->load->model('pavsliderlayer/slider');
-		$this->load->model('tool/image');
-
+		$this->load->model('tool/image');	
+		
 		$model = $this->model_pavsliderlayer_slider;
-		$group_id = isset($setting['group_id'])?(int)$setting['group_id']:0;
+		$group_id = (int)$setting['group_id'];
 
 		if (file_exists('catalog/view/theme/' . $this->config->get('config_template') . '/stylesheet/sliderlayer/css/typo.css')) {
 			$this->document->addStyle('catalog/view/theme/' . $this->config->get('config_template') . '/stylesheet/sliderlayer/css/typo.css');
@@ -34,18 +30,11 @@ class ControllermodulePavsliderlayer extends Controller {
 
  	 	$url =   $this->config->get('config_secure') ? $this->config->get('config_ssl') : $this->config->get('config_url'); 
  		
- 		$this->mdata['url'] = $url;
+ 		$this->data['url'] = $url;
 
  		$sliderGroup = $model->getSliderGroupById( $group_id );
-
- 		$languageID = $this->config->get('config_language_id');
-
-		$sliders = $model->getSlidersByGroupId($group_id, $languageID);
-		if(empty($sliders)){
-			$sliders = $model->getSlidersByGroupId($group_id, 1);
-		}
-
-		$this->mdata['sliderParams'] = $sliderGroup['params'];
+		$sliders = $model->getSlidersByGroupId( $group_id );
+		$this->data['sliderParams'] = $sliderGroup['params'];
 	 
 		if( isset($sliderGroup['params']['fullwidth']) && (!empty($sliderGroup['params']['fullwidth']) || $sliderGroup['params']['fullwidth'] == 'boxed') ){
 			$sliderGroup['params']['image_cropping'] = false; 
@@ -81,15 +70,18 @@ class ControllermodulePavsliderlayer extends Controller {
 		} 
 
 		// echo '<pre>'.print_r( $sliders,1 ); die;
-		$this->mdata['sliders'] = $sliders; 
+		$this->data['sliders'] = $sliders; 
 
-		$this->mdata['module'] = $module++;
 
+		$this->data['module'] = $module++;
+						
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/module/pavsliderlayer.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/module/pavsliderlayer.tpl', $this->mdata);
+			$this->template = $this->config->get('config_template') . '/template/module/pavsliderlayer.tpl';
 		} else {
-			return $this->load->view('default/template/module/pavsliderlayer.tpl', $this->mdata);
+			$this->template = 'default/template/module/pavsliderlayer.tpl';
 		}
+		
+		$this->render();
 	}
 }
 ?>

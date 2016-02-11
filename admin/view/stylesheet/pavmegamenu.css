@@ -1,23 +1,12 @@
-
-
 .tree-megamenu{
-	width:31%;	
+	width:350px;	
 	float:left;
 	overflow:hidden;
-	margin-right:20px;
-}
-.megamenu-form{
-	width: 60%
+	margin-right:40px;
 }
 td > i {
 	display:block;
 	font-size:11px;
-}
-.btn-updatetree{
-/*	padding:6px 30px;
-	background: #5CB85C;
-	border:none;
-	color:#FFF;*/
 }
 .quickdel{
 	background:url(../image/filemanager/edit-delete.png) no-repeat center center;
@@ -81,7 +70,7 @@ td > i {
 		}
 
 		ol.sortable {
-			margin: 1em 0;
+			margin: 4em 0;
 		}
 
 		.sortable li {
@@ -146,7 +135,3 @@ td > i {
 		.sortable li.mjs-nestedSortable-expanded > div > .disclose > span:before {
 			content: '- ';
 		}
-
-	.sortable li.active div{
-		border-color: red;
-	}

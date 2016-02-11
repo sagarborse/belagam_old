@@ -1,13 +1,13 @@
 <?php
 class ControllerPaymentLiqPay extends Controller {
-	public function index() {
-		$data['button_confirm'] = $this->language->get('button_confirm');
+	protected function index() {
+		$this->data['button_confirm'] = $this->language->get('button_confirm');
 
 		$this->load->model('checkout/order');
 
 		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-		$data['action'] = 'https://liqpay.com/?do=clickNbuy';
+		$this->data['action'] = 'https://liqpay.com/?do=clickNbuy';
 
 		$xml  = '<request>';
 		$xml .= '	<version>1.2</version>';
@@ -22,14 +22,16 @@ class ControllerPaymentLiqPay extends Controller {
 		$xml .= '	<pay_way>' . $this->config->get('liqpay_type') . '</pay_way>';
 		$xml .= '</request>';
 
-		$data['xml'] = base64_encode($xml);
-		$data['signature'] = base64_encode(sha1($this->config->get('liqpay_signature') . $xml . $this->config->get('liqpay_signature'), true));
+		$this->data['xml'] = base64_encode($xml);
+		$this->data['signature'] = base64_encode(sha1($this->config->get('liqpay_signature') . $xml . $this->config->get('liqpay_signature'), true));
 
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/liqpay.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/payment/liqpay.tpl', $data);
+			$this->template = $this->config->get('config_template') . '/template/payment/liqpay.tpl';
 		} else {
-			return $this->load->view('default/template/payment/liqpay.tpl', $data);
-		}
+			$this->template = 'default/template/payment/liqpay.tpl';
+		}	
+
+		$this->render();
 	}
 
 	public function callback() {
@@ -44,7 +46,8 @@ class ControllerPaymentLiqPay extends Controller {
 		if ($signature == $this->request->post['signature']) {
 			$this->load->model('checkout/order');
 
-			$this->model_checkout_order->addOrderHistory($order_id, $this->config->get('config_order_status_id'));
+			$this->model_checkout_order->confirm($order_id, $this->config->get('config_order_status_id'));			
 		}
 	}
 }
+?>

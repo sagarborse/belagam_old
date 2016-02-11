@@ -83,7 +83,6 @@
 	 									} ); 
 	 		$('#input-islider'+slayerID).val( 400*$this.countItem );	
  			// auto set current active.
- 			
 	 		$this.setCurrentLayerActive( layer );	
 	 		//auto bind the drag and drap for this 
 	 		$(layer).draggable({ containment: "#slider-toolbar .slider-editor",
@@ -98,9 +97,9 @@
 
 	 	
 			// bind current layer be actived when this selected. 	    
-	 	    layer.click( function() { 
+	 	    layer.click( function() {  
 	 			$this.setCurrentLayerActive( layer );	 
-	 		});
+	 		} );
 	 		$("#i-"+layer.attr("id") ).click( function(){
 	 		  if( $this.currentLayer != null ){
 	 		  	$this.storeCurrentLayerData();
@@ -130,8 +129,7 @@
 				 
 				var layer = $this.createLayer( $(this).attr("data-action"), null, ++$this.countItem );
 				if( $(this).attr("data-action") == 'add-image' ){
-
-					$this.showDialogImage(  'img-'+layer.attr('id') );
+					$this.showDialogImage(  'img-'+layer.attr('id') );	
 				}
 				if( $(this).attr("data-action") == 'add-video' ){
 					$this.showDialogVideo(  );
@@ -169,6 +167,7 @@
 
 	
 			/**** GLOBAL PROCESS ****/
+
 		    $(".draggable-item", this.seditor).draggable({ containment: "#slider-toolbar .slider-editor" });
 		    $(".layer-collection").sortable({ accept:"div",
 		    								  update:function() {   
@@ -210,14 +209,16 @@
  			} );
 
 
-			// BUTTON CLICK
- 			$("#btn-insert-typo").bind('click', function(){ 
- 				$this.insertTypo();
- 			});
+ 			/**
+ 			 */
+ 			 
 
- 			$("#btn-preview-slider").bind('click', function(){
+ 			this.insertTypo(); 
+
+ 			$("#btn-preview-slider").click( function(){
  				$this.preview();
- 			});
+
+ 			} );
 
 
  			/** SUBMIT FORM **/
@@ -230,7 +231,6 @@
 					 var data =[];
 					 var i = 0;
 					 var params = 'id='+$("#slider_id").val()+"&"+$("#slider-editor-form").serialize()+"&";
-
 					 var times = '';
 					 $( "#slider-toolbar .slider-editor .draggable-item" ).each( function(){
 			 			var param = '';
@@ -249,7 +249,7 @@
 					 	params +=$(e).attr('name')+"="+$(e).val()+"&";
 					 	 
 					 } ); 
-
+				 
 					 $.ajax( {url:$("#slider-form").attr('action'),  dataType:"JSON",type: "POST", 'data':params}  ).done( function(output){
 				 		  if( output.error == 1 ){
 				 		  	$("#slider-warning").html('<div class="warning">'+output.message+'</div>');
@@ -260,7 +260,6 @@
 					return false; 
 			}  );
 		};
-
  		this.getFormsData=function(){
 
  			 var data =[];
@@ -277,11 +276,11 @@
 					}
 	 			}  );  
 
+
 	 			iobject.time_start = $( "#input-islider"+iobject.layer_id ).val();
 
 	 			objects.layers[i] = iobject; i++;
 			 } );
-
 		 	objects.params = new Object();
 		 	objects.title = $('[name="slider_title"]',"#slider-editor-form").val();
 		 	objects.status = $('[name="slider_status"]',"#slider-editor-form").val();
@@ -290,49 +289,62 @@
 		 		objects.params[e.name] = e.value;
 		 	});	
 
-		 	//	objects.params
+		 //	objects.params
 			objects.times = new Object();
 
+		 
 		 	return ( JSON.stringify(objects) );
- 		}
-
+ 		}	
 		this.preview=function(){
-
-			var params = this.getFormsData();
-
-			$('#modal-previewLayer').remove();
-
-			$.ajax({
-				url: 'index.php?route=module/pavsliderlayer/previewLayer&token=' + getURLVar('token'),
-				type: "POST",
-				data: { slider_preview_data: params },
-				dataType: 'html',
-				success: function(html) {
-					$('body').append('<div id="modal-previewLayer" class="modal">' + html + '</div>');
-					$('#modal-previewLayer').modal('show');
-				}
-			});
+				var $this  = this; 
+				var params = this.getFormsData();
+			 
+				 var field = 'input-layer-class';
+				var $class = $("#"+field).val();
+					$('#dialog').remove();
+					
+					$('#content').prepend('<div id="dialog" style="padding: 3px 0px 0px 0px;"><form action="'+$this.adminURL+'&route=module/pavsliderlayer/preview&field=' 
+						+ encodeURIComponent(field) + '" method="post" target="iframename" id="formid"><input type="Hidden" name="slider_preview_data" id="slider-preview-data"></form><iframe name="iframename" src="'+$this.adminURL+'&route=module/pavsliderlayer/preview&field=' 
+						+ encodeURIComponent(field) + '" style="padding:0; margin: 0; display: block; width: 100%; height: 100%;" frameborder="no" scrolling="auto"></iframe></div>');
+					$("#slider-preview-data").val( params );
+					$('#dialog').dialog({
+						title: 'Preview Management',
+						close: function (event, ui) {
+		 
+						},	
+						bgiframe: true,
+						width: 1000,
+						height: 500,
+						resizable: false,
+						modal: true
+				});	 
+					$("#formid").submit();
 		};
 
-		// 2. Fix Bug Cho Nay
 		this.insertTypo=function(){
-			var $this = this;
-			var field = 'input-layer-class'; 
-			var layer_id = 'slayerID' + $('#layer_id').val();
-			var layer_class = $("#"+field).val();
-
-			$('#modal-typo').remove();
-			$.ajax({
-				url: 'index.php?route=module/pavsliderlayer/typo&token=' + getURLVar('token'),
-				type: "POST",
-				data: { field: field, layer_id: layer_id, layer_class: layer_class },
-				dataType: 'html',
-				success: function(html) {
-					$('body').append('<div id="modal-typo" class="modal">' + html + '</div>');
-					$('#modal-typo').modal('show');
-				}
+ 			var $this = this;
+ 			$("#btn-insert-typo").click( function(){ 
+				var field = 'input-layer-class';
+				var $class = $("#"+field).val();
+					$('#dialog').remove();
+					
+					$('#content').prepend('<div id="dialog" style="padding: 3px 0px 0px 0px;"><iframe src="'+$this.adminURL+'&route=module/pavsliderlayer/typo&	field=' + encodeURIComponent(field) + '" style="padding:0; margin: 0; display: block; width: 100%; height: 100%;" frameborder="no" scrolling="auto"></iframe></div>');
+					
+					$('#dialog').dialog({
+						title: 'Typo Management',
+						close: function (event, ui) {
+							if( $("#"+field).val()  ) { 
+								$this.currentLayer.removeClass($class).addClass( $("#"+field).val() );	
+								$this.storeCurrentLayerData(); 
+							}
+						},	
+						bgiframe: false,
+						width: 800,
+						height: 500,
+						resizable: false,
+						modal: false
+				});
 			});
-			return false;
  		}
 
  		/**
@@ -385,9 +397,7 @@
 	 	 	
 	 	 	$(".layer-index",this.layers).removeClass("layer-active");
 	 	 	$("#i-"+layer.attr("id") ).addClass("layer-active");
-
 	 	 	this.currentLayer = layer;
-
 	 	 	this.showLayerForm( layer );	
 		};	 	
 
@@ -435,23 +445,36 @@
 		};
 
 	
-		this.showDialogImage=function( thumb ){
-			$('#modal-image').remove();
-			$.ajax({
-				url: 'index.php?route=module/pavsliderlayer/filemanager&token=' + getURLVar('token') + '&thumb=' + thumb,
-				dataType: 'html',
-				success: function(html) {
-					$('body').append('<div id="modal-image" class="modal">' + html + '</div>');
-					$('#modal-image').modal('show');
-				}
+		this.showDialogImage=function(  thumb ){
+			var $this = this;
+			var field = 'layer_content';
+			var $url = this.adminURL;
+
+			$('#dialog').remove();
+			$('#content').prepend('<div id="dialog" style="padding: 3px 0px 0px 0px;"><iframe src="'+$url+'&route=common/filemanager&field=' + encodeURIComponent(field) + '" style="padding:0; margin: 0; display: block; width: 100%; height: 100%;" frameborder="no" scrolling="auto"></iframe></div>');
+			$('#dialog').dialog({
+				title: 'Image Management',
+				close: function (event, ui) {
+					if ($('#' + field).attr('value')) {
+						var src = $this.siteURL+"image/"+$('#' + field).attr('value');
+						$('#' + thumb).replaceWith('<img src="' + src + '" alt="" id="' + thumb + '" />');
+					}
+					$this.storeCurrentLayerData();
+
+				},	
+				bgiframe: false,
+				width: 700,
+				height: 400,
+				resizable: false,
+				modal: false
 			});
+
 		}
 		/**
 		 * Delete Current Layer: Remove HTML and Data. Hidden Form When Delete All Layers.
 		 */
 		this.deleteCurrentLayer=function(){
 			var $this = this;
-
 			if( $this.currentLayer ){
 				$( "#i-"+$this.currentLayer.attr("id") ).remove();
 				$this.currentLayer.remove();	
@@ -514,7 +537,6 @@
 
 			 	//$this.currentLayer = layer;
 	 		}else {
-
 				$( '[name="layer_caption"]','#slider-form' ).val(  $(".caption-layer",layer).html() );
 				$( '[name="layer_speed"]','#slider-form' ).val(  350 );
 				$( '[name="layer_left"]','#slider-form' ).val(  0 );
@@ -525,7 +547,6 @@
 				$( '[name="layer_endspeed"]','#slider-form' ).val(  300 );
 				$( '[name="layer_endanimation"]','#slider-form' ).val(  'auto' );
 				$( '[name="layer_endeasing"]','#slider-form' ).val(  'nothing' );
-				$( '[name="layer_content"]','#slider-form' ).val(  'no_image.png' );
 		 	}
 		 	this.storeCurrentLayerData();
 		  
@@ -537,7 +558,6 @@
 		this.updatePosition = function( left, top ){
 			 $( '[name="layer_top"]','#slider-form' ).val( parseInt(top) );
 			 $( '[name="layer_left"]','#slider-form' ).val( parseInt(left) );
-
 			this.storeCurrentLayerData();
 		};
 
@@ -547,12 +567,10 @@
 		this.showLayerForm = function( layer ){
 		 	 // restore data form for
 		 	 var $currentLayer = this.currentLayer;
-
 			 if( $currentLayer.data("data-form") ){ 
 			 	$.each( $currentLayer.data("data-form"), function(_, kv) {
 			 		if( $(this).attr('name').indexOf('layer_time') ==-1 ){
 						$( '[name="'+kv.name+'"]','#slider-form' ).val( kv.value );
-
 					}
 				} ); 
 			 }
@@ -563,9 +581,9 @@
 		 * Set Current Layer Data.
 		 */
 	 	this.storeCurrentLayerData=function(){
-
 	 		 this.state = false; 
 	 		 this.currentLayer.data( "data-form", $( '#slider-form' ).serializeArray() );
+
 	 	};
 
 		//THIS IS VERY IMPORTANT TO KEEP AT THE END

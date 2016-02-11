@@ -12,40 +12,17 @@
  */
 class ModelPavsliderlayerSlider extends Model { 
 	
-	public function cloneGroupSliders($groupID, $cloneGroupID, $languageID){
-		// Get SliderLayer By Group
-		$sql = "SELECT * FROM ".DB_PREFIX."pavosliderlayers where group_id = "  . $cloneGroupID;
-		$query = $this->db->query( $sql );
-		$rows = $query->rows;
-		
-		if( !empty($query->rows) ){
-			foreach ($rows as $row) {
-				$sql2 = "INSERT INTO ".DB_PREFIX."pavosliderlayers (title, parent_id, group_id, params, layersparams, image, `status`, position, language_id) SELECT title, parent_id, '" . $groupID . "', params, layersparams, image, `status`, position, '" . $languageID . "' FROM ".DB_PREFIX."pavosliderlayers AS iv WHERE iv.id=".$row['id'];
-				$this->db->query( $sql2 );
-			}
-		}
-	}
-
 	public function checkInstall(){
 
 		$sql = " SHOW TABLES LIKE '".DB_PREFIX."pavoslidergroups'";
 		$query = $this->db->query( $sql );
 		
-		if( count($query->rows) <=0 ){
-			$file = DIR_APPLICATION.'model/sample/module.php';
-			if( file_exists($file) ){
-				require_once( $file );
-		 		$sample = new ModelSampleModule( $this->registry );
-		 	    $result = $sample->installSampleQuery( $this->config->get('config_template'),'pavsliderlayer', true );
-		 	    $result = $sample->installSample( $this->config->get('config_template'),'pavsliderlayer', true );
-			}
-		}	
-		$query = $this->db->query( $sql );
 		if( count($query->rows) <=0 ){ 
 			$this->createTables();		
 			$this->createDataSample();
 			$this->createDefaultConfig();
 		}
+
 	}
 
 	protected function createTables(){
@@ -75,8 +52,6 @@ class ModelPavsliderlayerSlider extends Model {
 				) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ;
 
 		";
-
-		$sql[]="ALTER TABLE `".DB_PREFIX."pavosliderlayers` ADD `language_id` int(11) DEFAULT '1'";
 
 		foreach( $sql as $q ){
 			$query = $this->db->query( $q );
@@ -246,14 +221,14 @@ class ModelPavsliderlayerSlider extends Model {
 	/**
 	 *
 	 */
-	public function getSlidersByGroupId( $groupID, $language_id ){
-		$query  = ' SELECT * FROM '. DB_PREFIX . "pavosliderlayers";
-		$query .= ' WHERE group_id='.(int)$groupID .' AND language_id='.(int)$language_id.' ORDER BY position ASC';
+	public function getSlidersByGroupId( $groupID ){
+		$query = ' SELECT * FROM '. DB_PREFIX . "pavosliderlayers   ";
+		$query .= ' WHERE group_id='.(int)$groupID .' ORDER BY position ASC';
 
 		$query = $this->db->query( $query );
 		return $query->rows;
-	}
 
+	}
 
 
 

@@ -1,18 +1,21 @@
 <?php
 class ModelOpenbayAmazonusOrder extends Model {
-	public function acknowledgeOrder($order_id) {
-		$amazonus_order_id = $this->getAmazonusOrderId($order_id);
+	public function acknowledgeOrder($orderId) {
+		$amazonusOrderId = $this->getAmazonusOrderId($orderId);
 
-		$request_xml = "<Request>
-  <AmazonOrderId>$amazonus_order_id</AmazonOrderId>
-  <MerchantOrderId>$order_id</MerchantOrderId>
+		$requestXml = "<Request>
+  <AmazonOrderId>$amazonusOrderId</AmazonOrderId>
+  <MerchantOrderId>$orderId</MerchantOrderId>
 </Request>";
 
-		$this->openbay->amazonus->callNoResponse('order/acknowledge', $request_xml, false);
+		$this->openbay->amazonus->callNoResponse('order/acknowledge', $requestXml, false);
 	}
 
 	public function getProductId($sku) {
-		$row = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "amazonus_product_link` WHERE `amazonus_sku` = '" . $this->db->escape($sku) . "'")->row;
+		$row = $this->db->query("SELECT `product_id`
+			FROM `" . DB_PREFIX . "amazonus_product_link`
+			WHERE `amazonus_sku` = '" . $this->db->escape($sku) . "'
+			")->row;
 
 		if (isset($row['product_id']) && !empty($row['product_id'])) {
 			return $row['product_id'];
@@ -22,7 +25,10 @@ class ModelOpenbayAmazonusOrder extends Model {
 	}
 
 	public function getProductVar($sku) {
-		$row = $this->db->query("SELECT `var` FROM `" . DB_PREFIX . "amazonus_product_link` WHERE `amazonus_sku` = '" . $this->db->escape($sku) . "'")->row;
+		$row = $this->db->query("SELECT `var`
+			FROM `" . DB_PREFIX . "amazonus_product_link`
+			WHERE `amazonus_sku` = '" . $this->db->escape($sku) . "'
+			")->row;
 
 		if (isset($row['var'])) {
 			return $row['var'];
@@ -31,55 +37,65 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return '';
 	}
 
-	public function decreaseProductQuantity($product_id, $delta, $var = '') {
-		if ($product_id == 0) {
+	public function decreaseProductQuantity($productId, $delta, $var = '') {
+		if($productId == 0) {
 			return;
 		}
-		if ($var == '') {
-			$this->db->query("UPDATE `" . DB_PREFIX . "product` SET `quantity` = GREATEST(`quantity` - '" . (int)$delta . "', 0) WHERE `product_id` = '" . (int)$product_id . "' AND `subtract` = '1'");
+		if($var == '') {
+			$this->db->query("
+				UPDATE `" . DB_PREFIX . "product`
+				SET `quantity` = GREATEST(`quantity` - '" . (int)$delta . "', 0)
+				WHERE `product_id` = '" . (int)$productId . "'");
 		} else {
-			$this->db->query("UPDATE `" . DB_PREFIX . "product_option_relation` SET `stock` = GREATEST(`stock` - '" . (int)$delta . "', 0) WHERE `product_id` = '" . (int)$product_id . "' AND `var` = '" . $this->db->escape($var) . "' AND `subtract` = '1'");
+			//@TODO: do something about subtract column?
+			$this->db->query("
+				UPDATE `" . DB_PREFIX . "product_option_relation`
+				SET `stock` = GREATEST(`stock` - '" . (int)$delta . "', 0)
+				WHERE `product_id` = '" . (int)$productId . "' AND `var` = '" . $this->db->escape($var) . "'");
 		}
 	}
 
-	public function getMappedStatus($amazonus_status) {
-		$amazonus_status = trim(strtolower($amazonus_status));
+	public function getMappedStatus($amazonusStatus) {
+		$amazonusStatus = trim(strtolower($amazonusStatus));
 
-		switch ($amazonus_status) {
+		switch ($amazonusStatus) {
 			case 'pending':
-				$order_status = $this->config->get('openbay_amazonus_order_status_pending');
+				$orderStatus = $this->config->get('openbay_amazonus_order_status_pending');
 				break;
 
 			case 'unshipped':
-				$order_status = $this->config->get('openbay_amazonus_order_status_unshipped');
+				$orderStatus = $this->config->get('openbay_amazonus_order_status_unshipped');
 				break;
 
 			case 'partiallyshipped':
-				$order_status = $this->config->get('openbay_amazonus_order_status_partially_shipped');
+				$orderStatus = $this->config->get('openbay_amazonus_order_status_partially_shipped');
 				break;
 
 			case 'shipped':
-				$order_status = $this->config->get('openbay_amazonus_order_status_shipped');
+				$orderStatus = $this->config->get('openbay_amazonus_order_status_shipped');
 				break;
 
 			case 'canceled':
-				$order_status = $this->config->get('openbay_amazonus_order_status_canceled');
+				$orderStatus = $this->config->get('openbay_amazonus_order_status_canceled');
 				break;
 
 			case 'unfulfillable':
-				$order_status = $this->config->get('openbay_amazonus_order_status_unfulfillable');
+				$orderStatus = $this->config->get('openbay_amazonus_order_status_unfulfillable');
 				break;
 
 			default:
-				$order_status = $this->config->get('config_order_status_id');
+				$orderStatus = $this->config->get('config_order_status_id');
 				break;
 		}
 
-		return $order_status;
+		return $orderStatus;
 	}
 
-	public function getCountryName($country_code) {
-		$row = $this->db->query("SELECT `name` FROM `" . DB_PREFIX . "country` WHERE LOWER(`iso_code_2`) = '" . $this->db->escape(strtolower($country_code)) . "'")->row;
+	public function getCountryName($countryCode) {
+		$row = $this->db->query("
+			SELECT `name`
+			FROM `" . DB_PREFIX . "country`
+			WHERE LOWER(`iso_code_2`) = '" . $this->db->escape(strtolower($countryCode)) . "'")->row;
 
 		if (isset($row['name']) && !empty($row['name'])) {
 			return $row['name'];
@@ -88,8 +104,11 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return '';
 	}
 
-	public function getCountryId($country_code) {
-		$row = $this->db->query("SELECT `country_id` FROM `" . DB_PREFIX . "country` WHERE LOWER(`iso_code_2`) = '" . $this->db->escape(strtolower($country_code)) . "'")->row;
+	public function getCountryId($countryCode) {
+		$row = $this->db->query("
+			SELECT `country_id`
+			FROM `" . DB_PREFIX . "country`
+			WHERE LOWER(`iso_code_2`) = '" . $this->db->escape(strtolower($countryCode)) . "'")->row;
 
 		if (isset($row['country_id']) && !empty($row['country_id'])) {
 			return (int)$row['country_id'];
@@ -98,8 +117,11 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return 0;
 	}
 
-	public function getZoneId($zone_name) {
-		$row = $this->db->query("SELECT `zone_id` FROM `" . DB_PREFIX . "zone` WHERE LOWER(`name`) = '" . $this->db->escape(strtolower($zone_name)) . "'")->row;
+	public function getZoneId($zoneName) {
+		$row = $this->db->query("
+			SELECT `zone_id`
+			FROM `" . DB_PREFIX . "zone`
+			WHERE LOWER(`name`) = '" . $this->db->escape(strtolower($zoneName)) . "'")->row;
 
 		if (isset($row['country_id']) && !empty($row['country_id'])) {
 			return (int)$row['country_id'];
@@ -108,34 +130,51 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return 0;
 	}
 
-	public function updateOrderStatus($order_id, $status_id) {
-		$this->db->query("INSERT INTO `" . DB_PREFIX . "order_history` (`order_id`, `order_status_id`, `notify`, `comment`, `date_added`) VALUES (" . (int)$order_id . ", " . (int)$status_id . ", 0, '', NOW())");
+	public function updateOrderStatus($orderId, $statusId) {
+		$this->db->query("
+			INSERT INTO `" . DB_PREFIX . "order_history` (`order_id`, `order_status_id`, `notify`, `comment`, `date_added`)
+			VALUES (" . (int)$orderId . ", " . (int)$statusId . ", 0, '', NOW())");
 
-		$this->db->query("UPDATE `" . DB_PREFIX . "order` SET `order_status_id` = " . (int)$status_id . " WHERE `order_id` = " . (int)$order_id);
+		$this->db->query("
+			UPDATE `" . DB_PREFIX . "order`
+			SET `order_status_id` = " . (int)$statusId . "
+			WHERE `order_id` = " . (int)$orderId);
 	}
 
-	public function addAmazonusOrder($order_id, $amazonus_order_id) {
-		$this->db->query("INSERT INTO `" . DB_PREFIX . "amazonus_order` (`order_id`, `amazonus_order_id`) VALUES (" . (int)$order_id . ", '" . $this->db->escape($amazonus_order_id) . "')");
+	public function addAmazonusOrder($orderId, $amazonusOrderId) {
+		$this->db->query("
+			INSERT INTO `" . DB_PREFIX . "amazonus_order` (`order_id`, `amazonus_order_id`)
+			VALUES (" . (int)$orderId . ", '" . $this->db->escape($amazonusOrderId) . "')");
 	}
 
 	/* $data = array(PRODUCT_SKU => ORDER_ITEM_ID) */
-	public function addAmazonusOrderProducts($order_id, $data) {
-		foreach ($data as $sku => $order_item_id) {
+	public function addAmazonusOrderProducts($orderId, $data) {
+		foreach ($data as $sku => $orderItemId) {
 
-			$row = $this->db->query("SELECT `order_product_id` FROM `" . DB_PREFIX . "order_product` WHERE `model` = '" . $this->db->escape($sku) . "' AND `order_id` = " . (int)$order_id . "LIMIT 1")->row;
+			$row = $this->db->query("
+				SELECT `order_product_id`
+				FROM `" . DB_PREFIX . "order_product`
+				WHERE `model` = '" . $this->db->escape($sku) . "' AND `order_id` = " . (int)$orderId . "
+				LIMIT 1")->row;
 
 			if (!isset($row['order_product_id']) || empty($row['order_product_id'])) {
 				continue;
 			}
 
-			$order_product_id = $row['order_product_id'];
+			$orderProductId = $row['order_product_id'];
 
-			$this->db->query("INSERT INTO `" . DB_PREFIX . "amazonus_order_product` (`order_product_id`, `amazonus_order_item_id`) VALUES (" . (int)$order_product_id . ", '" . $this->db->escape($order_item_id) . "')");
+			$this->db->query("
+				INSERT INTO `" . DB_PREFIX . "amazonus_order_product` (`order_product_id`, `amazonus_order_item_id`)
+				VALUES (" . (int)$orderProductId . ", '" . $this->db->escape($orderItemId) . "')");
 		}
 	}
 
-	public function getOrderId($amazonus_order_id) {
-		$row = $this->db->query("SELECT `order_id` FROM `" . DB_PREFIX . "amazonus_order` WHERE `amazonus_order_id` = '" . $this->db->escape($amazonus_order_id) . "' LIMIT 1")->row;
+	public function getOrderId($amazonusOrderId) {
+		$row = $this->db->query("
+			SELECT `order_id`
+			FROM `" . DB_PREFIX . "amazonus_order`
+			WHERE `amazonus_order_id` = '" . $this->db->escape($amazonusOrderId) . "'
+			LIMIT 1")->row;
 
 		if (isset($row['order_id']) && !empty($row['order_id'])) {
 			return $row['order_id'];
@@ -144,8 +183,11 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return '';
 	}
 
-	public function getOrderStatus($order_id) {
-		$row = $this->db->query("SELECT `order_status_id` FROM `" . DB_PREFIX . "order` WHERE `order_id` = " . (int)$order_id)->row;
+	public function getOrderStatus($orderId) {
+		$row = $this->db->query("
+			SELECT `order_status_id`
+			FROM `" . DB_PREFIX . "order`
+			WHERE `order_id` = " . (int)$orderId)->row;
 
 		if (isset($row['order_status_id']) && !empty($row['order_status_id'])) {
 			return $row['order_status_id'];
@@ -154,22 +196,26 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return 0;
 	}
 
-	public function getAmazonusOrderId($order_id) {
-		$row = $this->db->query("SELECT `amazonus_order_id` FROM `" . DB_PREFIX . "amazonus_order` WHERE `order_id` = " . (int)$order_id . " LIMIT 1")->row;
+	public function getAmazonusOrderId($orderId) {
+		$row = $this->db->query("
+			SELECT `amazonus_order_id`
+			FROM `" . DB_PREFIX . "amazonus_order`
+			WHERE `order_id` = " . (int)$orderId . "
+			LIMIT 1")->row;
 
 		if (isset($row['amazonus_order_id']) && !empty($row['amazonus_order_id'])) {
 			return $row['amazonus_order_id'];
 		}
 
-		return null;
+		return NULL;
 	}
 
-	public function getProductOptionsByVar($product_var) {
+	public function getProductOptionsByVar($productVar) {
 		$options = array();
 
-		$option_value_ids = explode(':', $product_var);
-		foreach ($option_value_ids as $option_value_id) {
-			$option_details_row = $this->db->query("SELECT
+		$optionValueIds = explode(':', $productVar);
+		foreach($optionValueIds as $optionValueId) {
+			$optionDetailsRow = $this->db->query("SELECT
 				pov.product_option_id,
 				pov.product_option_value_id,
 				od.name,
@@ -180,20 +226,20 @@ class ModelOpenbayAmazonusOrder extends Model {
 				 `" . DB_PREFIX . "option` as opt,
 				 `" . DB_PREFIX . "option_value_description` as ovd,
 				 `" . DB_PREFIX . "option_description` as od
-			WHERE pov.product_option_value_id = '" . (int)$option_value_id . "' AND
+			WHERE pov.product_option_value_id = '" . (int)$optionValueId . "' AND
 				po.product_option_id = pov.product_option_id AND
 				opt.option_id = pov.option_id AND
 				ovd.option_value_id = pov.option_value_id AND ovd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND
 				od.option_id = pov.option_id AND od.language_id = '" . (int)$this->config->get('config_language_id') . "'
 			")->row;
 
-			if (!empty($option_details_row)) {
+			if(!empty($optionDetailsRow)) {
 				$options[] = array(
-					'product_option_id' => (int)$option_details_row['product_option_id'],
-					'product_option_value_id' => (int)$option_details_row['product_option_value_id'],
-					'name' => $option_details_row['name'],
-					'value' => $option_details_row['value'],
-					'type' => $option_details_row['type']
+					'product_option_id' => (int)$optionDetailsRow['product_option_id'],
+					'product_option_value_id' => (int)$optionDetailsRow['product_option_value_id'],
+					'name' => $optionDetailsRow['name'],
+					'value' => $optionDetailsRow['value'],
+					'type' => $optionDetailsRow['type']
 				);
 			}
 		}
@@ -201,3 +247,4 @@ class ModelOpenbayAmazonusOrder extends Model {
 		return $options;
 	}
 }
+?>

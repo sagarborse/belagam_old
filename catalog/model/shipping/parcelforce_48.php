@@ -1,7 +1,7 @@
 <?php
 class ModelShippingParcelforce48 extends Model {
 	function getQuote($address) {
-		$this->load->language('shipping/parcelforce_48');
+		$this->language->load('shipping/parcelforce_48');
 
 		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('parcelforce_48_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
 
@@ -59,11 +59,11 @@ class ModelShippingParcelforce48 extends Model {
 
 				if ($this->config->get('parcelforce_48_display_insurance') && (float)$insurance) {
 					$text .= ' (' . $this->language->get('text_insurance') . ' ' . $this->currency->format($insurance) . ')';
-				}
+				}		
 
 				if ($this->config->get('parcelforce_48_display_time')) {
 					$text .= ' (' . $this->language->get('text_time') . ')';
-				}
+				}	
 
 				$quote_data['parcelforce_48'] = array(
 					'code'         => 'parcelforce_48.parcelforce_48',
@@ -86,3 +86,4 @@ class ModelShippingParcelforce48 extends Model {
 		return $method_data;
 	}
 }
+?>

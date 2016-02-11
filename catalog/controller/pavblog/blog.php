@@ -6,20 +6,15 @@
  * @copyright	Copyright (C) Feb 2013 PavoThemes.com <@emai:pavothemes@gmail.com>.All rights reserved.
  * @license		GNU General Public License version 2
 *******************************************************/
- 
+
 /**
  * class ControllerpavblogBlog 
  */
-class ControllerpavblogBlog extends Controller {
+	class ControllerpavblogBlog extends Controller {
 		private $mparams = '';
-		private $mdata = array();
-
 		public function preload(){
-
-			$this->mdata['objlang'] = $this->language;
-			$this->mdata['objurl'] = $this->url;
-
-			$this->load->language('module/pavblog');
+			$this->language->load('module/pavblog');
+		
 			$this->load->model("pavblog/blog");
 			$this->load->model("pavblog/comment");
 			$mparams = $this->config->get( 'pavblog' );
@@ -81,13 +76,16 @@ class ControllerpavblogBlog extends Controller {
 			$this->load->model('tool/image'); 
 			
 			
-			$this->mdata['breadcrumbs'] = array();
+			$this->data['breadcrumbs'] = array();
 			
-			$this->mdata['breadcrumbs'][] = array(
+			$this->data['breadcrumbs'][] = array(
 				'text'      => $this->language->get('text_home'),
 				'href'      => $this->url->link('common/home'),
 				'separator' => false
 			);
+		 
+			
+			
 		
 			$this->request->get['id'] = isset($this->request->get['id'])?$this->request->get['id']:0;
 			$blog_id = $this->request->get['id'];
@@ -98,7 +96,7 @@ class ControllerpavblogBlog extends Controller {
 
 			
 
-			$this->mdata['config']	 = $this->mparams; 
+			$this->data['config']	 = $this->mparams; 
 			if ($blog) {
 			
 				$category_id = $blog['category_id'];
@@ -107,29 +105,29 @@ class ControllerpavblogBlog extends Controller {
 				$this->document->setDescription( $blog['meta_description'] );
 				$this->document->setKeywords( $blog['meta_keyword'] );
 				
-				$this->mdata['breadcrumbs'][] = array(
+				$this->data['breadcrumbs'][] = array(
 					'text'      => $blog['category_title'],
 					'href'      => $this->url->link('pavblog/category', 'id=' .  $category_id),      		
 					'separator' => $this->language->get('text_separator')
 				);	
-				$this->mdata['breadcrumbs'][] = array(
+				$this->data['breadcrumbs'][] = array(
 					'text'      => $blog['title'],
 					'href'      => $this->url->link('pavblog/blog', 'id=' .  $blog_id),      		
 					'separator' => $this->language->get('text_separator')
 				);		
 							
-				$this->mdata['heading_title'] = $blog['title'];
+				$this->data['heading_title'] = $blog['title'];
 				
-				$this->mdata['button_continue'] = $this->language->get('button_continue');
+				$this->data['button_continue'] = $this->language->get('button_continue');
 				
-				$this->mdata['description'] = html_entity_decode($blog['description'], ENT_QUOTES, 'UTF-8');
-				$this->mdata['content'] = html_entity_decode($blog['content'], ENT_QUOTES, 'UTF-8');
-				$this->mdata['entry_captcha'] = $this->language->get('entry_captcha');
-				$this->mdata['continue'] = $this->url->link('common/home');
+				$this->data['description'] = html_entity_decode($blog['description'], ENT_QUOTES, 'UTF-8');
+				$this->data['content'] = html_entity_decode($blog['content'], ENT_QUOTES, 'UTF-8');
+				$this->data['entry_captcha'] = $this->language->get('entry_captcha');
+				$this->data['continue'] = $this->url->link('common/home');
 				if (isset($this->error['captcha'])) {
-					$this->mdata['error_captcha'] = $this->error['captcha'];
+					$this->data['error_captcha'] = $this->error['captcha'];
 				} else {
-					$this->mdata['error_captcha'] = '';
+					$this->data['error_captcha'] = '';
 				}
 
 
@@ -155,16 +153,16 @@ class ControllerpavblogBlog extends Controller {
 				$blog['link'] =  $this->url->link( 'pavblog/blog','id='.$blog['blog_id'] );
 
 				if (isset($this->request->post['captcha'])) {
-					$this->mdata['captcha'] = $this->request->post['captcha'];
+					$this->data['captcha'] = $this->request->post['captcha'];
 				} else {
-					$this->mdata['captcha'] = '';
+					$this->data['captcha'] = '';
 				}	
 
 				
-				$this->mdata['comment_action'] = $this->url->link( 'pavblog/blog/comment','id='.$blog['blog_id'] );
-				$this->mdata['blog'] = $blog;
-				$this->mdata['samecategory'] = $this->getModel()->getSameCategory( $blog['category_id'], $blog['blog_id'] );
-				$this->mdata['social_share'] =  '';
+				$this->data['comment_action'] = $this->url->link( 'pavblog/blog/comment','id='.$blog['blog_id'] );
+				$this->data['blog'] = $blog;
+				$this->data['samecategory'] = $this->getModel()->getSameCategory( $blog['category_id'], $blog['blog_id'] );
+				$this->data['social_share'] =  '';
 				$data = array(
 					'filter_category_id' => '',
 					'filter_tag'		=> $blog['tags'],
@@ -178,7 +176,7 @@ class ControllerpavblogBlog extends Controller {
 				$related = $this->getModel('blog')->getListBlogs(  $data );
 			
 				
-				$this->mdata['related'] = $related;
+				$this->data['related'] = $related;
 				
 				$ttags = explode( ",",$blog['tags']);
 				$tags  = array();
@@ -187,7 +185,7 @@ class ControllerpavblogBlog extends Controller {
 					$tags[trim($tag)] = $this->url->link( 'pavblog/blogs','tag='.trim($tag) );
 				}
 				
-				$this->mdata['tags'] = $tags;
+				$this->data['tags'] = $tags;
 				if( $this->mparams->get('enable_recaptcha') ){  
 					if ($this->config->get('config_ssl')) {
 						$recaptcha_ssl = true;
@@ -195,12 +193,12 @@ class ControllerpavblogBlog extends Controller {
 						$recaptcha_ssl = false;
 					}
 				//	require_once(DIR_SYSTEM . 'library/recaptchalib.php');
-				//	$this->mdata['recaptcha'] = recaptcha_get_html($this->mparams->get('recaptcha_public_key'), null, $recaptcha_ssl);
+				//	$this->data['recaptcha'] = recaptcha_get_html($this->mparams->get('recaptcha_public_key'), null, $recaptcha_ssl);
 
 				}else {
-					$this->mdata['recaptcha'] = null;
+					$this->data['recaptcha'] = null;
 				}
-				$this->mdata['link'] =  $this->url->link( 'pavblog/blog','id='.$blog['blog_id'] );
+				$this->data['link'] =  $this->url->link( 'pavblog/blog','id='.$blog['blog_id'] );
 				
 				if (isset($this->request->get['page'])) {
 					$page = $this->request->get['page'];
@@ -221,28 +219,29 @@ class ControllerpavblogBlog extends Controller {
 					'start'              => ($page - 1) * $limit,
 					'limit'              => $limit
 				);
-				$this->mdata['comments'] = $this->getModel('comment')->getList( $data );
+				$this->data['comments'] = $this->getModel('comment')->getList( $data );
 				
-				$this->mdata['pagination'] = $pagination->render();
+				$this->data['pagination'] = $pagination->render();
 								
 				$this->getModel( 'blog' )->updateHits( $blog_id ); 
-
-
-				$this->mdata['column_left'] = $this->load->controller('common/column_left');
-				$this->mdata['column_right'] = $this->load->controller('common/column_right');
-				$this->mdata['content_top'] = $this->load->controller('common/content_top');
-				$this->mdata['content_bottom'] = $this->load->controller('common/content_bottom');
-				$this->mdata['footer'] = $this->load->controller('common/footer');
-				$this->mdata['header'] = $this->load->controller('common/header');
-
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/pavblog/blog.tpl')) {
-					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/pavblog/blog.tpl', $this->mdata));
+					$this->template = $this->config->get('config_template') . '/template/pavblog/blog.tpl';
 				} else {
-					$this->response->setOutput($this->load->view('default/template/pavblog/blog.tpl', $this->mdata));
+					$this->template = 'default/template/pavblog/blog.tpl';
 				}
-
+				
+				$this->children = array(
+					'common/column_left',
+					'common/column_right',
+					'common/content_top',
+					'common/content_bottom',
+					'common/footer',
+					'common/header'
+				);
+							
+				$this->response->setOutput($this->render());
 			} else {
-				$this->mdata['breadcrumbs'][] = array(
+				$this->data['breadcrumbs'][] = array(
 					'text'      => $this->language->get('text_error'),
 					'href'      => $this->url->link('information/information', 'category_id=' . $category_id),
 					'separator' => $this->language->get('text_separator')
@@ -250,27 +249,30 @@ class ControllerpavblogBlog extends Controller {
 					
 				$this->document->setTitle($this->language->get('text_error'));
 				
-				$this->mdata['heading_title'] = $this->language->get('text_error');
+				$this->data['heading_title'] = $this->language->get('text_error');
 
-				$this->mdata['text_error'] = $this->language->get('text_error');
+				$this->data['text_error'] = $this->language->get('text_error');
 
-				$this->mdata['button_continue'] = $this->language->get('button_continue');
+				$this->data['button_continue'] = $this->language->get('button_continue');
 				
-				$this->mdata['continue'] = $this->url->link('common/home');
-
-				$this->mdata['column_left'] = $this->load->controller('common/column_left');
-				$this->mdata['column_right'] = $this->load->controller('common/column_right');
-				$this->mdata['content_top'] = $this->load->controller('common/content_top');
-				$this->mdata['content_bottom'] = $this->load->controller('common/content_bottom');
-				$this->mdata['footer'] = $this->load->controller('common/footer');
-				$this->mdata['header'] = $this->load->controller('common/header');
+				$this->data['continue'] = $this->url->link('common/home');
 
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/error/not_found.tpl')) {
-					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/error/not_found.tpl', $this->mdata));
+					$this->template = $this->config->get('config_template') . '/template/error/not_found.tpl';
 				} else {
-					$this->response->setOutput($this->load->view('default/template/error/not_found.tpl', $this->mdata));
+					$this->template = 'default/template/error/not_found.tpl';
 				}
-
+				
+				$this->children = array(
+					'common/column_left',
+					'common/column_right',
+					'common/content_top',
+					'common/content_bottom',
+					'common/footer',
+					'common/header'
+				);
+						
+				$this->response->setOutput($this->render());
 			}
 		}
 		
@@ -295,12 +297,11 @@ class ControllerpavblogBlog extends Controller {
 
 			if( isset($this->request->post['comment']) ){
 				$d = array('email'=>'','user'=>'','comment'=>'','blog_id'=>'');
-
+			
 				$data = $this->request->post['comment'];
 				$data  = array_merge( $d,$data );
 				if( $this->mparams->get('enable_recaptcha') ){ 
 					if (empty($this->session->data['captcha']) || ($this->session->data['captcha'] != $this->request->post['captcha'])) {
-
       					$error['captcha'] = '<div class="comment-warning">'.$this->language->get('error_captcha').'</div>';
     				} 
 				}

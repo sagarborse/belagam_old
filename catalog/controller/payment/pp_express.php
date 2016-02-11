@@ -1,37 +1,39 @@
 <?php
 class ControllerPaymentPPExpress extends Controller {
-	public function index() {
+	protected function index() {
 		$this->language->load('payment/pp_express');
 
-		$data['button_continue'] = $this->language->get('button_continue');
-		$data['button_continue_action'] = $this->url->link('payment/pp_express/checkout', '', 'SSL');
+		$this->data['button_continue'] = $this->language->get('button_continue');
+		$this->data['button_continue_action'] = $this->url->link('payment/pp_express/checkout', '', 'SSL');
 
 		/**
 		 * if there is any other paypal session data, clear it
 		 */
 		unset($this->session->data['paypal']);
 
+
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/pp_express.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/payment/pp_express.tpl', $data);
+			$this->template = $this->config->get('config_template') . '/template/payment/pp_express.tpl';
 		} else {
-			return $this->load->view('default/template/payment/pp_express.tpl', $data);
+			$this->template = 'default/template/payment/pp_express.tpl';
 		}
+
+		$this->render();
 	}
 
 	public function express() {
 		if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
-			$this->log->write('No product redirect');
-			$this->response->redirect($this->url->link('checkout/cart'));
+			$this->redirect($this->url->link('checkout/cart'));
 		}
 
-		if ($this->customer->isLogged()) {
+		if($this->customer->isLogged()) {
 			/**
 			 * If the customer is already logged in
 			 */
 			$this->session->data['paypal']['guest'] = false;
 			unset($this->session->data['guest']);
 		} else {
-			if ($this->config->get('config_checkout_guest') && !$this->config->get('config_customer_price') && !$this->cart->hasDownload() && !$this->cart->hasRecurringProducts()) {
+			if($this->config->get('config_guest_checkout') && !$this->config->get('config_customer_price') && !$this->cart->hasDownload() && !$this->cart->hasRecurringProducts()) {
 				/**
 				 * If the guest checkout is allowed (config ok, no login for price and doesn't have downloads)
 				 */
@@ -43,7 +45,7 @@ class ControllerPaymentPPExpress extends Controller {
 				 * Send them to the normal checkout flow.
 				 */
 				unset($this->session->data['guest']);
-				$this->response->redirect($this->url->link('checkout/checkout', '', 'SSL'));
+				$this->redirect($this->url->link('checkout/checkout', '', 'SSL'));
 			}
 		}
 
@@ -55,7 +57,7 @@ class ControllerPaymentPPExpress extends Controller {
 		$this->load->model('payment/pp_express');
 		$this->load->model('tool/image');
 
-		if ($this->cart->hasShipping()) {
+		if($this->cart->hasShipping()) {
 			$shipping = 2;
 		} else {
 			$shipping = 1;
@@ -66,43 +68,43 @@ class ControllerPaymentPPExpress extends Controller {
 		$max_amount = $this->currency->format($max_amount, $this->currency->getCode(), '', false);
 
 		$data = array(
-			'METHOD'             => 'SetExpressCheckout',
-			'MAXAMT'             => $max_amount,
-			'RETURNURL'          => $this->url->link('payment/pp_express/expressReturn', '', 'SSL'),
-			'CANCELURL'          => $this->url->link('checkout/cart', '', 'SSL'),
+			'METHOD' => 'SetExpressCheckout',
+			'MAXAMT' => $max_amount,
+			'RETURNURL' => $this->url->link('payment/pp_express/expressReturn', '', 'SSL'),
+			'CANCELURL' => $this->url->link('checkout/cart'),
 			'REQCONFIRMSHIPPING' => 0,
-			'NOSHIPPING'         => $shipping,
-			'ALLOWNOTE'          => $this->config->get('pp_express_allow_note'),
-			'LOCALECODE'         => 'EN',
-			'LANDINGPAGE'        => 'Login',
-			'HDRIMG'             => $this->model_tool_image->resize($this->config->get('pp_express_logo'), 790, 90),
-			'PAYFLOWCOLOR'       => $this->config->get('pp_express_page_colour'),
-			'CHANNELTYPE'        => 'Merchant'
+			'NOSHIPPING' => $shipping,
+			'ALLOWNOTE' => $this->config->get('pp_express_allow_note'),
+			'LOCALECODE' => 'EN',
+			'LANDINGPAGE' => 'Login',
+			'HDRIMG' => $this->model_tool_image->resize($this->config->get('pp_express_logo'), 790, 90),
+			'HDRBORDERCOLOR' => $this->config->get('pp_express_border_colour'),
+			'HDRBACKCOLOR' => $this->config->get('pp_express_header_colour'),
+			'PAYFLOWCOLOR' => $this->config->get('pp_express_page_colour'),
+			'CHANNELTYPE' => 'Merchant',
 		);
-
-		if (isset($this->session->data['pp_login']['seamless']['access_token']) && (isset($this->session->data['pp_login']['seamless']['customer_id']) && $this->session->data['pp_login']['seamless']['customer_id'] == $this->customer->getId()) && $this->config->get('pp_login_seamless')) {
-			$data['IDENTITYACCESSTOKEN'] = $this->session->data['pp_login']['seamless']['access_token'];
-		}
 
 		$data = array_merge($data, $this->model_payment_pp_express->paymentRequestInfo());
 
 		$result = $this->model_payment_pp_express->call($data);
 
+
+
 		/**
 		 * If a failed PayPal setup happens, handle it.
 		 */
-		if (!isset($result['TOKEN'])) {
+		if(!isset($result['TOKEN'])) {
 			$this->session->data['error'] = $result['L_LONGMESSAGE0'];
 			/**
 			 * Unable to add error message to user as the session errors/success are not
 			 * used on the cart or checkout pages - need to be added?
 			 * If PayPal debug log is off then still log error to normal error log.
 			 */
-			if ($this->config->get('pp_express_debug') == 1) {
+			if($this->config->get('pp_express_debug')) {
 				$this->log->write(serialize($result));
 			}
 
-			$this->response->redirect($this->url->link('checkout/checkout', '', 'SSL'));
+			$this->redirect($this->url->link('checkout/checkout', '', 'SSL'));
 		}
 
 		$this->session->data['paypal']['token'] = $result['TOKEN'];
@@ -123,7 +125,7 @@ class ControllerPaymentPPExpress extends Controller {
 		$this->load->model('payment/pp_express');
 		$data = array(
 			'METHOD' => 'GetExpressCheckoutDetails',
-			'TOKEN'  => $this->session->data['paypal']['token']
+			'TOKEN' => $this->session->data['paypal']['token'],
 		);
 
 		$result = $this->model_payment_pp_express->call($data);
@@ -131,17 +133,17 @@ class ControllerPaymentPPExpress extends Controller {
 		$this->session->data['paypal']['result']    = $result;
 
 		$this->session->data['comment'] = '';
-		if (isset($result['PAYMENTREQUEST_0_NOTETEXT'])) {
+		if(isset($result['PAYMENTREQUEST_0_NOTETEXT'])) {
 			$this->session->data['comment'] = $result['PAYMENTREQUEST_0_NOTETEXT'];
 		}
 
-		if ($this->session->data['paypal']['guest'] == true) {
+		if($this->session->data['paypal']['guest'] == true) {
 
 			$this->session->data['guest']['customer_group_id'] = $this->config->get('config_customer_group_id');
 			$this->session->data['guest']['firstname'] = trim($result['FIRSTNAME']);
 			$this->session->data['guest']['lastname'] = trim($result['LASTNAME']);
 			$this->session->data['guest']['email'] = trim($result['EMAIL']);
-			if (isset($result['PHONENUM'])) {
+			if(isset($result['PHONENUM'])) {
 				$this->session->data['guest']['telephone'] = $result['PHONENUM'];
 			} else {
 				$this->session->data['guest']['telephone'] = '';
@@ -151,7 +153,7 @@ class ControllerPaymentPPExpress extends Controller {
 			$this->session->data['guest']['payment']['firstname'] = trim($result['FIRSTNAME']);
 			$this->session->data['guest']['payment']['lastname'] = trim($result['LASTNAME']);
 
-			if (isset($result['BUSINESS'])) {
+			if(isset($result['BUSINESS'])) {
 				$this->session->data['guest']['payment']['company'] = $result['BUSINESS'];
 			} else {
 				$this->session->data['guest']['payment']['company'] = '';
@@ -160,19 +162,19 @@ class ControllerPaymentPPExpress extends Controller {
 			$this->session->data['guest']['payment']['company_id'] = '';
 			$this->session->data['guest']['payment']['tax_id'] = '';
 
-			if ($this->cart->hasShipping()) {
+			if($this->cart->hasShipping()) {
 				$shipping_name = explode(' ', trim($result['PAYMENTREQUEST_0_SHIPTONAME']));
 				$shipping_first_name = $shipping_name[0];
 				unset($shipping_name[0]);
 				$shipping_last_name = implode(' ', $shipping_name);
 
+
 				$this->session->data['guest']['payment']['address_1'] = $result['PAYMENTREQUEST_0_SHIPTOSTREET'];
-				if (isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2'])) {
+				if(isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2'])) {
 					$this->session->data['guest']['payment']['address_2'] = $result['PAYMENTREQUEST_0_SHIPTOSTREET2'];
 				} else {
 					$this->session->data['guest']['payment']['address_2'] = '';
 				}
-
 				$this->session->data['guest']['payment']['postcode'] = $result['PAYMENTREQUEST_0_SHIPTOZIP'];
 				$this->session->data['guest']['payment']['city'] = $result['PAYMENTREQUEST_0_SHIPTOCITY'];
 
@@ -180,13 +182,11 @@ class ControllerPaymentPPExpress extends Controller {
 				$this->session->data['guest']['shipping']['lastname'] = $shipping_last_name;
 				$this->session->data['guest']['shipping']['company'] = '';
 				$this->session->data['guest']['shipping']['address_1'] = $result['PAYMENTREQUEST_0_SHIPTOSTREET'];
-
-				if (isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2'])) {
+				if(isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2'])) {
 					$this->session->data['guest']['shipping']['address_2'] = $result['PAYMENTREQUEST_0_SHIPTOSTREET2'];
 				} else {
 					$this->session->data['guest']['shipping']['address_2'] = '';
 				}
-
 				$this->session->data['guest']['shipping']['postcode'] = $result['PAYMENTREQUEST_0_SHIPTOZIP'];
 				$this->session->data['guest']['shipping']['city'] = $result['PAYMENTREQUEST_0_SHIPTOCITY'];
 
@@ -275,7 +275,7 @@ class ControllerPaymentPPExpress extends Controller {
 			 * if the user is logged in, add the address to the account and set the ID.
 			 */
 
-			if ($this->cart->hasShipping()) {
+			if($this->cart->hasShipping()) {
 				$this->load->model('account/address');
 
 				$addresses = $this->model_account_address->getAddresses();
@@ -285,7 +285,7 @@ class ControllerPaymentPPExpress extends Controller {
 				 */
 				$match = false;
 				foreach($addresses as $address) {
-					if (trim(strtolower($address['address_1'])) == trim(strtolower($result['PAYMENTREQUEST_0_SHIPTOSTREET'])) && trim(strtolower($address['postcode'])) == trim(strtolower($result['PAYMENTREQUEST_0_SHIPTOZIP']))) {
+					if(trim(strtolower($address['address_1'])) == trim(strtolower($result['PAYMENTREQUEST_0_SHIPTOSTREET'])) && trim(strtolower($address['postcode'])) == trim(strtolower($result['PAYMENTREQUEST_0_SHIPTOZIP']))) {
 						$match = true;
 
 						$this->session->data['payment_address_id'] = $address['address_id'];
@@ -304,7 +304,7 @@ class ControllerPaymentPPExpress extends Controller {
 				/**
 				 * If there is no address match add the address and set the info.
 				 */
-				if ($match == false) {
+				if($match == false) {
 
 					$shipping_name = explode(' ', trim($result['PAYMENTREQUEST_0_SHIPTONAME']));
 					$shipping_first_name = $shipping_name[0];
@@ -314,18 +314,18 @@ class ControllerPaymentPPExpress extends Controller {
 					$country_info = $this->db->query("SELECT * FROM `" . DB_PREFIX . "country` WHERE `iso_code_2` = '" . $this->db->escape($result['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE']) . "' AND `status` = '1' LIMIT 1")->row;
 					$zone_info = $this->db->query("SELECT * FROM `" . DB_PREFIX . "zone` WHERE `name` = '" . $this->db->escape($result['PAYMENTREQUEST_0_SHIPTOSTATE']) . "' AND `status` = '1' AND `country_id` = '" . (int)$country_info['country_id'] . "'")->row;
 
-					$address_data = array(
-						'firstname'  => $shipping_first_name,
-						'lastname'   => $shipping_last_name,
-						'company'    => '',
+					$address_data= array(
+						'firstname' => $shipping_first_name,
+						'lastname' => $shipping_last_name,
+						'company' => '',
 						'company_id' => '',
-						'tax_id'     => '',
-						'address_1'  => $result['PAYMENTREQUEST_0_SHIPTOSTREET'],
-						'address_2'  => (isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2']) ? $result['PAYMENTREQUEST_0_SHIPTOSTREET2'] : ''),
-						'postcode'   => $result['PAYMENTREQUEST_0_SHIPTOZIP'],
-						'city'       => $result['PAYMENTREQUEST_0_SHIPTOCITY'],
-						'zone_id'    => (isset($zone_info['zone_id']) ? $zone_info['zone_id'] : 0),
-						'country_id' => (isset($country_info['country_id']) ? $country_info['country_id'] : 0)
+						'tax_id' => '',
+						'address_1' => $result['PAYMENTREQUEST_0_SHIPTOSTREET'],
+						'address_2' => (isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2']) ? $result['PAYMENTREQUEST_0_SHIPTOSTREET2'] : ''),
+						'postcode' => $result['PAYMENTREQUEST_0_SHIPTOZIP'],
+						'city' => $result['PAYMENTREQUEST_0_SHIPTOCITY'],
+						'zone_id' => (isset($zone_info['zone_id']) ? $zone_info['zone_id'] : 0),
+						'country_id' => (isset($country_info['country_id']) ? $country_info['country_id'] : 0),
 					);
 
 					$address_id = $this->model_account_address->addAddress($address_data);
@@ -346,7 +346,8 @@ class ControllerPaymentPPExpress extends Controller {
 			}
 		}
 
-		$this->response->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
+
+		$this->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
 	}
 
 	public function expressConfirm() {
@@ -361,7 +362,7 @@ class ControllerPaymentPPExpress extends Controller {
 
 			$this->session->data['success'] = $this->language->get('text_coupon');
 
-			$this->response->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
+			$this->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
 		}
 
 		// Voucher
@@ -370,7 +371,7 @@ class ControllerPaymentPPExpress extends Controller {
 
 			$this->session->data['success'] = $this->language->get('text_voucher');
 
-			$this->response->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
+			$this->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
 		}
 
 		// Reward
@@ -379,29 +380,10 @@ class ControllerPaymentPPExpress extends Controller {
 
 			$this->session->data['success'] = $this->language->get('text_reward');
 
-			$this->response->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
+			$this->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
 		}
 
 		$this->document->setTitle($this->language->get('express_text_title'));
-
-		$data['heading_title'] = $this->language->get('express_text_title');
-
-		$data['breadcrumbs'] = array();
-
-		$data['breadcrumbs'][] = array(
-			'href' => $this->url->link('common/home'),
-			'text' => $this->language->get('text_home')
-		);
-
-		$data['breadcrumbs'][] = array(
-			'href' => $this->url->link('payment/pp_express/express'),
-			'text' => $this->language->get('text_title')
-		);
-
-		$data['breadcrumbs'][] = array(
-			'href' => $this->url->link('payment/pp_express/expressConfirm'),
-			'text' => $this->language->get('express_text_title')
-		);
 
 		$points = $this->customer->getRewardPoints();
 
@@ -413,29 +395,73 @@ class ControllerPaymentPPExpress extends Controller {
 			}
 		}
 
-		$data['text_trial'] = $this->language->get('text_trial');
-		$data['text_recurring'] = $this->language->get('text_recurring');
-		$data['text_length'] = $this->language->get('text_length');
-		$data['text_recurring_item'] = $this->language->get('text_recurring_item');
-		$data['text_payment_recurring'] = $this->language->get('text_payment_recurring');
-		$data['text_until_cancelled'] = $this->language->get('text_until_cancelled');
 
-		$data['column_name'] = $this->language->get('column_name');
-		$data['column_model'] = $this->language->get('column_model');
-		$data['column_quantity'] = $this->language->get('column_quantity');
-		$data['column_price'] = $this->language->get('column_price');
-		$data['column_total'] = $this->language->get('column_total');
+		$this->data['text_title'] = $this->language->get('express_text_title');
+		$this->data['text_next'] = $this->language->get('text_next');
+		$this->data['text_next_choice'] = $this->language->get('text_next_choice');
+		$this->data['text_use_voucher'] = $this->language->get('text_use_voucher');
+		$this->data['text_use_coupon'] = $this->language->get('text_use_coupon');
+		$this->data['text_use_reward'] = sprintf($this->language->get('text_use_reward'), $points);
 
-		$data['button_shipping'] = $this->language->get('button_express_shipping');
-		$data['button_confirm'] = $this->language->get('button_express_confirm');
+		$this->data['button_coupon'] = $this->language->get('button_coupon');
+		$this->data['button_voucher'] = $this->language->get('button_voucher');
+		$this->data['button_reward'] = $this->language->get('button_reward');
+		$this->data['button_shipping'] = $this->language->get('express_button_shipping');
+		$this->data['entry_coupon'] = $this->language->get('express_entry_coupon');
+		$this->data['entry_voucher'] = $this->language->get('entry_voucher');
+		$this->data['entry_reward'] = sprintf($this->language->get('entry_reward'), $points_total);
+		$this->data['button_confirm'] = $this->language->get('express_button_confirm');
+
+		$this->data['column_name'] = $this->language->get('column_name');
+		$this->data['column_model'] = $this->language->get('column_model');
+		$this->data['column_quantity'] = $this->language->get('column_quantity');
+		$this->data['column_price'] = $this->language->get('column_price');
+		$this->data['column_total'] = $this->language->get('column_total');
+		$this->data['text_until_cancelled'] = $this->language->get('text_until_cancelled');
+
+		$this->data['text_trial'] = $this->language->get('text_trial');
+		$this->data['text_recurring'] = $this->language->get('text_recurring');
+		$this->data['text_length'] = $this->language->get('text_length');
+		$this->data['text_recurring_item'] = $this->language->get('text_recurring_item');
+		$this->data['text_payment_profile'] = $this->language->get('text_payment_profile');
 
 		if (isset($this->request->post['next'])) {
-			$data['next'] = $this->request->post['next'];
+			$this->data['next'] = $this->request->post['next'];
 		} else {
-			$data['next'] = '';
+			$this->data['next'] = '';
 		}
 
-		$data['action'] = $this->url->link('payment/pp_express/expressConfirm', '', 'SSL');
+		$this->data['coupon_status'] = $this->config->get('coupon_status');
+
+		if (isset($this->request->post['coupon'])) {
+			$this->data['coupon'] = $this->request->post['coupon'];
+		} elseif (isset($this->session->data['coupon'])) {
+			$this->data['coupon'] = $this->session->data['coupon'];
+		} else {
+			$this->data['coupon'] = '';
+		}
+
+		$this->data['voucher_status'] = $this->config->get('voucher_status');
+
+		if (isset($this->request->post['voucher'])) {
+			$this->data['voucher'] = $this->request->post['voucher'];
+		} elseif (isset($this->session->data['voucher'])) {
+			$this->data['voucher'] = $this->session->data['voucher'];
+		} else {
+			$this->data['voucher'] = '';
+		}
+
+		$this->data['reward_status'] = ($points && $points_total && $this->config->get('reward_status'));
+
+		if (isset($this->request->post['reward'])) {
+			$this->data['reward'] = $this->request->post['reward'];
+		} elseif (isset($this->session->data['reward'])) {
+			$this->data['reward'] = $this->session->data['reward'];
+		} else {
+			$this->data['reward'] = '';
+		}
+
+		$this->data['action'] = $this->url->link('payment/pp_express/expressConfirm', '', 'SSL');
 
 		$products = $this->cart->getProducts();
 
@@ -449,7 +475,7 @@ class ControllerPaymentPPExpress extends Controller {
 			}
 
 			if ($product['minimum'] > $product_total) {
-				$data['error_warning'] = sprintf($this->language->get('error_minimum'), $product['name'], $product['minimum']);
+				$this->data['error_warning'] = sprintf($this->language->get('error_minimum'), $product['name'], $product['minimum']);
 			}
 
 			if ($product['image']) {
@@ -470,7 +496,7 @@ class ControllerPaymentPPExpress extends Controller {
 				}
 
 				$option_data[] = array(
-					'name'  => $option['name'],
+					'name' => $option['name'],
 					'value' => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value)
 				);
 			}
@@ -489,55 +515,55 @@ class ControllerPaymentPPExpress extends Controller {
 				$total = false;
 			}
 
-			$recurring_description = '';
+			$profile_description = '';
 
 			if ($product['recurring']) {
 				$frequencies = array(
-					'day'        => $this->language->get('text_day'),
-					'week'       => $this->language->get('text_week'),
+					'day' => $this->language->get('text_day'),
+					'week' => $this->language->get('text_week'),
 					'semi_month' => $this->language->get('text_semi_month'),
-					'month'      => $this->language->get('text_month'),
-					'year'       => $this->language->get('text_year'),
+					'month' => $this->language->get('text_month'),
+					'year' => $this->language->get('text_year'),
 				);
 
-				if ($product['recurring']['trial']) {
-					$recurring_price = $this->currency->format($this->tax->calculate($product['recurring']['trial_price'] * $product['quantity'], $product['tax_class_id'], $this->config->get('config_tax')));
-					$recurring_description = sprintf($this->language->get('text_trial_description'), $recurring_price, $product['recurring']['trial_cycle'], $frequencies[$product['recurring']['trial_frequency']], $product['recurring']['trial_duration']) . ' ';
+				if ($product['recurring_trial']) {
+					$recurring_price = $this->currency->format($this->tax->calculate($product['recurring_trial_price'] * $product['quantity'], $product['tax_class_id'], $this->config->get('config_tax')));
+					$profile_description = sprintf($this->language->get('text_trial_description'), $recurring_price, $product['recurring_trial_cycle'], $frequencies[$product['recurring_trial_frequency']], $product['recurring_trial_duration']) . ' ';
 				}
 
-				$recurring_price = $this->currency->format($this->tax->calculate($product['recurring']['price'] * $product['quantity'], $product['tax_class_id'], $this->config->get('config_tax')));
+				$recurring_price = $this->currency->format($this->tax->calculate($product['recurring_price'] * $product['quantity'], $product['tax_class_id'], $this->config->get('config_tax')));
 
-				if ($product['recurring']['duration']) {
-					$recurring_description .= sprintf($this->language->get('text_payment_description'), $recurring_price, $product['recurring']['cycle'], $frequencies[$product['recurring']['frequency']], $product['recurring']['duration']);
+				if ($product['recurring_duration']) {
+					$profile_description .= sprintf($this->language->get('text_payment_description'), $recurring_price, $product['recurring_cycle'], $frequencies[$product['recurring_frequency']], $product['recurring_duration']);
 				} else {
-					$recurring_description .= sprintf($this->language->get('text_payment_cancel'), $recurring_price, $product['recurring']['cycle'], $frequencies[$product['recurring']['frequency']], $product['recurring']['duration']);
+					$profile_description .= sprintf($this->language->get('text_payment_until_canceled_description'), $recurring_price, $product['recurring_cycle'], $frequencies[$product['recurring_frequency']], $product['recurring_duration']);
 				}
 			}
 
-			$data['products'][] = array(
-				'key'                 => $product['key'],
-				'thumb'               => $image,
-				'name'                => $product['name'],
-				'model'               => $product['model'],
-				'option'              => $option_data,
-				'quantity'            => $product['quantity'],
-				'stock'               => $product['stock'] ? true : !(!$this->config->get('config_stock_checkout') || $this->config->get('config_stock_warning')),
-				'reward'              => ($product['reward'] ? sprintf($this->language->get('text_points'), $product['reward']) : ''),
-				'price'               => $price,
-				'total'               => $total,
-				'href'                => $this->url->link('product/product', 'product_id=' . $product['product_id']),
-				'remove'              => $this->url->link('checkout/cart', 'remove=' . $product['key']),
-				'recurring'           => $product['recurring'],
-				'recurring_name'        => (isset($product['recurring']['recurring_name']) ? $product['recurring']['recurring_name'] : ''),
-				'recurring_description' => $recurring_description
+			$this->data['products'][] = array(
+				'key' => $product['key'],
+				'thumb' => $image,
+				'name' => $product['name'],
+				'model' => $product['model'],
+				'option' => $option_data,
+				'quantity' => $product['quantity'],
+				'stock' => $product['stock'] ? true : !(!$this->config->get('config_stock_checkout') || $this->config->get('config_stock_warning')),
+				'reward' => ($product['reward'] ? sprintf($this->language->get('text_points'), $product['reward']) : ''),
+				'price' => $price,
+				'total' => $total,
+				'href' => $this->url->link('product/product', 'product_id=' . $product['product_id']),
+				'remove' => $this->url->link('checkout/cart', 'remove=' . $product['key']),
+				'recurring' => $product['recurring'],
+				'profile_name' => $product['profile_name'],
+				'profile_description' => $profile_description,
 			);
 		}
 
-		$data['vouchers'] = array();
+		$this->data['vouchers'] = array();
 
-		if ($this->cart->hasShipping()) {
+		if($this->cart->hasShipping()) {
 
-			$data['has_shipping'] = true;
+			$this->data['has_shipping'] = true;
 			/**
 			 * Shipping services
 			 */
@@ -552,11 +578,11 @@ class ControllerPaymentPPExpress extends Controller {
 				// Shipping Methods
 				$quote_data = array();
 
-				$this->load->model('extension/extension');
+				$this->load->model('setting/extension');
 
-				$results = $this->model_extension_extension->getExtensions('shipping');
+				$results = $this->model_setting_extension->getExtensions('shipping');
 
-				if (!empty($results)) {
+				if(!empty($results)) {
 					foreach ($results as $result) {
 						if ($this->config->get($result['code'] . '_status')) {
 							$this->load->model('shipping/' . $result['code']);
@@ -565,10 +591,10 @@ class ControllerPaymentPPExpress extends Controller {
 
 							if ($quote) {
 								$quote_data[$result['code']] = array(
-									'title'      => $quote['title'],
-									'quote'      => $quote['quote'],
+									'title' => $quote['title'],
+									'quote' => $quote['quote'],
 									'sort_order' => $quote['sort_order'],
-									'error'      => $quote['error']
+									'error' => $quote['error']
 								);
 							}
 						}
@@ -584,34 +610,36 @@ class ControllerPaymentPPExpress extends Controller {
 						array_multisort($sort_order, SORT_ASC, $quote_data);
 
 						$this->session->data['shipping_methods'] = $quote_data;
-						$data['shipping_methods'] = $quote_data;
+						$this->data['shipping_methods'] = $quote_data;
 
-						if (!isset($this->session->data['shipping_method'])) {
+						if(!isset($this->session->data['shipping_method'])) {
 							//default the shipping to the very first option.
 							$key1 = key($quote_data);
 							$key2 = key($quote_data[$key1]['quote']);
 							$this->session->data['shipping_method'] = $quote_data[$key1]['quote'][$key2];
 						}
 
-						$data['code'] = $this->session->data['shipping_method']['code'];
-						$data['action_shipping'] = $this->url->link('payment/pp_express/shipping', '', 'SSL');
+						$this->data['code'] = $this->session->data['shipping_method']['code'];
+						$this->data['action_shipping'] = $this->url->link('payment/pp_express/shipping', '', 'SSL');
 					} else {
 						unset($this->session->data['shipping_methods']);
 						unset($this->session->data['shipping_method']);
-						$data['error_no_shipping'] = $this->language->get('error_no_shipping');
+						$this->data['error_no_shipping'] = $this->language->get('error_no_shipping');
 					}
 				} else {
 					unset($this->session->data['shipping_methods']);
 					unset($this->session->data['shipping_method']);
-					$data['error_no_shipping'] = $this->language->get('error_no_shipping');
+					$this->data['error_no_shipping'] = $this->language->get('error_no_shipping');
 				}
 			}
 		} else {
-			$data['has_shipping'] = false;
+			$this->data['has_shipping'] = false;
 		}
 
-		// Totals
-		$this->load->model('extension/extension');
+		/**
+		 * Product totals
+		 */
+		$this->load->model('setting/extension');
 
 		$total_data = array();
 		$total = 0;
@@ -621,7 +649,7 @@ class ControllerPaymentPPExpress extends Controller {
 		if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
 			$sort_order = array();
 
-			$results = $this->model_extension_extension->getExtensions('total');
+			$results = $this->model_setting_extension->getExtensions('total');
 
 			foreach ($results as $key => $value) {
 				$sort_order[$key] = $this->config->get($value['code'] . '_sort_order');
@@ -635,25 +663,18 @@ class ControllerPaymentPPExpress extends Controller {
 
 					$this->{'model_total_' . $result['code']}->getTotal($total_data, $total, $taxes);
 				}
+
+				$sort_order = array();
+
+				foreach ($total_data as $key => $value) {
+					$sort_order[$key] = $value['sort_order'];
+				}
+
+				array_multisort($sort_order, SORT_ASC, $total_data);
 			}
-
-			$sort_order = array();
-
-			foreach ($total_data as $key => $value) {
-				$sort_order[$key] = $value['sort_order'];
-			}
-
-			array_multisort($sort_order, SORT_ASC, $total_data);
 		}
 
-		$data['totals'] = array();
-
-		foreach ($total_data as $total) {
-			$data['totals'][] = array(
-				'title' => $total['title'],
-				'text'  => $this->currency->format($total['value']),
-			);
-		}
+		$this->data['totals'] = $total_data;
 
 		/**
 		 * Payment methods
@@ -667,9 +688,9 @@ class ControllerPaymentPPExpress extends Controller {
 
 		$method_data = array();
 
-		$this->load->model('extension/extension');
+		$this->load->model('setting/extension');
 
-		$results = $this->model_extension_extension->getExtensions('payment');
+		$results = $this->model_setting_extension->getExtensions('payment');
 
 		foreach ($results as $result) {
 			if ($this->config->get($result['code'] . '_status')) {
@@ -694,44 +715,43 @@ class ControllerPaymentPPExpress extends Controller {
 		$this->session->data['payment_methods'] = $method_data;
 		$this->session->data['payment_method'] = $this->session->data['payment_methods']['pp_express'];
 
-		$data['action_confirm'] = $this->url->link('payment/pp_express/expressComplete', '', 'SSL');
+		$this->data['action_confirm'] = $this->url->link('payment/pp_express/expressComplete', '', 'SSL');
 
-		if (isset($this->session->data['error_warning'])) {
-			$data['error_warning'] = $this->session->data['error_warning'];
+		$this->data['error_warning'] = '';
+		$this->data['attention'] = '';
+		$this->data['success'] = '';
+
+		if(isset($this->session->data['error_warning'])) {
+			$this->data['error_warning'] = $this->session->data['error_warning'];
 			unset($this->session->data['error_warning']);
-		} else {
-			$data['error_warning'] = '';
 		}
 
-		if (isset($this->session->data['success'])) {
-			$data['success'] = $this->session->data['success'];
+		if(isset($this->session->data['success'])) {
+			$this->data['success'] = $this->session->data['success'];
 			unset($this->session->data['success']);
-		} else {
-			$data['success'] = '';
 		}
 
-		if (isset($this->session->data['attention'])) {
-			$data['attention'] = $this->session->data['attention'];
+		if(isset($this->session->data['attention'])) {
+			$this->data['attention'] = $this->session->data['attention'];
 			unset($this->session->data['attention']);
-		} else {
-			$data['attention'] = '';
 		}
 
-		$data['coupon'] = $this->load->controller('module/coupon');
-		$data['voucher'] = $this->load->controller('module/voucher');
-		$data['reward'] = $this->load->controller('module/reward');
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
+		$this->children = array(
+			'common/column_left',
+			'common/column_right',
+			'common/content_top',
+			'common/content_bottom',
+			'common/footer',
+			'common/header'
+		);
 
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/pp_express_confirm.tpl')) {
-			$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/payment/pp_express_confirm.tpl', $data));
+			$this->template = $this->config->get('config_template') . '/template/payment/pp_express_confirm.tpl';
 		} else {
-			$this->response->setOutput($this->load->view('default/template/payment/pp_express_confirm.tpl', $data));
+			$this->template = 'default/template/payment/pp_express_confirm.tpl';
 		}
+
+		$this->response->setOutput($this->render());
 	}
 
 	public function expressComplete() {
@@ -780,7 +800,7 @@ class ControllerPaymentPPExpress extends Controller {
 			$redirect = $this->url->link('checkout/cart');
 		}
 
-		// Validate minimum quantity requirements.
+		// Validate minimum quantity requirments.
 		$products = $this->cart->getProducts();
 
 		foreach ($products as $product) {
@@ -804,11 +824,11 @@ class ControllerPaymentPPExpress extends Controller {
 			$total = 0;
 			$taxes = $this->cart->getTaxes();
 
-			$this->load->model('extension/extension');
+			$this->load->model('setting/extension');
 
 			$sort_order = array();
 
-			$results = $this->model_extension_extension->getExtensions('total');
+			$results = $this->model_setting_extension->getExtensions('total');
 
 			foreach ($results as $key => $value) {
 				$sort_order[$key] = $this->config->get($value['code'] . '_sort_order');
@@ -848,7 +868,7 @@ class ControllerPaymentPPExpress extends Controller {
 
 			if ($this->customer->isLogged() && isset($this->session->data['payment_address_id'])) {
 				$data['customer_id'] = $this->customer->getId();
-				$data['customer_group_id'] = $this->config->get('config_customer_group_id');
+				$data['customer_group_id'] = $this->customer->getCustomerGroupId();
 				$data['firstname'] = $this->customer->getFirstName();
 				$data['lastname'] = $this->customer->getLastName();
 				$data['email'] = $this->customer->getEmail();
@@ -956,28 +976,28 @@ class ControllerPaymentPPExpress extends Controller {
 					}
 
 					$option_data[] = array(
-						'product_option_id'       => $option['product_option_id'],
+						'product_option_id' => $option['product_option_id'],
 						'product_option_value_id' => $option['product_option_value_id'],
-						'option_id'               => $option['option_id'],
-						'option_value_id'         => $option['option_value_id'],
-						'name'                    => $option['name'],
-						'value'                   => $value,
-						'type'                    => $option['type']
+						'option_id' => $option['option_id'],
+						'option_value_id' => $option['option_value_id'],
+						'name' => $option['name'],
+						'value' => $value,
+						'type' => $option['type']
 					);
 				}
 
 				$product_data[] = array(
 					'product_id' => $product['product_id'],
-					'name'       => $product['name'],
-					'model'      => $product['model'],
-					'option'     => $option_data,
-					'download'   => $product['download'],
-					'quantity'   => $product['quantity'],
-					'subtract'   => $product['subtract'],
-					'price'      => $product['price'],
-					'total'      => $product['total'],
-					'tax'        => $this->tax->getTax($product['price'], $product['tax_class_id']),
-					'reward'     => $product['reward']
+					'name' => $product['name'],
+					'model' => $product['model'],
+					'option' => $option_data,
+					'download' => $product['download'],
+					'quantity' => $product['quantity'],
+					'subtract' => $product['subtract'],
+					'price' => $product['price'],
+					'total' => $product['total'],
+					'tax' => $this->tax->getTax($product['price'], $product['tax_class_id']),
+					'reward' => $product['reward']
 				);
 			}
 
@@ -987,15 +1007,15 @@ class ControllerPaymentPPExpress extends Controller {
 			if (!empty($this->session->data['vouchers'])) {
 				foreach ($this->session->data['vouchers'] as $voucher) {
 					$voucher_data[] = array(
-						'description'      => $voucher['description'],
-						'code'             => substr(md5(mt_rand()), 0, 10),
-						'to_name'          => $voucher['to_name'],
-						'to_email'         => $voucher['to_email'],
-						'from_name'        => $voucher['from_name'],
-						'from_email'       => $voucher['from_email'],
+						'description' => $voucher['description'],
+						'code' => substr(md5(mt_rand()), 0, 10),
+						'to_name' => $voucher['to_name'],
+						'to_email' => $voucher['to_email'],
+						'from_name' => $voucher['from_name'],
+						'from_email' => $voucher['from_email'],
 						'voucher_theme_id' => $voucher['voucher_theme_id'],
-						'message'          => $voucher['message'],
-						'amount'           => $voucher['amount']
+						'message' => $voucher['message'],
+						'amount' => $voucher['amount']
 					);
 				}
 			}
@@ -1007,14 +1027,10 @@ class ControllerPaymentPPExpress extends Controller {
 			$data['total'] = $total;
 
 			if (isset($this->request->cookie['tracking'])) {
-				$data['tracking'] = $this->request->cookie['tracking'];
-
-				$subtotal = $this->cart->getSubTotal();
-
-				// Affiliate
 				$this->load->model('affiliate/affiliate');
 
 				$affiliate_info = $this->model_affiliate_affiliate->getAffiliateByCode($this->request->cookie['tracking']);
+				$subtotal = $this->cart->getSubTotal();
 
 				if ($affiliate_info) {
 					$data['affiliate_id'] = $affiliate_info['affiliate_id'];
@@ -1023,22 +1039,9 @@ class ControllerPaymentPPExpress extends Controller {
 					$data['affiliate_id'] = 0;
 					$data['commission'] = 0;
 				}
-
-				// Marketing
-				$this->load->model('checkout/marketing');
-
-				$marketing_info = $this->model_checkout_marketing->getMarketingByCode($this->request->cookie['tracking']);
-
-				if ($marketing_info) {
-					$data['marketing_id'] = $marketing_info['marketing_id'];
-				} else {
-					$data['marketing_id'] = 0;
-				}
 			} else {
 				$data['affiliate_id'] = 0;
 				$data['commission'] = 0;
-				$data['marketing_id'] = 0;
-				$data['tracking'] = '';
 			}
 
 			$data['language_id'] = $this->config->get('config_language_id');
@@ -1049,7 +1052,7 @@ class ControllerPaymentPPExpress extends Controller {
 
 			if (!empty($this->request->server['HTTP_X_FORWARDED_FOR'])) {
 				$data['forwarded_ip'] = $this->request->server['HTTP_X_FORWARDED_FOR'];
-			} elseif (!empty($this->request->server['HTTP_CLIENT_IP'])) {
+			} elseif(!empty($this->request->server['HTTP_CLIENT_IP'])) {
 				$data['forwarded_ip'] = $this->request->server['HTTP_CLIENT_IP'];
 			} else {
 				$data['forwarded_ip'] = '';
@@ -1067,7 +1070,6 @@ class ControllerPaymentPPExpress extends Controller {
 				$data['accept_language'] = '';
 			}
 
-			$this->load->model('account/custom_field');
 			$this->load->model('checkout/order');
 
 			$order_id = $this->model_checkout_order->addOrder($data);
@@ -1076,18 +1078,18 @@ class ControllerPaymentPPExpress extends Controller {
 			$this->load->model('payment/pp_express');
 
 			$paypal_data = array(
-				'TOKEN'                      => $this->session->data['paypal']['token'],
-				'PAYERID'                    => $this->session->data['paypal']['payerid'],
-				'METHOD'                     => 'DoExpressCheckoutPayment',
+				'TOKEN' => $this->session->data['paypal']['token'],
+				'PAYERID' => $this->session->data['paypal']['payerid'],
+				'METHOD' => 'DoExpressCheckoutPayment',
 				'PAYMENTREQUEST_0_NOTIFYURL' => $this->url->link('payment/pp_express/ipn', '', 'SSL'),
-				'RETURNFMFDETAILS'           => 1
+				'RETURNFMFDETAILS' => 1,
 			);
 
 			$paypal_data = array_merge($paypal_data, $this->model_payment_pp_express->paymentRequestInfo());
 
 			$result = $this->model_payment_pp_express->call($paypal_data);
 
-			if ($result['ACK'] == 'Success') {
+			if($result['ACK'] == 'Success') {
 				//handle order status
 				switch($result['PAYMENTINFO_0_PAYMENTSTATUS']) {
 					case 'Canceled_Reversal':
@@ -1122,90 +1124,89 @@ class ControllerPaymentPPExpress extends Controller {
 						break;
 				}
 
-				$this->model_checkout_order->addOrderHistory($order_id, $order_status_id);
+				$this->model_checkout_order->confirm($order_id, $order_status_id);
 
 				//add order to paypal table
 				$paypal_order_data = array(
-					'order_id'         => $order_id,
-					'capture_status'   => ($this->config->get('pp_express_method') == 'Sale' ? 'Complete' : 'NotComplete'),
-					'currency_code'    => $result['PAYMENTINFO_0_CURRENCYCODE'],
+					'order_id' => $order_id,
+					'capture_status' => ($this->config->get('pp_express_method') == 'Sale' ? 'Complete' : 'NotComplete'),
+					'currency_code' => $result['PAYMENTINFO_0_CURRENCYCODE'],
 					'authorization_id' => $result['PAYMENTINFO_0_TRANSACTIONID'],
-					'total'            => $result['PAYMENTINFO_0_AMT']
+					'total' => $result['PAYMENTINFO_0_AMT'],
 				);
-
 				$paypal_order_id = $this->model_payment_pp_express->addOrder($paypal_order_data);
 
 				//add transaction to paypal transaction table
 				$paypal_transaction_data = array(
-					'paypal_order_id'       => $paypal_order_id,
-					'transaction_id'        => $result['PAYMENTINFO_0_TRANSACTIONID'],
+					'paypal_order_id' => $paypal_order_id,
+					'transaction_id' => $result['PAYMENTINFO_0_TRANSACTIONID'],
 					'parent_transaction_id' => '',
-					'note'                  => '',
-					'msgsubid'              => '',
-					'receipt_id'            => (isset($result['PAYMENTINFO_0_RECEIPTID']) ? $result['PAYMENTINFO_0_RECEIPTID'] : ''),
-					'payment_type'          => $result['PAYMENTINFO_0_PAYMENTTYPE'],
-					'payment_status'        => $result['PAYMENTINFO_0_PAYMENTSTATUS'],
-					'pending_reason'        => $result['PAYMENTINFO_0_PENDINGREASON'],
-					'transaction_entity'    => ($this->config->get('pp_express_method') == 'Sale' ? 'payment' : 'auth'),
-					'amount'                => $result['PAYMENTINFO_0_AMT'],
-					'debug_data'            => json_encode($result)
+					'note' => '',
+					'msgsubid' => '',
+					'receipt_id' => (isset($result['PAYMENTINFO_0_RECEIPTID']) ? $result['PAYMENTINFO_0_RECEIPTID'] : ''),
+					'payment_type' => $result['PAYMENTINFO_0_PAYMENTTYPE'],
+					'payment_status' => $result['PAYMENTINFO_0_PAYMENTSTATUS'],
+					'pending_reason' => $result['PAYMENTINFO_0_PENDINGREASON'],
+					'transaction_entity' => ($this->config->get('pp_express_method') == 'Sale' ? 'payment' : 'auth'),
+					'amount' => $result['PAYMENTINFO_0_AMT'],
+					'debug_data' => json_encode($result),
 				);
-
 				$this->model_payment_pp_express->addTransaction($paypal_transaction_data);
 
 				$recurring_products = $this->cart->getRecurringProducts();
 
 				//loop through any products that are recurring items
-				if ($recurring_products) {
+				if(!empty($recurring_products)) {
+
 					$this->language->load('payment/pp_express');
 
 					$this->load->model('checkout/recurring');
 
 					$billing_period = array(
-						'day'        => 'Day',
-						'week'       => 'Week',
+						'day' => 'Day',
+						'week' => 'Week',
 						'semi_month' => 'SemiMonth',
-						'month'      => 'Month',
-						'year'       => 'Year'
+						'month' => 'Month',
+						'year' => 'Year'
 					);
 
 					foreach($recurring_products as $item) {
 						$data = array(
-							'METHOD'             => 'CreateRecurringPaymentsProfile',
-							'TOKEN'              => $this->session->data['paypal']['token'],
-							'PROFILESTARTDATE'   => gmdate("Y-m-d\TH:i:s\Z", gmmktime(gmdate("H"), gmdate("i")+5, gmdate("s"), gmdate("m"), gmdate("d"), gmdate("y"))),
-							'BILLINGPERIOD'      => $billing_period[$item['recurring']['frequency']],
-							'BILLINGFREQUENCY'   => $item['recurring']['cycle'],
-							'TOTALBILLINGCYCLES' => $item['recurring']['duration'],
-							'AMT'                => $this->currency->format($this->tax->calculate($item['recurring']['price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'],
-							'CURRENCYCODE'       => $this->currency->getCode()
+							'METHOD' => 'CreateRecurringPaymentsProfile',
+							'TOKEN' => $this->session->data['paypal']['token'],
+							'PROFILESTARTDATE' => gmdate("Y-m-d\TH:i:s\Z", mktime(gmdate("H"), gmdate("i")+5, gmdate("s"), gmdate("m"), gmdate("d"), gmdate("y"))),
+							'BILLINGPERIOD' => $billing_period[$item['recurring_frequency']],
+							'BILLINGFREQUENCY' => $item['recurring_cycle'],
+							'TOTALBILLINGCYCLES' => $item['recurring_duration'],
+							'AMT' => $this->currency->format($this->tax->calculate($item['recurring_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'],
+							'CURRENCYCODE' => $this->currency->getCode(),
 						);
 
 						//trial information
-						if ($item['recurring']['trial']) {
+						if($item['recurring_trial'] == 1) {
 							$data_trial = array(
-								'TRIALBILLINGPERIOD'      => $billing_period[$item['recurring']['trial_frequency']],
-								'TRIALBILLINGFREQUENCY'   => $item['recurring']['trial_cycle'],
-								'TRIALTOTALBILLINGCYCLES' => $item['recurring']['trial_duration'],
-								'TRIALAMT'                => $this->currency->format($this->tax->calculate($item['recurring']['trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity']
+								'TRIALBILLINGPERIOD' => $billing_period[$item['recurring_trial_frequency']],
+								'TRIALBILLINGFREQUENCY' => $item['recurring_trial_cycle'],
+								'TRIALTOTALBILLINGCYCLES' => $item['recurring_trial_duration'],
+								'TRIALAMT' => $this->currency->format($this->tax->calculate($item['recurring_trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'],
 							);
 
-							$trial_amt = $this->currency->format($this->tax->calculate($item['recurring']['trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'] . ' ' . $this->currency->getCode();
-							$trial_text =  sprintf($this->language->get('text_trial'), $trial_amt, $item['recurring']['trial_cycle'], $item['recurring']['trial_frequency'], $item['recurring']['trial_duration']);
+							$trial_amt = $this->currency->format($this->tax->calculate($item['recurring_trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'].' '.$this->currency->getCode();
+							$trial_text =  sprintf($this->language->get('text_trial'), $trial_amt, $item['recurring_trial_cycle'], $item['recurring_trial_frequency'], $item['recurring_trial_duration']);
 
 							$data = array_merge($data, $data_trial);
 						} else {
 							$trial_text = '';
 						}
 
-						$recurring_amt = $this->currency->format($this->tax->calculate($item['recurring']['price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false)  * $item['quantity'] . ' ' . $this->currency->getCode();
-						$recurring_description = $trial_text . sprintf($this->language->get('text_recurring'), $recurring_amt, $item['recurring']['cycle'], $item['recurring']['frequency']);
+						$recurring_amt = $this->currency->format($this->tax->calculate($item['recurring_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false)  * $item['quantity'].' '.$this->currency->getCode();
+						$recurring_description = $trial_text . sprintf($this->language->get('text_recurring'), $recurring_amt, $item['recurring_cycle'], $item['recurring_frequency']);
 
-						if ($item['recurring']['duration'] > 0) {
-							$recurring_description .= sprintf($this->language->get('text_length'), $item['recurring']['duration']);
+						if($item['recurring_duration'] > 0) {
+							$recurring_description .= sprintf($this->language->get('text_length'), $item['recurring_duration']);
 						}
 
-						//create new recurring and set to pending status as no payment has been made yet.
+						//create new profile and set to pending status as no payment has been made yet.
 						$recurring_id = $this->model_checkout_recurring->create($item, $order_id, $recurring_description);
 
 						$data['PROFILEREFERENCE'] = $recurring_id;
@@ -1213,20 +1214,20 @@ class ControllerPaymentPPExpress extends Controller {
 
 						$result = $this->model_payment_pp_express->call($data);
 
-						if (isset($result['PROFILEID'])) {
+						if(isset($result['PROFILEID'])) {
 							$this->model_checkout_recurring->addReference($recurring_id, $result['PROFILEID']);
 						} else {
-							// there was an error creating the recurring, need to log and also alert admin / user
+							// there was an error creating the profile, need to log and also alert admin / user
+
 
 						}
 					}
 				}
 
-				$this->response->redirect($this->url->link('checkout/success'));
+				$this->redirect($this->url->link('checkout/success'));
 
-				if (isset($result['REDIRECTREQUIRED']) && $result['REDIRECTREQUIRED'] == true) {
-					//- handle german redirect here
-					$this->response->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_complete-express-checkout&token=' . $this->session->data['paypal']['token']);
+				if(isset($result['REDIRECTREQUIRED']) && $result['REDIRECTREQUIRED'] == true) { //- handle german redirect here
+					$this->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_complete-express-checkout&token='.$this->session->data['paypal']['token']);
 				}
 			} else {
 				if ($result['L_ERRORCODE0'] == '10486') {
@@ -1235,7 +1236,7 @@ class ControllerPaymentPPExpress extends Controller {
 						if ($this->session->data['paypal_redirect_count'] == 2) {
 							$this->session->data['paypal_redirect_count'] = 0;
 							$this->session->data['error'] = $this->language->get('error_too_many_failures');
-							$this->response->redirect($this->url->link('checkout/checkout', '', 'SSL'));
+							$this->redirect($this->url->link('checkout/checkout', '', 'SSL'));
 						} else {
 							$this->session->data['paypal_redirect_count']++;
 						}
@@ -1244,23 +1245,23 @@ class ControllerPaymentPPExpress extends Controller {
 					}
 
 					if ($this->config->get('pp_express_test') == 1) {
-						$this->response->redirect('https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
+						$this->redirect('https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
 					} else {
-						$this->response->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
+						$this->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
 					}
 				}
 
 				$this->session->data['error'] = $result['L_LONGMESSAGE0'];
-				$this->response->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
+				$this->redirect($this->url->link('payment/pp_express/expressConfirm', '', 'SSL'));
 			}
 		} else {
-			$this->response->redirect($redirect);
+			$this->redirect($redirect);
 		}
 	}
 
 	public function checkout() {
 		if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
-			$this->response->redirect($this->url->link('checkout/cart'));
+			$this->redirect($this->url->link('checkout/cart'));
 		}
 
 		$this->load->model('payment/pp_express');
@@ -1273,42 +1274,22 @@ class ControllerPaymentPPExpress extends Controller {
 		$max_amount = min($max_amount * 1.25, 10000);
 		$max_amount = $this->currency->format($max_amount, $this->currency->getCode(), '', false);
 
-		if ($this->cart->hasShipping()) {
-			$shipping = 0;
-			$data_shipping = array(
-				'PAYMENTREQUEST_0_SHIPTONAME'				=> html_entity_decode($order_info['shipping_firstname'] . ' ' . $order_info['shipping_lastname'], ENT_QUOTES, 'UTF-8'),
-				'PAYMENTREQUEST_0_SHIPTOSTREET'				=> html_entity_decode($order_info['shipping_address_1'], ENT_QUOTES, 'UTF-8'),
-				'PAYMENTREQUEST_0_SHIPTOSTREET2'			=> html_entity_decode($order_info['shipping_address_2'], ENT_QUOTES, 'UTF-8'),
-				'PAYMENTREQUEST_0_SHIPTOCITY'				=> html_entity_decode($order_info['shipping_city'], ENT_QUOTES, 'UTF-8'),
-				'PAYMENTREQUEST_0_SHIPTOSTATE'				=> html_entity_decode($order_info['shipping_zone'], ENT_QUOTES, 'UTF-8'),
-				'PAYMENTREQUEST_0_SHIPTOZIP'				=> html_entity_decode($order_info['shipping_postcode'], ENT_QUOTES, 'UTF-8'),
-				'PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE'		=> $order_info['shipping_iso_code_2']
-			);
-		} else {
-			$shipping = 1;
-			$data_shipping = array();
-		}
-
 		$data = array(
-			'METHOD'             => 'SetExpressCheckout',
-			'MAXAMT'             => $max_amount,
-			'RETURNURL'          => $this->url->link('payment/pp_express/checkoutReturn', '', 'SSL'),
-			'CANCELURL'          => $this->url->link('checkout/checkout', '', 'SSL'),
+			'METHOD' => 'SetExpressCheckout',
+			'MAXAMT' => $max_amount,
+			'RETURNURL' => $this->url->link('payment/pp_express/checkoutReturn', '', 'SSL'),
+			'CANCELURL' => $this->url->link('checkout/checkout', '', 'SSL'),
 			'REQCONFIRMSHIPPING' => 0,
-			'NOSHIPPING'         => $shipping,
-			'LOCALECODE'         => 'EN',
-			'LANDINGPAGE'        => 'Login',
-			'HDRIMG'             => $this->model_tool_image->resize($this->config->get('pp_express_logo'), 790, 90),
-			'PAYFLOWCOLOR'       => $this->config->get('pp_express_page_colour'),
-			'CHANNELTYPE'        => 'Merchant',
-			'ALLOWNOTE'          => $this->config->get('pp_express_allow_note')
+			'NOSHIPPING' => 1,
+			'LOCALECODE' => 'EN',
+			'LANDINGPAGE' => 'Login',
+			'HDRIMG' => $this->model_tool_image->resize($this->config->get('pp_express_logo'), 790, 90),
+			'HDRBORDERCOLOR' => $this->config->get('pp_express_border_colour'),
+			'HDRBACKCOLOR' => $this->config->get('pp_express_header_colour'),
+			'PAYFLOWCOLOR' => $this->config->get('pp_express_page_colour'),
+			'CHANNELTYPE' => 'Merchant',
+			'ALLOWNOTE' => $this->config->get('pp_express_allow_note'),
 		);
-
-		$data = array_merge($data, $data_shipping);
-
-		if (isset($this->session->data['pp_login']['seamless']['access_token']) && (isset($this->session->data['pp_login']['seamless']['customer_id']) && $this->session->data['pp_login']['seamless']['customer_id'] == $this->customer->getId()) && $this->config->get('pp_login_seamless')) {
-			$data['IDENTITYACCESSTOKEN'] = $this->session->data['pp_login']['seamless']['access_token'];
-		}
 
 		$data = array_merge($data, $this->model_payment_pp_express->paymentRequestInfo());
 
@@ -1317,26 +1298,26 @@ class ControllerPaymentPPExpress extends Controller {
 		/**
 		 * If a failed PayPal setup happens, handle it.
 		 */
-		if (!isset($result['TOKEN'])) {
+		if(!isset($result['TOKEN'])) {
 			$this->session->data['error'] = $result['L_LONGMESSAGE0'];
 			/**
 			 * Unable to add error message to user as the session errors/success are not
 			 * used on the cart or checkout pages - need to be added?
 			 * If PayPal debug log is off then still log error to normal error log.
 			 */
-			if ($this->config->get('pp_express_debug') == 1) {
+			if($this->config->get('pp_express_debug') == 0) {
 				$this->log->write(serialize($result));
 			}
 
-			$this->response->redirect($this->url->link('checkout/checkout', '', 'SSL'));
+			$this->redirect($this->url->link('checkout/checkout', '', 'SSL'));
 		}
 
 		$this->session->data['paypal']['token'] = $result['TOKEN'];
 
 		if ($this->config->get('pp_express_test') == 1) {
-			header('Location: https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $result['TOKEN'] . '&useraction=commit');
+			header('Location: https://www.sandbox.paypal.com/cgiâ€‘bin/webscr?cmd=_express-checkout&token=' . $result['TOKEN'].'&useraction=commit');
 		} else {
-			header('Location: https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $result['TOKEN'] . '&useraction=commit');
+			header('Location: https://www.paypal.com/cgiâ€‘bin/webscr?cmd=_express-checkout&token=' . $result['TOKEN'].'&useraction=commit');
 		}
 	}
 
@@ -1350,29 +1331,28 @@ class ControllerPaymentPPExpress extends Controller {
 
 		$data = array(
 			'METHOD' => 'GetExpressCheckoutDetails',
-			'TOKEN'  => $this->session->data['paypal']['token']
+			'TOKEN' => $this->session->data['paypal']['token'],
 		);
 
 		$result = $this->model_payment_pp_express->call($data);
-
 		$this->session->data['paypal']['payerid'] = $result['PAYERID'];
 		$this->session->data['paypal']['result'] = $result;
 
 		$order_id = $this->session->data['order_id'];
 
 		$paypal_data = array(
-			'TOKEN'                      => $this->session->data['paypal']['token'],
-			'PAYERID'                    => $this->session->data['paypal']['payerid'],
-			'METHOD'                     => 'DoExpressCheckoutPayment',
+			'TOKEN' => $this->session->data['paypal']['token'],
+			'PAYERID' => $this->session->data['paypal']['payerid'],
+			'METHOD' => 'DoExpressCheckoutPayment',
 			'PAYMENTREQUEST_0_NOTIFYURL' => $this->url->link('payment/pp_express/ipn', '', 'SSL'),
-			'RETURNFMFDETAILS'           => 1
+			'RETURNFMFDETAILS' => 1,
 		);
 
 		$paypal_data = array_merge($paypal_data, $this->model_payment_pp_express->paymentRequestInfo());
 
 		$result = $this->model_payment_pp_express->call($paypal_data);
 
-		if ($result['ACK'] == 'Success') {
+		if($result['ACK'] == 'Success') {
 			//handle order status
 			switch($result['PAYMENTINFO_0_PAYMENTSTATUS']) {
 				case 'Canceled_Reversal':
@@ -1407,87 +1387,87 @@ class ControllerPaymentPPExpress extends Controller {
 					break;
 			}
 
-			$this->model_checkout_order->addOrderHistory($order_id, $order_status_id);
+			$this->model_checkout_order->confirm($order_id, $order_status_id);
 
 			//add order to paypal table
 			$paypal_order_data = array(
-				'order_id'         => $order_id,
-				'capture_status'   => ($this->config->get('pp_express_method') == 'Sale' ? 'Complete' : 'NotComplete'),
-				'currency_code'    => $result['PAYMENTINFO_0_CURRENCYCODE'],
+				'order_id' => $order_id,
+				'capture_status' => ($this->config->get('pp_express_method') == 'Sale' ? 'Complete' : 'NotComplete'),
+				'currency_code' => $result['PAYMENTINFO_0_CURRENCYCODE'],
 				'authorization_id' => $result['PAYMENTINFO_0_TRANSACTIONID'],
-				'total'            => $result['PAYMENTINFO_0_AMT']
+				'total' => $result['PAYMENTINFO_0_AMT'],
 			);
-
 			$paypal_order_id = $this->model_payment_pp_express->addOrder($paypal_order_data);
 
 			//add transaction to paypal transaction table
 			$paypal_transaction_data = array(
-				'paypal_order_id'       => $paypal_order_id,
-				'transaction_id'        => $result['PAYMENTINFO_0_TRANSACTIONID'],
+				'paypal_order_id' => $paypal_order_id,
+				'transaction_id' => $result['PAYMENTINFO_0_TRANSACTIONID'],
 				'parent_transaction_id' => '',
-				'note'                  => '',
-				'msgsubid'              => '',
-				'receipt_id'            => (isset($result['PAYMENTINFO_0_RECEIPTID']) ? $result['PAYMENTINFO_0_RECEIPTID'] : ''),
-				'payment_type'          => $result['PAYMENTINFO_0_PAYMENTTYPE'],
-				'payment_status'        => $result['PAYMENTINFO_0_PAYMENTSTATUS'],
-				'pending_reason'        => $result['PAYMENTINFO_0_PENDINGREASON'],
-				'transaction_entity'    => ($this->config->get('pp_express_method') == 'Sale' ? 'payment' : 'auth'),
-				'amount'                => $result['PAYMENTINFO_0_AMT'],
-				'debug_data'            => json_encode($result)
+				'note' => '',
+				'msgsubid' => '',
+				'receipt_id' => (isset($result['PAYMENTINFO_0_RECEIPTID']) ? $result['PAYMENTINFO_0_RECEIPTID'] : ''),
+				'payment_type' => $result['PAYMENTINFO_0_PAYMENTTYPE'],
+				'payment_status' => $result['PAYMENTINFO_0_PAYMENTSTATUS'],
+				'pending_reason' => $result['PAYMENTINFO_0_PENDINGREASON'],
+				'transaction_entity' => ($this->config->get('pp_express_method') == 'Sale' ? 'payment' : 'auth'),
+				'amount' => $result['PAYMENTINFO_0_AMT'],
+				'debug_data' => json_encode($result),
 			);
 			$this->model_payment_pp_express->addTransaction($paypal_transaction_data);
 
 			$recurring_products = $this->cart->getRecurringProducts();
 
 			//loop through any products that are recurring items
-			if ($recurring_products) {
+			if(!empty($recurring_products)) {
+
 				$this->load->model('checkout/recurring');
 
 				$billing_period = array(
-					'day'        => 'Day',
-					'week'       => 'Week',
+					'day' => 'Day',
+					'week' => 'Week',
 					'semi_month' => 'SemiMonth',
-					'month'      => 'Month',
-					'year'       => 'Year'
+					'month' => 'Month',
+					'year' => 'Year'
 				);
 
-				foreach ($recurring_products as $item) {
+				foreach($recurring_products as $item) {
 					$data = array(
-						'METHOD'             => 'CreateRecurringPaymentsProfile',
-						'TOKEN'              => $this->session->data['paypal']['token'],
-						'PROFILESTARTDATE'   => gmdate("Y-m-d\TH:i:s\Z", gmmktime(gmdate('H'), gmdate('i') + 5, gmdate('s'), gmdate('m'), gmdate('d'), gmdate('y'))),
-						'BILLINGPERIOD'      => $billing_period[$item['recurring']['frequency']],
-						'BILLINGFREQUENCY'   => $item['recurring']['cycle'],
-						'TOTALBILLINGCYCLES' => $item['recurring']['duration'],
-						'AMT'                => $this->currency->format($this->tax->calculate($item['recurring']['price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'],
-						'CURRENCYCODE'       => $this->currency->getCode()
+						'METHOD' => 'CreateRecurringPaymentsProfile',
+						'TOKEN' => $this->session->data['paypal']['token'],
+						'PROFILESTARTDATE' => gmdate("Y-m-d\TH:i:s\Z", mktime(gmdate("H"), gmdate("i")+5, gmdate("s"), gmdate("m"), gmdate("d"), gmdate("y"))),
+						'BILLINGPERIOD' => $billing_period[$item['recurring_frequency']],
+						'BILLINGFREQUENCY' => $item['recurring_cycle'],
+						'TOTALBILLINGCYCLES' => $item['recurring_duration'],
+						'AMT' => $this->currency->format($this->tax->calculate($item['recurring_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'],
+						'CURRENCYCODE' => $this->currency->getCode(),
 					);
 
 					//trial information
-					if ($item['recurring']['trial'] == 1) {
+					if($item['recurring_trial'] == 1) {
 						$data_trial = array(
-							'TRIALBILLINGPERIOD'      => $billing_period[$item['recurring']['trial_frequency']],
-							'TRIALBILLINGFREQUENCY'   => $item['recurring']['trial_cycle'],
-							'TRIALTOTALBILLINGCYCLES' => $item['recurring']['trial_duration'],
-							'TRIALAMT'                => $this->currency->format($this->tax->calculate($item['recurring']['trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity']
+							'TRIALBILLINGPERIOD' => $billing_period[$item['recurring_trial_frequency']],
+							'TRIALBILLINGFREQUENCY' => $item['recurring_trial_cycle'],
+							'TRIALTOTALBILLINGCYCLES' => $item['recurring_trial_duration'],
+							'TRIALAMT' => $this->currency->format($this->tax->calculate($item['recurring_trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'],
 						);
 
-						$trial_amt = $this->currency->format($this->tax->calculate($item['recurring']['trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'] . ' ' . $this->currency->getCode();
-						$trial_text =  sprintf($this->language->get('text_trial'), $trial_amt, $item['recurring']['trial_cycle'], $item['recurring']['trial_frequency'], $item['recurring']['trial_duration']);
+						$trial_amt = $this->currency->format($this->tax->calculate($item['recurring_trial_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false) * $item['quantity'].' '.$this->currency->getCode();
+						$trial_text =  sprintf($this->language->get('text_trial'), $trial_amt, $item['recurring_trial_cycle'], $item['recurring_trial_frequency'], $item['recurring_trial_duration']);
 
 						$data = array_merge($data, $data_trial);
 					} else {
 						$trial_text = '';
 					}
 
-					$recurring_amt = $this->currency->format($this->tax->calculate($item['recurring']['price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false)  * $item['quantity'] . ' ' . $this->currency->getCode();
-					$recurring_description = $trial_text . sprintf($this->language->get('text_recurring'), $recurring_amt, $item['recurring']['cycle'], $item['recurring']['frequency']);
+					$recurring_amt = $this->currency->format($this->tax->calculate($item['recurring_price'], $item['tax_class_id'], $this->config->get('config_tax')), false, false, false)  * $item['quantity'].' '.$this->currency->getCode();
+					$recurring_description = $trial_text.sprintf($this->language->get('text_recurring'), $recurring_amt, $item['recurring_cycle'], $item['recurring_frequency']);
 
-					if ($item['recurring']['duration'] > 0) {
-						$recurring_description .= sprintf($this->language->get('text_length'), $item['recurring']['duration']);
+					if($item['recurring_duration'] > 0) {
+						$recurring_description .= sprintf($this->language->get('text_length'), $item['recurring_duration']);
 					}
 
-					//create new recurring and set to pending status as no payment has been made yet.
+					//create new profile and set to pending status as no payment has been made yet.
 					$recurring_id = $this->model_checkout_recurring->create($item, $order_id, $recurring_description);
 
 					$data['PROFILEREFERENCE'] = $recurring_id;
@@ -1495,20 +1475,20 @@ class ControllerPaymentPPExpress extends Controller {
 
 					$result = $this->model_payment_pp_express->call($data);
 
-					if (isset($result['PROFILEID'])) {
+					if(isset($result['PROFILEID'])) {
 						$this->model_checkout_recurring->addReference($recurring_id, $result['PROFILEID']);
 					} else {
-						// there was an error creating the recurring, need to log and also alert admin / user
+						// there was an error creating the profile, need to log and also alert admin / user
+
 
 					}
 				}
 			}
 
-			if (isset($result['REDIRECTREQUIRED']) && $result['REDIRECTREQUIRED'] == true) {
-				//- handle german redirect here
-				$this->response->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_complete-express-checkout&token=' . $this->session->data['paypal']['token']);
+			if(isset($result['REDIRECTREQUIRED']) && $result['REDIRECTREQUIRED'] == true) { //- handle german redirect here
+				$this->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_complete-express-checkout&token='.$this->session->data['paypal']['token']);
 			} else {
-				$this->response->redirect($this->url->link('checkout/success'));
+				$this->redirect($this->url->link('checkout/success'));
 			}
 		} else {
 
@@ -1518,8 +1498,7 @@ class ControllerPaymentPPExpress extends Controller {
 					if ($this->session->data['paypal_redirect_count'] == 2) {
 						$this->session->data['paypal_redirect_count'] = 0;
 						$this->session->data['error'] = $this->language->get('error_too_many_failures');
-
-						$this->response->redirect($this->url->link('checkout/checkout', '', 'SSL'));
+						$this->redirect($this->url->link('checkout/checkout', '', 'SSL'));
 					} else {
 						$this->session->data['paypal_redirect_count']++;
 					}
@@ -1528,50 +1507,56 @@ class ControllerPaymentPPExpress extends Controller {
 				}
 
 				if ($this->config->get('pp_express_test') == 1) {
-					$this->response->redirect('https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
+					$this->redirect('https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
 				} else {
-					$this->response->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
+					$this->redirect('https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' . $this->session->data['paypal']['token']);
 				}
 			}
 
 			$this->language->load('payment/pp_express');
 
-			$data['breadcrumbs'] = array();
+			$this->data['breadcrumbs'] = array();
 
-			$data['breadcrumbs'][] = array(
+			$this->data['breadcrumbs'][] = array(
 				'href' => $this->url->link('common/home'),
-				'text' => $this->language->get('text_home')
+				'text' => $this->language->get('text_home'),
+				'separator' => false
 			);
 
-			$data['breadcrumbs'][] = array(
+			$this->data['breadcrumbs'][] = array(
 				'href' => $this->url->link('checkout/cart'),
-				'text' => $this->language->get('text_cart')
+				'text' => $this->language->get('text_cart'),
+				'separator' => $this->language->get('text_separator')
 			);
 
-			$data['heading_title'] = $this->language->get('error_heading_title');
+			$this->data['heading_title'] = $this->language->get('error_heading_title');
 
-			$data['text_error'] = '<div class="warning">' . $result['L_ERRORCODE0'] . ' : ' . $result['L_LONGMESSAGE0'] . '</div>';
+			$this->data['text_error'] = '<div class="warning">'.$result['L_ERRORCODE0'].' : '.$result['L_LONGMESSAGE0'].'</div>';
 
-			$data['button_continue'] = $this->language->get('button_continue');
+			$this->data['button_continue'] = $this->language->get('button_continue');
 
-			$data['continue'] = $this->url->link('checkout/cart');
+			$this->data['continue'] = $this->url->link('checkout/cart');
 
 			unset($this->session->data['success']);
 
-			$this->response->addHeader($this->request->server['SERVER_PROTOCOL'] . ' 404 Not Found');
+			$this->response->addHeader($this->request->server['SERVER_PROTOCOL'] . '/1.1 404 Not Found');
 
-			$data['column_left'] = $this->load->controller('common/column_left');
-			$data['column_right'] = $this->load->controller('common/column_right');
-			$data['content_top'] = $this->load->controller('common/content_top');
-			$data['content_bottom'] = $this->load->controller('common/content_bottom');
-			$data['footer'] = $this->load->controller('common/footer');
-			$data['header'] = $this->load->controller('common/header');
-
-			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/not_found.tpl')) {
-				$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/payment/not_found.tpl'));
+			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/error/not_found.tpl')) {
+				$this->template = $this->config->get('config_template') . '/template/error/not_found.tpl';
 			} else {
-				$this->response->setOutput($this->load->view('default/template/payment/not_found.tpl'));
+				$this->template = 'default/template/error/not_found.tpl';
 			}
+
+			$this->children = array(
+				'common/column_left',
+				'common/column_right',
+				'common/content_top',
+				'common/content_bottom',
+				'common/footer',
+				'common/header'
+			);
+
+			$this->response->setOutput($this->render());
 		}
 	}
 
@@ -1582,7 +1567,7 @@ class ControllerPaymentPPExpress extends Controller {
 		$request = 'cmd=_notify-validate';
 
 		foreach ($_POST as $key => $value) {
-			$request .= '&' . $key . '=' . urlencode(html_entity_decode($value, ENT_QUOTES, 'UTF-8'));
+			$request .= '&' . $key . '=' . urlencode(stripslashes($value));
 		}
 
 		if ($this->config->get('pp_express_test') == 1) {
@@ -1606,62 +1591,63 @@ class ControllerPaymentPPExpress extends Controller {
 
 		$this->model_payment_pp_express->log(array('request' => $request,'response' => $response), 'IPN data');
 
-		if ((string)$response == "VERIFIED")  {
-
-			if ($this->config->get('pp_express_debug') == 1) {
+		if ( (string)$response == "VERIFIED" )  {
+			if($this->config->get('pp_express_debug') == 1) {
 				$this->log->write((isset($this->request->post['transaction_entity']) ? $this->request->post['transaction_entity'] : ''));
 			}
 
-			if (isset($this->request->post['txn_id'])) {
+			if(isset($this->request->post['txn_id'])) {
 				$transaction = $this->model_payment_pp_express->getTransactionRow($this->request->post['txn_id']);
 			} else {
 				$transaction = false;
 			}
 
-			if (isset($this->request->post['parent_txn_id'])) {
+			if(isset($this->request->post['parent_txn_id'])) {
 				$parent_transaction = $this->model_payment_pp_express->getTransactionRow($this->request->post['parent_txn_id']);
 			} else {
 				$parent_transaction = false;
 			}
 
-			if ($transaction) {
+			if($transaction) {
 				//transaction exists, check for cleared payment or updates etc
-				if ($this->config->get('pp_express_debug') == 1) {
+				if($this->config->get('pp_express_debug') == 1) {
 					$this->log->write('Transaction exists');
 				}
 
 				//if the transaction is pending but the new status is completed
-				if ($transaction['payment_status'] != $this->request->post['payment_status']) {
+				if($transaction['payment_status'] != $this->request->post['payment_status']) {
 					$this->db->query("UPDATE `" . DB_PREFIX . "paypal_order_transaction` SET `payment_status` = '" . $this->request->post['payment_status'] . "' WHERE `transaction_id` = '" . $this->db->escape($transaction['transaction_id']) . "' LIMIT 1");
-				} elseif ($transaction['payment_status'] == 'Pending' && ($transaction['pending_reason'] != $this->request->post['pending_reason'])) {
+
+
+				}elseif($transaction['payment_status'] == 'Pending' && ($transaction['pending_reason'] != $this->request->post['pending_reason'])) {
 					//payment is still pending but the pending reason has changed, update it.
 					$this->db->query("UPDATE `" . DB_PREFIX . "paypal_order_transaction` SET `pending_reason` = '" . $this->request->post['pending_reason'] . "' WHERE `transaction_id` = '" . $this->db->escape($transaction['transaction_id']) . "' LIMIT 1");
 				}
 			} else {
-				if ($this->config->get('pp_express_debug') == 1) {
+				if($this->config->get('pp_express_debug') == 1) {
 					$this->log->write('Transaction does not exist');
 				}
 
-				if ($parent_transaction) {
-					if ($this->config->get('pp_express_debug') == 1) {
+				if($parent_transaction) {
+					//parent transaction exists
+					if($this->config->get('pp_express_debug') == 1) {
 						$this->log->write('Parent transaction exists');
 					}
-					//parent transaction exists
 
-					//add new related transaction
+					//insert new related transaction
 					$transaction = array(
-						'paypal_order_id'       => $parent_transaction['paypal_order_id'],
-						'transaction_id'        => $this->request->post['txn_id'],
+						'paypal_order_id' => $parent_transaction['paypal_order_id'],
+						'transaction_id' => $this->request->post['txn_id'],
 						'parent_transaction_id' => $this->request->post['parent_txn_id'],
-						'note'                  => '',
-						'msgsubid'              => '',
-						'receipt_id'            => (isset($this->request->post['receipt_id']) ? $this->request->post['receipt_id'] : ''),
-						'payment_type'          => (isset($this->request->post['payment_type']) ? $this->request->post['payment_type'] : ''),
-						'payment_status'        => (isset($this->request->post['payment_status']) ? $this->request->post['payment_status'] : ''),
-						'pending_reason'        => (isset($this->request->post['pending_reason']) ? $this->request->post['pending_reason'] : ''),
-						'amount'                => $this->request->post['mc_gross'],
-						'debug_data'            => json_encode($this->request->post),
-						'transaction_entity'    => (isset($this->request->post['transaction_entity']) ? $this->request->post['transaction_entity'] : '')
+						'note' => '',
+						'msgsubid' => '',
+						'receipt_id' => (isset($this->request->post['receipt_id']) ? $this->request->post['receipt_id'] : ''),
+						'payment_type' => (isset($this->request->post['payment_type']) ? $this->request->post['payment_type'] : ''),
+						'payment_status' => (isset($this->request->post['payment_status']) ? $this->request->post['payment_status'] : ''),
+						'pending_reason' => (isset($this->request->post['pending_reason']) ? $this->request->post['pending_reason'] : ''),
+						'amount' => $this->request->post['mc_gross'],
+						'debug_data' => json_encode($this->request->post),
+						'transaction_entity' => (isset($this->request->post['transaction_entity']) ? $this->request->post['transaction_entity'] : ''),
 					);
 
 					$this->model_payment_pp_express->addTransaction($transaction);
@@ -1669,8 +1655,8 @@ class ControllerPaymentPPExpress extends Controller {
 					/**
 					 * If there has been a refund, log this against the parent transaction.
 					 */
-					if (isset($this->request->post['payment_status']) && $this->request->post['payment_status'] == 'Refunded') {
-						if (($this->request->post['mc_gross'] * -1) == $parent_transaction['amount']) {
+					if(isset($this->request->post['payment_status']) && $this->request->post['payment_status'] == 'Refunded') {
+						if(($this->request->post['mc_gross'] * -1) == $parent_transaction['amount']) {
 							$this->db->query("UPDATE `" . DB_PREFIX . "paypal_order_transaction` SET `payment_status` = 'Refunded' WHERE `transaction_id` = '" . $this->db->escape($parent_transaction['transaction_id']) . "' LIMIT 1");
 						} else {
 							$this->db->query("UPDATE `" . DB_PREFIX . "paypal_order_transaction` SET `payment_status` = 'Partially-Refunded' WHERE `transaction_id` = '" . $this->db->escape($parent_transaction['transaction_id']) . "' LIMIT 1");
@@ -1680,31 +1666,31 @@ class ControllerPaymentPPExpress extends Controller {
 					/**
 					 * If the capture payment is now complete
 					 */
-					if (isset($this->request->post['auth_status']) && $this->request->post['auth_status'] == 'Completed' && $parent_transaction['payment_status'] == 'Pending') {
-						$captured = $this->currency->format($this->model_payment_pp_express->totalCaptured($parent_transaction['paypal_order_id']), false, false, false);
-						$refunded = $this->currency->format($this->model_payment_pp_express->totalRefundedOrder($parent_transaction['paypal_order_id']), false, false, false);
-						$remaining = $this->currency->format($parent_transaction['amount'] - $captured + $refunded, false, false, false);
+					if(isset($this->request->post['auth_status']) && $this->request->post['auth_status'] == 'Completed' && $parent_transaction['payment_status'] == 'Pending') {
+						$captured = number_format($this->model_payment_pp_express->totalCaptured($parent_transaction['paypal_order_id']), 2);
+						$refunded = number_format($this->model_payment_pp_express->totalRefundedOrder($parent_transaction['paypal_order_id']), 2);
+						$remaining = number_format($parent_transaction['amount'] - $captured + $refunded, 2);
 
-						if ($this->config->get('pp_express_debug') == 1) {
-							$this->log->write('Captured: ' . $captured);
-							$this->log->write('Refunded: ' . $refunded);
-							$this->log->write('Remaining: ' . $remaining);
+						if($this->config->get('pp_express_debug') == 1) {
+							$this->log->write('Captured: '.$captured);
+							$this->log->write('Refunded: '.$refunded);
+							$this->log->write('Remaining: '.$remaining);
 						}
 
-						if ($remaining > 0.00) {
+						if($remaining > 0.00) {
 							$transaction = array(
-								'paypal_order_id'       => $parent_transaction['paypal_order_id'],
-								'transaction_id'        => '',
+								'paypal_order_id' => $parent_transaction['paypal_order_id'],
+								'transaction_id' => '',
 								'parent_transaction_id' => $this->request->post['parent_txn_id'],
-								'note'                  => '',
-								'msgsubid'              => '',
-								'receipt_id'            => '',
-								'payment_type'          => '',
-								'payment_status'        => 'Void',
-								'pending_reason'        => '',
-								'amount'                => '',
-								'debug_data'            => 'Voided after capture',
-								'transaction_entity'    => 'auth'
+								'note' => '',
+								'msgsubid' => '',
+								'receipt_id' => '',
+								'payment_type' => '',
+								'payment_status' => 'Void',
+								'pending_reason' => '',
+								'amount' => '',
+								'debug_data' => 'Voided after capture',
+								'transaction_entity' => 'auth'
 							);
 
 							$this->model_payment_pp_express->addTransaction($transaction);
@@ -1715,7 +1701,7 @@ class ControllerPaymentPPExpress extends Controller {
 
 				} else {
 					//parent transaction doesn't exists, need to investigate?
-					if ($this->config->get('pp_express_debug') == 1) {
+					if($this->config->get('pp_express_debug') == 1) {
 						$this->log->write('Parent transaction not found');
 					}
 				}
@@ -1724,123 +1710,123 @@ class ControllerPaymentPPExpress extends Controller {
 			/*
 			 * Subscription payments
 			 *
-			 * recurring ID should always exist if its a recurring payment transaction.
+			 * profile ID should always exist if its a recurring payment transaction.
 			 *
 			 * also the reference will match a recurring payment ID
 			 */
 			if (isset($this->request->post['txn_type'])) {
 				//payment
 				if ($this->request->post['txn_type'] == 'recurring_payment') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `amount` = '" . (float)$this->request->post['amount'] . "', `type` = '1'");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `amount` = '" . (float)$this->request->post['amount'] . "', `type` = '1'");
 
-						//as there was a payment the recurring is active, ensure it is set to active (may be been suspended before)
-						if ($recurring['status'] != 1) {
-							$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 2 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "'");
+						//as there was a payment the profile is active, ensure it is set to active (may be been suspended before)
+						if ($profile['status'] != 1) {
+							$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 2 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "'");
 						}
 					}
 				}
 
 				//suspend
 				if ($this->request->post['txn_type'] == 'recurring_payment_suspended') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '6'");
-						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 3 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "' LIMIT 1");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '6'");
+						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 3 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "' LIMIT 1");
 					}
 				}
 
 				//suspend due to max failed
 				if ($this->request->post['txn_type'] == 'recurring_payment_suspended_due_to_max_failed_payment') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '7'");
-						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 3 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "' LIMIT 1");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '7'");
+						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 3 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "' LIMIT 1");
 					}
 				}
 
 				//payment failed
 				if ($this->request->post['txn_type'] == 'recurring_payment_failed') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '4'");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '4'");
 					}
 				}
 
 				//outstanding payment failed
 				if ($this->request->post['txn_type'] == 'recurring_payment_outstanding_payment_failed') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '8'");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '8'");
 					}
 				}
 
 				//outstanding payment
 				if ($this->request->post['txn_type'] == 'recurring_payment_outstanding_payment') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `amount` = '" . (float)$this->request->post['amount'] . "', `type` = '2'");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `amount` = '" . (float)$this->request->post['amount'] . "', `type` = '2'");
 
-						//as there was a payment the recurring is active, ensure it is set to active (may be been suspended before)
-						if ($recurring['status'] != 1) {
-							$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 2 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "'");
+						//as there was a payment the profile is active, ensure it is set to active (may be been suspended before)
+						if ($profile['status'] != 1) {
+							$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 2 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "'");
 						}
 					}
 				}
 
-				//date_added
-				if ($this->request->post['txn_type'] == 'recurring_payment_recurring_date_added') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+				//created
+				if ($this->request->post['txn_type'] == 'recurring_payment_profile_created') {
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '0'");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '0'");
 
-						if ($recurring['status'] != 1) {
-							$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 2 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "'");
+						if ($profile['status'] != 1) {
+							$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 2 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "'");
 						}
 					}
 				}
 
 				//cancelled
-				if ($this->request->post['txn_type'] == 'recurring_payment_recurring_cancel') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+				if ($this->request->post['txn_type'] == 'recurring_payment_profile_cancel') {
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false && $recurring['status'] != 3) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '5'");
-						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 4 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "' LIMIT 1");
+					if ($profile != false && $profile['status'] != 3) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '5'");
+						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 4 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "' LIMIT 1");
 					}
 				}
 
 				//skipped
 				if ($this->request->post['txn_type'] == 'recurring_payment_skipped') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '3'");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '3'");
 					}
 				}
 
 				//expired
 				if ($this->request->post['txn_type'] == 'recurring_payment_expired') {
-					$recurring = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
+					$profile = $this->model_account_recurring->getProfileByRef($this->request->post['recurring_payment_id']);
 
-					if ($recurring != false) {
-						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '9'");
-						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 5 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "' LIMIT 1");
+					if ($profile != false) {
+						$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '9'");
+						$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 5 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "' LIMIT 1");
 					}
 				}
 			}
-		} elseif ((string)$response == "INVALID") {
+		}elseif( (string)$response == "INVALID" ) {
 			$this->model_payment_pp_express->log(array('IPN was invalid'), 'IPN fail');
 		} else {
-			if ($this->config->get('pp_express_debug') == 1) {
+			if($this->config->get('pp_express_debug') == 1) {
 				$this->log->write('string unknown ');
 			}
 		}
@@ -1851,7 +1837,7 @@ class ControllerPaymentPPExpress extends Controller {
 	public function shipping() {
 		$this->shippingValidate($this->request->post['shipping_method']);
 
-		$this->response->redirect($this->url->link('payment/pp_express/expressConfirm'));
+		$this->redirect($this->url->link('payment/pp_express/expressConfirm'));
 	}
 
 	protected function shippingValidate($code) {
@@ -1876,23 +1862,23 @@ class ControllerPaymentPPExpress extends Controller {
 	}
 
 	public function recurringCancel() {
-		//cancel an active recurring
+		//cancel an active profile
 
 		$this->load->model('account/recurring');
 		$this->load->model('payment/pp_express');
 		$this->language->load('account/recurring');
 
-		$recurring = $this->model_account_recurring->getProfile($this->request->get['recurring_id']);
+		$profile = $this->model_account_recurring->getProfile($this->request->get['recurring_id']);
 
-		if ($recurring && !empty($recurring['reference'])) {
+		if ($profile && !empty($profile['profile_reference'])) {
 
-			$result = $this->model_payment_pp_express->recurringCancel($recurring['reference']);
+			$result = $this->model_payment_pp_express->recurringCancel($profile['profile_reference']);
 
 			if (isset($result['PROFILEID'])) {
-				$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "', `date_added` = NOW(), `type` = '5'");
-				$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 4 WHERE `order_recurring_id` = '" . (int)$recurring['order_recurring_id'] . "' LIMIT 1");
+				$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring_transaction` SET `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "', `created` = NOW(), `type` = '5'");
+				$this->db->query("UPDATE `" . DB_PREFIX . "order_recurring` SET `status` = 4 WHERE `order_recurring_id` = '" . (int)$profile['order_recurring_id'] . "' LIMIT 1");
 
-				$this->session->data['success'] = $this->language->get('text_cancelled');
+				$this->session->data['success'] = $this->language->get('success_cancelled');
 			} else {
 				$this->session->data['error'] = sprintf($this->language->get('error_not_cancelled'), $result['L_LONGMESSAGE0']);
 			}
@@ -1900,7 +1886,7 @@ class ControllerPaymentPPExpress extends Controller {
 			$this->session->data['error'] = $this->language->get('error_not_found');
 		}
 
-		$this->response->redirect($this->url->link('account/recurring/info', 'recurring_id=' . $this->request->get['recurring_id'], 'SSL'));
+		$this->redirect($this->url->link('account/recurring/info', 'recurring_id=' . $this->request->get['recurring_id'], 'SSL'));
 	}
 
 	protected function validateCoupon() {
@@ -1973,30 +1959,5 @@ class ControllerPaymentPPExpress extends Controller {
 			return false;
 		}
 	}
-
-	public function recurringButtons() {
-		$this->language->load('payment/pp_express');
-
-		$recurring = $this->model_account_recurring->getProfile($this->request->get['recurring_id']);
-
-		$data['buttons'] = array();
-
-		if ($recurring['status'] == 2 || $recurring['status'] == 3) {
-			$data['buttons'][] = array(
-				'text' => $this->language->get('button_cancel_recurring'),
-				'link' => $this->url->link('payment/pp_express/recurringCancel', 'recurring_id=' . $this->request->get['recurring_id'], 'SSL')
-			);
-		}
-
-		$data['buttons'][] = array(
-			'text' => $this->language->get('button_continue'),
-			'link' => $this->url->link('account/recurring', '', 'SSL')
-		);
-
-		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/common/buttons.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/common/buttons.tpl', $data);
-		} else {
-			return $this->load->view('default/template/common/buttons.tpl', $data);
-		}
-	}
 }
+?>

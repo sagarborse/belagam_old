@@ -1,8 +1,6 @@
-<?php
+<?php 
 class ModelCatalogAttribute extends Model {
 	public function addAttribute($data) {
-		$this->event->trigger('pre.admin.attribute.add', $data);
-
 		$this->db->query("INSERT INTO " . DB_PREFIX . "attribute SET attribute_group_id = '" . (int)$data['attribute_group_id'] . "', sort_order = '" . (int)$data['sort_order'] . "'");
 
 		$attribute_id = $this->db->getLastId();
@@ -10,15 +8,9 @@ class ModelCatalogAttribute extends Model {
 		foreach ($data['attribute_description'] as $language_id => $value) {
 			$this->db->query("INSERT INTO " . DB_PREFIX . "attribute_description SET attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
 		}
-
-		$this->event->trigger('post.admin.attribute.add', $attribute_id);
-
-		return $attribute_id;
 	}
 
 	public function editAttribute($attribute_id, $data) {
-		$this->event->trigger('pre.admin.attribute.edit', $data);
-
 		$this->db->query("UPDATE " . DB_PREFIX . "attribute SET attribute_group_id = '" . (int)$data['attribute_group_id'] . "', sort_order = '" . (int)$data['sort_order'] . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
 
 		$this->db->query("DELETE FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");
@@ -26,17 +18,11 @@ class ModelCatalogAttribute extends Model {
 		foreach ($data['attribute_description'] as $language_id => $value) {
 			$this->db->query("INSERT INTO " . DB_PREFIX . "attribute_description SET attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
 		}
-
-		$this->event->trigger('post.admin.attribute.edit', $attribute_id);
 	}
 
 	public function deleteAttribute($attribute_id) {
-		$this->event->trigger('pre.admin.attribute.delete', $attribute_id);
-
 		$this->db->query("DELETE FROM " . DB_PREFIX . "attribute WHERE attribute_id = '" . (int)$attribute_id . "'");
 		$this->db->query("DELETE FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");
-
-		$this->event->trigger('post.admin.attribute.delete', $attribute_id);
 	}
 
 	public function getAttribute($attribute_id) {
@@ -60,13 +46,13 @@ class ModelCatalogAttribute extends Model {
 			'ad.name',
 			'attribute_group',
 			'a.sort_order'
-		);
+		);	
 
 		if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
-			$sql .= " ORDER BY " . $data['sort'];
+			$sql .= " ORDER BY " . $data['sort'];	
 		} else {
-			$sql .= " ORDER BY attribute_group, ad.name";
-		}
+			$sql .= " ORDER BY attribute_group, ad.name";	
+		}	
 
 		if (isset($data['order']) && ($data['order'] == 'DESC')) {
 			$sql .= " DESC";
@@ -77,14 +63,14 @@ class ModelCatalogAttribute extends Model {
 		if (isset($data['start']) || isset($data['limit'])) {
 			if ($data['start'] < 0) {
 				$data['start'] = 0;
-			}
+			}				
 
 			if ($data['limit'] < 1) {
 				$data['limit'] = 20;
-			}
+			}	
 
 			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
-		}
+		}	
 
 		$query = $this->db->query($sql);
 
@@ -118,13 +104,13 @@ class ModelCatalogAttribute extends Model {
 			'ad.name',
 			'attribute_group',
 			'a.sort_order'
-		);
+		);	
 
 		if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
-			$sql .= " ORDER BY " . $data['sort'];
+			$sql .= " ORDER BY " . $data['sort'];	
 		} else {
-			$sql .= " ORDER BY ad.name";
-		}
+			$sql .= " ORDER BY ad.name";	
+		}	
 
 		if (isset($data['order']) && ($data['order'] == 'DESC')) {
 			$sql .= " DESC";
@@ -135,14 +121,14 @@ class ModelCatalogAttribute extends Model {
 		if (isset($data['start']) || isset($data['limit'])) {
 			if ($data['start'] < 0) {
 				$data['start'] = 0;
-			}
+			}				
 
 			if ($data['limit'] < 1) {
 				$data['limit'] = 20;
-			}
+			}	
 
 			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
-		}
+		}	
 
 		$query = $this->db->query($sql);
 
@@ -153,11 +139,12 @@ class ModelCatalogAttribute extends Model {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "attribute");
 
 		return $query->row['total'];
-	}
+	}	
 
 	public function getTotalAttributesByAttributeGroupId($attribute_group_id) {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "attribute WHERE attribute_group_id = '" . (int)$attribute_group_id . "'");
 
 		return $query->row['total'];
-	}
+	}		
 }
+?>

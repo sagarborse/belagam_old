@@ -35,39 +35,4 @@ $_['text_leave_a_comment'] = 'Leave A Comment';
   */
   $_['filter_blog_header_title'] = 'Filter Blogs By %s';
   $_['blogs_latest_header_title'] = 'Latest Blogs';
-
-  /*blogcategory module*/
-  // Heading 
-$_['blog_category_heading_title'] = 'Blog Category';
-
-// Text
-$_['text_latest']  = 'Latest'; 
-$_['text_mostviewed']  = 'Most Viewed'; 
-$_['text_featured']  = 'Featured'; 
-$_['text_bestseller']  = 'Best Seller'; 
-
-/*blogcomment module*/
-// Heading 
-$_['blogcomment_heading_title'] = 'Latest Comments';
-
-$_['text_postedby'] = 'Posted By';
-/*bloglatest module*/
-// Heading 
-$_['bloglatest_heading_title'] = 'Latest';
-
-// Text
-$_['text_latest']  = 'Latest Blog'; 
-$_['text_mostviewed']  = 'Most Viewed'; 
-$_['text_featured']  = 'Featured'; 
-$_['text_bestseller']  = 'Best Seller'; 
-$_['entry_show_readmore'] = 'Show Readmore' ;
-$_['text_readmore'] = 'Read more';
-
-
-// Page Blogs
-$_['text_blogs'] = 'Blogs';
-
-$_['text_error'] = 'Blogs not found!';
-
-
 ?>

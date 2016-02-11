@@ -1,9 +1,9 @@
-<?php
+<?php 
 class ModelPaymentFreeCheckout extends Model {
 	public function getMethod($address, $total) {
-		$this->load->language('payment/free_checkout');
+		$this->language->load('payment/free_checkout');
 
-		if ($total <= 0.00) {
+		if ($total <= 0) {
 			$status = true;
 		} else {
 			$status = false;
@@ -11,11 +11,10 @@ class ModelPaymentFreeCheckout extends Model {
 
 		$method_data = array();
 
-		if ($status) {
-			$method_data = array(
+		if ($status) {  
+			$method_data = array( 
 				'code'       => 'free_checkout',
 				'title'      => $this->language->get('text_title'),
-				'terms'      => '',
 				'sort_order' => $this->config->get('free_checkout_sort_order')
 			);
 		}
@@ -23,3 +22,4 @@ class ModelPaymentFreeCheckout extends Model {
 		return $method_data;
 	}
 }
+?>

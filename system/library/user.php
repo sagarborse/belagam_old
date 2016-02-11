@@ -15,7 +15,6 @@ class User {
 			if ($user_query->num_rows) {
 				$this->user_id = $user_query->row['user_id'];
 				$this->username = $user_query->row['username'];
-				$this->user_group_id = $user_query->row['user_group_id'];
 
 				$this->db->query("UPDATE " . DB_PREFIX . "user SET ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE user_id = '" . (int)$this->session->data['user_id'] . "'");
 
@@ -41,8 +40,7 @@ class User {
 			$this->session->data['user_id'] = $user_query->row['user_id'];
 
 			$this->user_id = $user_query->row['user_id'];
-			$this->username = $user_query->row['username'];
-			$this->user_group_id = $user_query->row['user_group_id'];
+			$this->username = $user_query->row['username'];			
 
 			$user_group_query = $this->db->query("SELECT permission FROM " . DB_PREFIX . "user_group WHERE user_group_id = '" . (int)$user_query->row['user_group_id'] . "'");
 
@@ -65,6 +63,8 @@ class User {
 
 		$this->user_id = '';
 		$this->username = '';
+
+		session_destroy();
 	}
 
 	public function hasPermission($key, $value) {
@@ -86,8 +86,5 @@ class User {
 	public function getUserName() {
 		return $this->username;
 	}
-	
-	public function getGroupId() {
-		return $this->user_group_id;
-	}	
 }
+?>

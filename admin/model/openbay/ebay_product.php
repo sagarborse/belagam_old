@@ -27,7 +27,7 @@ class ModelOpenbayEbayProduct extends Model {
 						'option_value_id'           => $product_option_value['option_value_id'],
 						'name'                      => $product_option_value['name'],
 						'image'                     => $product_option_value['image'],
-						'image_thumb'               => (!empty($product_option_value['image'])) ? $this->model_tool_image->resize($product_option_value['image'], 100, 100) : '',
+						'image_thumb'               => (!empty($product_option_value['image'])?$this->model_tool_image->resize($product_option_value['image'], 100, 100):''),
 						'quantity'                  => $product_option_value['quantity'],
 						'subtract'                  => $product_option_value['subtract'],
 						'price'                     => $product_option_value['price'],
@@ -61,19 +61,28 @@ class ModelOpenbayEbayProduct extends Model {
 			WHERE `status` = '1'");
 
 		//loop over products and if count is more than 1, update all older entries to 0
-		foreach($sql->rows as $row) {
-			$sql2 = $this->db->query("SELECT * FROM `" . DB_PREFIX . "ebay_listing` WHERE `product_id` = '" . (int)$row['product_id'] . "' AND `status` = 1 ORDER BY `ebay_listing_id` DESC");
+		foreach($sql->rows as $row){
+			$sql2 = $this->db->query("SELECT * FROM `" . DB_PREFIX . "ebay_listing` WHERE `product_id` = '".(int)$row['product_id']."' AND `status` = 1 ORDER BY `ebay_listing_id` DESC");
 
-			if ($sql2->num_rows > 1) {
-				$this->db->query("UPDATE `" . DB_PREFIX . "ebay_listing` SET `status` = 0  WHERE `product_id` = '" . (int)$row['product_id'] . "'");
-				$this->db->query("UPDATE `" . DB_PREFIX . "ebay_listing` SET `status` = 1  WHERE `ebay_listing_id` = '" . (int)$sql2->row['ebay_listing_id'] . "'");
+			if($sql2->num_rows > 1){
+				$this->db->query("UPDATE `" . DB_PREFIX . "ebay_listing` SET `status` = 0  WHERE `product_id` = '".(int)$row['product_id']."'");
+				$this->db->query("UPDATE `" . DB_PREFIX . "ebay_listing` SET `status` = 1  WHERE `ebay_listing_id` = '".(int)$sql2->row['ebay_listing_id']."'");
 			}
 		}
 	}
 
-	public function searchEbayCatalog($search, $category_id, $page = 1) {
-		$response = $this->openbay->ebay->call('listing/searchCatalog/', array('page' => (int)$page, 'categoryId' => $category_id, 'search' => $search));
+	public function searchEbayCatalog($data) {
 
+		if(!isset($data['page'])){ $page = 1; }else{ $page = $data['page']; }
+
+		//validation for category id
+
+		//validation for saerch term
+
+	$response['data']   = $this->openbay->ebay->call('listing/searchCatalog/', array('page' => (int)$page, 'categoryId' => $data['categoryId'], 'search' => $data['search']));
+		$response['error']  = $this->openbay->ebay->lasterror;
+		$response['msg']    = $this->openbay->ebay->lastmsg;
 		return $response;
 	}
 }
+?>

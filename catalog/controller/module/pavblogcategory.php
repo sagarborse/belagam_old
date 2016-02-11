@@ -1,18 +1,13 @@
-<?php
-class ControllerModulePavblogcategory extends Controller {
-
-	private $mdata = array();
-
-	public function index($setting) {
+<?php  
+class Controllermodulepavblogcategory extends Controller {
+	protected function index($setting) {
 		static $module = 0;
-
-		$this->mdata['objlang'] = $this->language;
-
+		
 		$this->load->model('pavblog/category');
 		$this->load->model('tool/image');
-		$this->language->load('module/pavblog');
+		$this->language->load('module/pavblogcategory');
 		
-		$this->mdata['button_cart'] = $this->language->get('button_cart');
+		$this->data['button_cart'] = $this->language->get('button_cart');
 		
 		
 		if( !defined("_PAVBLOG_MEDIA_") ){
@@ -28,26 +23,27 @@ class ControllerModulePavblogcategory extends Controller {
 			'latest' => 1,
 			'limit' => 9
 		);
-
-		$category_id = 0;
-
-		if($this->request->get['route'] == 'pavblog/category' && isset($this->request->get['id'])) {
-			$category_id = $this->request->get['id'];
-		}
-
-		$tree = $this->model_pavblog_category->getTree(null, $category_id);
+	  
+		$tree = $this->model_pavblog_category->getTree();
 		
-		$this->mdata['tree'] = $tree;
+		$this->data['tree'] = $tree;
 		// echo '<pre>'.print_r( $tree,1 ); die;
 		
-		$this->mdata['heading_title'] = $this->language->get('blog_category_heading_title');
-
-
+		$this->data['heading_title'] = $this->language->get('heading_title');
+		
+		
+		
+		
+		
+	
+	
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/module/pavblogcategory.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/module/pavblogcategory.tpl', $this->mdata);
+			$this->template = $this->config->get('config_template') . '/template/module/pavblogcategory.tpl';
 		} else {
-			return $this->load->view('default/template/module/pavblogcategory.tpl', $this->mdata);
+			$this->template = 'default/template/module/pavblogcategory.tpl';
 		}
+		
+		$this->render();
 	}
 	
 }

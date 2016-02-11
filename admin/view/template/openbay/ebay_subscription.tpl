@@ -1,157 +1,181 @@
-<?php echo $header; ?><?php echo $column_left; ?>
+<?php echo $header; ?>
 <div id="content">
-  <div class="page-header">
-    <div class="container-fluid">
-      <div class="pull-right">
-        <a href="<?php echo $return; ?>" data-toggle="tooltip" title="<?php echo $button_cancel; ?>" class="btn btn-default"><i class="fa fa-reply"></i></a>
-      </div>
-      <h1><?php echo $heading_title; ?></h1>
-      <ul class="breadcrumb">
-        <?php foreach ($breadcrumbs as $breadcrumb) { ?>
-        <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
-        <?php } ?>
-      </ul>
+    <div class="breadcrumb">
+<?php 
+        foreach ($breadcrumbs as $breadcrumb) {
+            echo $breadcrumb['separator'] .'<a href="'.$breadcrumb['href'].'">'.$breadcrumb['text'].'</a>';
+        } 
+?>
     </div>
-  </div>
-  <div class="container-fluid">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="fa fa-list"></i> <?php echo $text_subscription; ?></h3>
-      </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="col-md-4">
-            <a class="btn btn-primary" id="load-account" disabled="disabled"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_load_my_plan; ?></a>
-            <div class="panel panel-default" id="my-plan-container">
-              <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user fa-lg"></i> <?php echo $text_subscription_current; ?></h1>
-              </div>
-              <div class="panel-body">
-                <table class="table" id="my-plan"></table>
-              </div>
+
+    <div class="box mBottom130"> 
+        <div class="heading">
+            <h1><?php echo $lang_heading; ?></h1>
+            <div class="buttons">
+                <?php if($validation == true) { ?>
+                    <a onclick="loadAccount(); loadUsage();" class="button" id="loadAccount"><span><?php echo $lang_load; ?></span></a>
+                    <img src="view/image/loading.gif" class="imageLoadAccount" class="displayNone" alt="Loading" />
+                <?php } ?>
+                <a onclick="location = '<?php echo $return; ?>';" class="button"><span><?php echo $lang_btn_return; ?></span></a>
             </div>
-          </div>
-          <div class="col-md-8">
-            <a class="btn btn-primary" id="load-plans" disabled="disabled"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_load_plans; ?></a>
-            <div class="panel panel-default" id="openbay-plans-container">
-              <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-list fa-lg"></i> <?php echo $text_subscription_avail; ?></h1>
-              </div>
-              <div class="panel-body">
-                <table id="openbay-plans" class="table"></table>
-                <p><?php echo $text_subscription_avail1; ?></p>
-                <p><?php echo $text_subscription_avail2; ?></p>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
+        <div class="content">
+        <?php if($validation == true) { ?>
+            <h2><?php echo $lang_usage_title; ?> <img src="view/image/loading.gif" id="imageLoadUsage" class="displayNone" alt="Loading" /></h2>
+            <div id="usageTable" class="displayNone"></div>
+            
+            <h2 class="mTop10"><?php echo $lang_subscription_current; ?> <img src="view/image/loading.gif" class="imageLoadAccount" class="displayNone" alt="Loading" /></h2>
+            <table width="100%" cellspacing="0" cellpadding="5" border="0" id="myopenbayplan" class="displayNone border borderNoBottom"></table>
+            
+            <h2 class="mTop10"><?php echo $lang_subscription_avail; ?> <img src="view/image/loading.gif" class="imageLoadAccount" class="displayNone" alt="Loading" /></h2>
+            <p><?php echo $lang_subscription_avail1; ?></p>
+            <p><?php echo $lang_subscription_avail2; ?></p>
+            
+            <table width="100%" cellspacing="0" cellpadding="5" border="0" id="openbayplans" class="displayNone border borderNoBottom"></table>
+
+        <?php }else{ ?>
+            <div class="warning"><?php echo $lang_error_validation; ?></div>
+        <?php } ?>
     </div>
-  </div>
 </div>
 
 <script type="text/javascript"><!--
-  function loadAccount() {
-    $.ajax({
-      url: 'index.php?route=openbay/ebay/getMyPlan&token=<?php echo $token; ?>',
-      type: 'post',
-      dataType: 'json',
-      beforeSend: function(){
-        $('#my-plan-container').hide();
-      },
-      success: function(json) {
-        $('#load-account').hide();
-        $('#my-plan').empty();
+    function loadAccount(){
+	    $.ajax({
+        url: 'index.php?route=openbay/openbay/getMyPlan&token=<?php echo $token; ?>',
+        type: 'post',
+        dataType: 'json',
+        beforeSend: function(){
+            $('#myopenbayplan').hide();
+        },
+        success: function(json) {
+            $('#myopenbayplan').empty().show();
 
-        htmlInj = '';
+            htmlInj = '';
 
-        htmlInj += '<thead>';
-          htmlInj += '<tr>';
-            htmlInj += '<th><?php echo $column_plan; ?></th>';
-            htmlInj += '<th><?php echo $column_price; ?></th>';
-            htmlInj += '<th><?php echo $column_description; ?></th>';
-            htmlInj += '<th></th>';
-          htmlInj += '</tr>';
-        htmlInj += '</thead>';
-        htmlInj += '<tbody>';
-          htmlInj += '<tr>';
-            htmlInj += '<td>'+json.plan.title+'</td>';
-            htmlInj += '<td>&pound;'+json.plan.price+'</td>';
-            htmlInj += '<td>'+json.plan.description+'</td>';
-            htmlInj += '<td></td>';
-          htmlInj += '</tr>';
-
-          if (json.sub_id){
-            htmlInj += '<tr>';
-            htmlInj += '<td colspan="4"><?php echo $text_ajax_acc_load_plan; ?>'+json.sub_id+'<?php echo $text_ajax_acc_load_plan2; ?></td>';
-            htmlInj += '</tr>';
-          }
-
-        htmlInj += '</tbody>';
-
-        $('#my-plan').append(htmlInj);
-        $('#my-plan-container').show();
-      },
-      error: function (xhr, ajaxOptions, thrownError) {
-        if (xhr.status != 0) { alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText); }
-      }
-    });
-  }
-
-  function loadPlans() {
-    $.ajax({
-      url: 'index.php?route=openbay/ebay/getPlans&token=<?php echo $token; ?>',
-      type: 'post',
-      dataType: 'json',
-      beforeSend: function(){
-        $('#openbay-plans-container').hide();
-      },
-      success: function(json) {
-        $('#load-plans').hide();
-        $('#openbay-plans').empty();
-
-        htmlInj = '';
-        htmlInj += '<thead>';
-          htmlInj += '<tr>';
-            htmlInj += '<th><?php echo $column_plan; ?></th>';
-            htmlInj += '<th><?php echo $column_price; ?></th>';
-            htmlInj += '<th><?php echo $column_description; ?></th>';
-            htmlInj += '<th></td>';
-          htmlInj += '</tr>';
-        htmlInj += '</thead>';
-        htmlInj += '<tbody>';
-        $.each(json.plans, function(key,val){
-          htmlInj += '<tr>';
-          htmlInj += '<td>'+val.title+'</td>';
-          htmlInj += '<td>&pound;'+val.price+'</td>';
-          htmlInj += '<td>'+val.description+'</td>';
-          if (val.myplan == 1){
-            htmlInj += '<td><a class="btn btn-success" disabled="disabled"><i class="fa fa-check-circle-o fa-lg"></i> <?php echo $column_current; ?></a></td>';
-          }else{
-            if (val.user_plan_id == 1) {
-              htmlInj += '<td></td>';
-            }else{
-              htmlInj += '<td>';
-              htmlInj += '<a href="https://uk.openbaypro.com/account/live/subscription_setup.php?plan_id='+val.user_plan_id+'&subscriber_id=<?php echo $obp_token;?>" class="btn btn-primary" target="_BLANK"><i class="fa fa-arrow-right fa-lg"></i> <?php echo $button_plan_change; ?></a>';
-              htmlInj += '</td>';
+            if(json.sub_id){
+                htmlInj += '<tr>';
+                    htmlInj += '<td colspan="4" class="bold borderBottom" style="background-color: #EAF7D9; height:40px;line-height:40px;"><?php echo $lang_ajax_acc_load_plan; ?>'+json.sub_id+'<?php echo $lang_ajax_acc_load_plan2; ?></td>';
+                htmlInj += '</tr>';
             }
-          }
-          htmlInj += '</tr>';
-        });
-        htmlInj += '<tbody>';
 
-        $('#openbay-plans').append(htmlInj);
-        $('#openbay-plans-container').show();
-      },
-      error: function (xhr, ajaxOptions, thrownError) {
-        if (xhr.status != 0) { alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText); }
-      }
-    });
-  }
+            htmlInj += '<tr>';
+                htmlInj += '<td width="120" class="bold borderBottom"><?php echo $lang_ajax_acc_load_text1; ?></td>';
+                htmlInj += '<td width="120" class="bold borderBottom"><?php echo $lang_ajax_acc_load_text3; ?></td>';
+                htmlInj += '<td width="300" class="bold borderBottom"><?php echo $lang_ajax_acc_load_text4; ?></td>';
+                htmlInj += '<td width="150" class="bold borderBottom"></td>';
+            htmlInj += '</tr>';
 
-  $(document).ready(function() {
-    loadAccount();
-    loadPlans();
-  });
+            $('#myopenbayplan').append(htmlInj);
+
+            htmlInj = '';
+            htmlInj += '<tr>';
+                htmlInj += '<td class="borderBottom">'+json.plan.title+'</td>';
+                htmlInj += '<td class="borderBottom">&pound;'+json.plan.price+'</td>';
+                htmlInj += '<td class="borderBottom">'+json.plan.description+'</td>';
+                htmlInj += '<td class="borderBottom"></td>';
+            htmlInj += '</tr>';
+
+            $('#myopenbayplan').append(htmlInj);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+	    });
+        
+      $.ajax({
+        url: 'index.php?route=openbay/openbay/getPlans&token=<?php echo $token; ?>',
+        type: 'post',
+        dataType: 'json',
+        beforeSend: function(){
+            $('#loadAccount').hide();
+            $('.imageLoadAccount').show();
+            $('#openbayplans').hide();
+        },
+        success: function(json) {
+            $('#loadAccount').show();
+            $('.imageLoadAccount').hide();
+            $('#openbayplans').empty().show();
+
+            htmlInj = '';
+            htmlInj += '<tr>';
+                htmlInj += '<td width="120" class="bold borderBottom"><?php echo $lang_ajax_acc_load_text1; ?></td>';
+                htmlInj += '<td width="120" class="bold borderBottom"><?php echo $lang_ajax_acc_load_text3; ?></td>';
+                htmlInj += '<td width="300" class="bold borderBottom"><?php echo $lang_ajax_acc_load_text4; ?></td>';
+                htmlInj += '<td width="150" class="bold borderBottom"></td>';
+            htmlInj += '</tr>';
+
+            $('#openbayplans').append(htmlInj);
+
+            $.each(json.plans, function(key,val){
+
+                htmlInj = '';
+                htmlInj += '<tr>';
+                    htmlInj += '<td class="borderBottom">'+val.title+'</td>';
+                    htmlInj += '<td class="borderBottom">&pound;'+val.price+'</td>';
+                    htmlInj += '<td class="borderBottom">'+val.description+'</td>';
+                    if(val.myplan == 1){
+                        htmlInj += '<td class="borderBottom"><?php echo $lang_ajax_acc_load_text5; ?></td>';
+                    }else{
+                        if(val.user_plan_id == 1)
+                        {
+                            htmlInj += '<td class="borderBottom"></td>';
+                        }else{
+                            htmlInj += '<td class="borderBottom">';
+                                htmlInj += '<a href="https://uk.openbaypro.com/account/live/subscription_setup.php?plan_id='+val.user_plan_id+'&subscriber_id=<?php echo $obp_token;?>" class="button" target="_BLANK"><span><?php echo $lang_ajax_acc_load_text6; ?></span></a>';
+                            htmlInj += '</td>';
+                        }
+                    }
+                htmlInj += '</tr>';
+
+                $('#openbayplans').append(htmlInj);
+            });
+        },
+        failure: function(){
+            $('.imageLoadAccount').hide();
+            $('#loadAccount').show();
+            alert('<?php echo $lang_ajax_load_error; ?>');
+        },
+        error: function(){
+            $('.imageLoadAccount').hide();
+            $('#loadAccount').show();
+            alert('<?php echo $lang_ajax_load_error; ?>');
+        }
+      });
+    }
+    
+    function loadUsage(){
+	    $.ajax({
+        url: 'index.php?route=openbay/openbay/getUsage&token=<?php echo $token; ?>',
+        type: 'post',
+        dataType: 'json',
+        beforeSend: function(){
+            $('#usageTable').hide();
+            $('#imageLoadUsage').show();
+        },
+        success: function(json) {
+            $('#imageLoadUsage').hide();
+            $('#usageTable').html(json.html).show();
+            if(json.lasterror){ alert(json.lastmsg); }
+        },
+        failure: function(){
+            $('#imageLoadUsage').hide();
+            $('#usageTable').hide();
+            alert('<?php echo $lang_ajax_load_error; ?>');
+        },
+        error: function(){
+            $('#imageLoadUsage').hide();
+            $('#usageTable').hide();
+            alert('<?php echo $lang_ajax_load_error; ?>');
+        }
+	    });
+    }
 //--></script>
+
+<?php if($validation == true) { ?>
+    <script type="text/javascript"><!--
+        $(document).ready(function() { loadAccount(); loadUsage(); });
+    //--></script>
+<?php } ?>
+
 <?php echo $footer; ?>

@@ -4,7 +4,6 @@ $_['heading_title']       = 'Pav Product Tabs';
 
 // Text
 $_['text_module']         = 'Modules';
-$_['text_edit']         = 'Edit Pav Product Tabs';
 $_['text_success']        = 'Success: You have modified module slideshow!';
 $_['text_content_top']    = 'Content Top';
 $_['text_content_bottom'] = 'Content Bottom';
@@ -42,8 +41,5 @@ $_['text_special']  = 'Special';
 $_['error_permission']    = 'Warning: You do not have permission to modify module slideshow!';
 $_['error_dimension']     = 'Width &amp; Height dimensions required!';
 $_['error_carousel']     = 'Width &amp;  Max Items - Max Columns - Limit Items In Carousel  required!';
-$_['entry_module_additional_class']	= 'Module Additional Class';
-
-$_['entry_module_name']	= 'Module Name';
 
 ?>

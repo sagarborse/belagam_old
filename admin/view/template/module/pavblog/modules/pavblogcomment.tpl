@@ -1,65 +1,142 @@
-<form action="<?php echo $action_com;?>" method="post" id="formcom">
-<div class="form-horizontal">
-	<div class="row">
-		<div class="col-sm-2">
-			<ul class="nav nav-pills nav-stacked">
-				<?php if ($excom) { ?>
-				<?php foreach ($excom as $extension) { ?>
-				<?php $actived = (empty($module_comid))?"class='active'":''; ?>
-				<li <?php echo $actived; ?>><a href="<?php echo $extension['edit']; ?>" ><i class="fa fa-plus-circle"></i> <?php echo $extension['name']; ?></a></li>
-				<?php $i=0; foreach ($extension['module'] as $module) { $i++;?>
-				<?php $active = ($module['module_id'] == $module_comid)?'class="active"':''; ?>
-				<li <?php echo $active; ?>><a href="<?php echo $module['edit']; ?>" ><i class="fa fa-minus-circle"></i> <?php echo $module['name']; ?></a></li>
-				<?php } //end modules?>
-				<?php } //end extensions?>
-				<?php } //end if?>
-			</ul>
-		</div>
-		<!-- End ul #module -->
+<?php
+/******************************************************
+ * @package Pav Megamenu module for Opencart 1.5.x
+ * @version 1.0
+ * @author http://www.pavothemes.com
+ * @copyright	Copyright (C) Feb 2012 PavoThemes.com <@emai:pavothemes@gmail.com>.All rights reserved.
+ * @license		GNU General Public License version 2
+*******************************************************/
 
-		<div class="col-sm-8">
-			<div class="pull-left">
-				<a class="btn btn-success" title="" onclick="$('#formcom').submit();" data-toggle="tooltip" data-original-title="Save"><i class="fa fa-save"> Save </i></a>
-				<?php if(!empty($module_comid)) { ?>
-				<a onclick="confirm('Are you sure?') ? location.href='<?php echo $delete_com; ?>' : false;" data-toggle="tooltip" title="" class="btn btn-danger" data-original-title="Delete"><i class="fa fa-trash-o"> Delete</i></a>
-				<?php } ?>
-			</div>
-			<div class="tab-content" id="tab-content-blogcomment">
-				<div class="tab-pane active" id="tab-module-pavblogcomment">
-					<table class="table noborder">
-						<tr>
-							<td class="col-sm-2"><?php echo $objlang->get('entry_module_name'); ?></td>
-							<td class="col-sm-10">
-								<input class="form-control" type="text" placeholder="<?php echo $objlang->get('entry_module_name'); ?>" value="<?php echo isset($name)?$name:''; ?>" name="pavblogcomment_module[name]" />
-							</td>
-						</tr>
-						<tr>
-							<td class="col-sm-2"><?php echo $objlang->get('entry_carousel'); ?></td>
-							<td class="col-sm-10">
-								<input class="form-control" type="text" name="pavblogcomment_module[limit]" value="<?php echo isset($pavblogcomment['limit'])?$pavblogcomment['limit']:5; ?>">
-							</td>
-						</tr>
-						<tr>
-							<td class="col-sm-2"><?php echo $entry_status; ?></td>
-							<td class="col-sm-10">
-								<select name="pavblogcomment_module[status]" id="input-status" class="form-control">
-									<?php if($status_cat) { ?>
-									<option value="1" selected="selected"><?php echo $text_enabled; ?></option>
-									<option value="0"><?php echo $text_disabled; ?></option>
-									<?php } else { ?>
-									<option value="1"><?php echo $text_enabled; ?></option>
-									<option value="0" selected="selected"><?php echo $text_disabled; ?></option>
-									<?php } ?>
-								</select>
-							</td>
-						</tr>
-					</table>
-				</div>
-			</div><!-- End div .tab-content module-->		
-		</div>
-	</div>
-</div>
-</form>
-<style type="text/css">
-	.noborder tbody > tr > td {border: 1px solid #fff;}
-</style>
+$module_key = isset($module_key)?$module_key:'pavblogcomment';
+?>
+
+      <div id="<?php echo $module_key; ?>">
+        <div class="vtabs">
+          <?php $module_row = 1; ?>
+          <?php foreach ($modules as $module) { ?>
+          <a href="#tab-module-<?php echo $module_key; ?>-<?php echo $module_row; ?>" id="module-<?php echo $module_key; ?>-<?php echo $module_row; ?>"><?php echo $this->language->get("tab_module") . ' ' . $module_row; ?>&nbsp;<img src="view/image/delete.png" alt="" onclick="$('.vtabs a:first').trigger('click'); $('#module-<?php echo $module_key; ?>-<?php echo $module_row; ?>').remove(); $('#tab-module-<?php echo $module_key; ?>-<?php echo $module_row; ?>').remove(); return false;" /></a>
+          <?php $module_row++; ?>
+          <?php } ?>
+          <span id="module-add-<?php echo $module_key; ?>"><?php echo $button_add_module; ?>&nbsp;<img src="view/image/add.png" alt="" onclick="addModuleComment();" /></span> </div>
+        <?php $module_row = 1; ?>
+		  
+        <?php foreach ($modules as $module) { ?>
+        <div id="tab-module-<?php echo $module_key; ?>-<?php echo $module_row; ?>" class="vtabs-content">
+         
+		
+          <table class="form">
+		
+			<tr>
+				 <td class="left"><?php echo $this->language->get("entry_carousel"); ?></td>
+				  <td class="left">
+        
+				<input type="text" name="pavblogcomment_module[<?php echo $module_row; ?>][limit]" value="<?php echo $module['limit']; ?>" size="3"/>
+                <?php if (isset($error_carousel[$module_row])) { ?>
+                <span class="error"><?php echo $error_carousel[$module_row]; ?></span>
+                <?php } ?></td>
+			</tr>
+            <tr>
+              <td><?php echo $entry_layout; ?></td>
+              <td><select name="pavblogcomment_module[<?php echo $module_row; ?>][layout_id]">
+                 <?php foreach ($layouts as $layout) { ?>
+                  <?php if ($layout['layout_id'] == $module['layout_id']) { ?>
+                  <option value="<?php echo $layout['layout_id']; ?>" selected="selected"><?php echo $layout['name']; ?></option>
+                  <?php } else { ?>
+                  <option value="<?php echo $layout['layout_id']; ?>"><?php echo $layout['name']; ?></option>
+                  <?php } ?>
+                  <?php } ?>
+                </select></td>
+            </tr>
+            <tr>
+              <td><?php echo $entry_position; ?></td>
+              <td><select name="pavblogcomment_module[<?php echo $module_row; ?>][position]">
+                  <?php foreach( $positions as $pos ) { ?>
+                  <?php if ($module['position'] == $pos) { ?>
+                  <option value="<?php echo $pos;?>" selected="selected"><?php echo $this->language->get('text_'.$pos); ?></option>
+                  <?php } else { ?>
+                  <option value="<?php echo $pos;?>"><?php echo $this->language->get('text_'.$pos); ?></option>
+                  <?php } ?>
+                  <?php } ?> 
+                </select></td>
+            </tr>
+            <tr>
+              <td><?php echo $entry_status; ?></td>
+              <td><select name="pavblogcomment_module[<?php echo $module_row; ?>][status]">
+                  <?php if ($module['status']) { ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                  <option value="0"><?php echo $text_disabled; ?></option>
+                  <?php } else { ?>
+                  <option value="1"><?php echo $text_enabled; ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                  <?php } ?>
+                </select></td>
+            </tr>
+            <tr>
+              <td><?php echo $entry_sort_order; ?></td>
+              <td><input type="text" name="pavblogcomment_module[<?php echo $module_row; ?>][sort_order]" value="<?php echo $module['sort_order']; ?>" size="3" /></td>
+            </tr>
+          </table>
+        </div>
+        <?php $module_row++; ?>
+        <?php } ?>
+      </div>
+<script type="text/javascript"><!--
+var module_row_comment = <?php echo $module_row; ?>;
+
+function addModuleComment() {	
+	html  = '<div id="tab-module-<?php echo $module_key; ?>-' + module_row_comment + '" class="vtabs-content">';
+	html += '  <table class="form">';
+
+	html += '      <td><?php echo $this->language->get("entry_carousel"); ?></td>';
+	html += '    <td class="left"><input type="text"  <input type="text" name="pavblogcomment_module[' + module_row_comment + '][limit]" value="6" size="3" /></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_layout; ?></td>';
+	html += '      <td><select name="pavblogcomment_module[' + module_row_comment + '][layout_id]">';
+	<?php foreach ($layouts as $layout) { ?>
+	html += '           <option value="<?php echo $layout['layout_id']; ?>"><?php echo addslashes($layout['name']); ?></option>';
+	<?php } ?>
+	html += '      </select></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_position; ?></td>';
+	html += '      <td><select name="pavblogcomment_module[' + module_row_comment + '][position]">';
+	<?php foreach( $positions as $pos ) { ?>
+	html += '<option value="<?php echo $pos;?>"><?php echo $this->language->get('text_'.$pos); ?></option>';      
+	<?php } ?>		html += '      </select></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_status; ?></td>';
+	html += '      <td><select name="pavblogcomment_module[' + module_row_comment + '][status]">';
+	html += '        <option value="1"><?php echo $text_enabled; ?></option>';
+	html += '        <option value="0"><?php echo $text_disabled; ?></option>';
+	html += '      </select></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_sort_order; ?></td>';
+	html += '      <td><input type="text" name="pavblogcomment_module[' + module_row_comment + '][sort_order]" value="" size="3" /></td>';
+	html += '    </tr>';
+	html += '  </table>'; 
+	html += '</div>';
+	
+	$('#<?php echo $module_key; ?>').append(html);
+	
+	$('#module-add-<?php echo $module_key; ?>').before('<a href="#tab-module-<?php echo $module_key; ?>-' + module_row_comment + '" id="module-<?php echo $module_key; ?>-' + module_row_comment + '"><?php echo $this->language->get("tab_module"); ?> ' + module_row_comment + '&nbsp;<img src="view/image/delete.png" alt="" onclick="$(\'.vtabs a:first\').trigger(\'click\'); $(\'#module-<?php echo $module_key; ?>-' + module_row_comment + '\').remove(); $(\'#tab-module-<?php echo $module_key; ?>-' + module_row_comment + '\').remove(); return false;" /></a>');
+	
+	$('#<?php echo $module_key; ?> .vtabs a').tabs();
+	
+	$('#module-<?php echo $module_key; ?>-' + module_row_comment).trigger('click');
+	
+	module_row_comment++;
+}
+//--></script> 
+<script type="text/javascript"><!--
+$('#<?php echo $module_key; ?> .vtabs a').tabs();
+//--></script> 
+<script type="text/javascript"><!--
+<?php $module_row = 1; ?>
+<?php foreach ($modules as $module) { ?>
+$('#language-<?php echo $module_key; ?>-<?php echo $module_row; ?> a').tabs();
+<?php $module_row++; ?>
+<?php } ?> 
+//--></script> 

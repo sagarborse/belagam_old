@@ -1,966 +1,841 @@
-<?php echo $header; ?><?php echo $column_left; ?>
+<?php echo $header; ?>
+
 <div id="content">
-<div class="page-header">
-  <div class="container-fluid">
-    <div class="pull-right">
-      <a href="<?php echo $cancel; ?>" data-toggle="tooltip" title="<?php echo $button_cancel; ?>" class="btn btn-default"><i class="fa fa-reply"></i></a>
-    </div>
-    <h1><?php echo $heading_title; ?></h1>
-    <ul class="breadcrumb">
-      <?php foreach ($breadcrumbs as $breadcrumb) { ?>
-      <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
-      <?php } ?>
-    </ul>
-  </div>
-</div>
-<div class="container-fluid">
-  <?php foreach($error_warning as $warning) { ?>
-    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $warning; ?></div>
-  <?php } ?>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h3 class="panel-title"><i class="fa fa-list"></i> <?php echo $text_bulk; ?></h3>
-    </div>
-    <div class="panel-body" id="page-listing">
-      <?php if (!isset($error_fail)) { ?>
-        <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" id="form" class="form-horizontal">
-          <div class="well">
-            <div class="row">
-              <div class="col-sm-12 text-right">
-                <a class="btn btn-primary" id="button-verify"><i class="fa fa-check"></i> <?php echo $text_preview_all; ?></a>
-                <a class="btn btn-primary" id="button-edit" style="display:none;"><i class="fa fa-pencil"></i> <?php echo $button_edit; ?></a>
-                <a class="btn btn-primary" id="button-submit" style="display:none;"><i class="fa fa-plus-circle"></i> <?php echo $button_submit; ?></a>
-              </div>
-            </div>
-          </div>
-          <?php if ($products) { ?>
-            <?php $i = 0; ?>
-            <?php foreach ($products as $product) { ?>
-              <div class="well listingBox" id="p_row_<?php echo $i; ?>">
-                <input type="hidden" class="product_id openbay_data_<?php echo $i; ?>" name="product_id" value="<?php echo $i; ?>" />
-                <input type="hidden" class="openbay_data_<?php echo $i; ?>" name="product_id" value="<?php echo $product['product_id']; ?>" />
-                <input type="hidden" name="price_original" id="price_original_<?php echo $i; ?>" value="<?php echo number_format($product['price']*(($default['defaults']['tax']/100) + 1), 2, '.', ''); ?>" />
-                <input type="hidden" class="openbay_data_<?php echo $i; ?>" name="catalog_epid" id="catalog_epid_<?php echo $i; ?>" value="0" />
-                <div class="row">
-                  <div class="col-sm-7">
-                    <h4 id="product_title_<?php echo $i; ?>" style="display:none;"></h4>
-                  </div>
-                  <div class="col-sm-5 form-group text-right" id="p_row_buttons_<?php echo $i; ?>">
-                    <a class="btn btn-primary" onclick="showCategory('<?php echo $i; ?>');" id="editCategory_<?php echo $i; ?>" ><i class="fa fa-pencil"></i> <?php echo $text_category; ?></a>
-                    <a class="btn btn-primary" onclick="showProfiles('<?php echo $i; ?>');" id="editProfiles_<?php echo $i; ?>" ><i class="fa fa-pencil"></i> <?php echo $text_profile; ?></a>
-                    <a class="btn btn-primary" style="display:none;" onclick="showCatalog('<?php echo $i; ?>');" id="editCatalog_<?php echo $i; ?>" ><i class="fa fa-pencil"></i> <?php echo $text_catalog; ?></a>
-                    <a class="btn btn-primary" style="display:none;" onclick="showFeatures('<?php echo $i; ?>');" id="editFeature_<?php echo $i; ?>"><i class="fa fa-pencil"></i> <?php echo $text_features; ?></a>
-                    <a class="btn btn-danger" onclick="removeBox('<?php echo $i; ?>')"><i class="fa fa-minus-circle"></i> <?php echo $button_remove; ?></a>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-sm-12">
-                    <div class="row" id="product_messages_<?php echo $i; ?>" style="display:none;"></div>
-                    <div class="row product_content_<?php echo $i; ?>">
-                      <div class="col-sm-2">
-                        <div class="row">
-                          <div class="col-sm-12 form-group text-center">
-                            <img class="img-thumbnail" src="<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" />
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-sm-12 form-group">
-                            <h4 class="text-center"><span class="label label-success"><?php echo $text_stock; ?>: <?php echo $product['quantity']; ?></span></h4>
-                            <input type="hidden" name="qty" value="<?php echo $product['quantity']; ?>" class="openbay_data_<?php echo $i; ?>" />
-                          </div>
-                        </div>
-                        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="overlay-feature-<?php echo $i; ?>" data-backdrop="static" data-keyboard="false">
-                          <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                              <div class="modal-body" id="feature-data-<?php echo $i; ?>"></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="overlay-category-<?php echo $i; ?>" data-backdrop="static" data-keyboard="false">
-                          <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                              <div class="modal-body">
-                                <div class="page-header">
-                                  <div class="container-fluid">
-                                    <div class="pull-right">
-                                      <a onclick="overlayHide();" class="btn btn-default" data-toggle="tooltip" title="<?php echo $text_close; ?>"><i class="fa fa-reply"></i></a>
-                                    </div>
-                                    <h1 class="panel-title"><?php echo $text_category; ?></h1>
-                                  </div>
-                                </div>
-                                <div class="container-fluid">
-                                  <div class="panel panel-default">
-                                    <div class="panel-body">
-                                    <div class="well">
-                                      <div class="row">
-                                        <div class="form-group">
-                                          <label class="col-sm-2 control-label"><?php echo $text_suggested; ?></label>
-                                          <div class="col-sm-10">
-                                            <div class="alert alert-info" id="loadingSuggestedCat_<?php echo $i; ?>"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_category; ?></div>
-                                            <div id="suggestedCat_<?php echo $i; ?>"></div>
-                                            <input type="hidden" name="finalCat" id="finalCat_<?php echo $i; ?>" class="openbay_data_<?php echo $i; ?>" />
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="row">
-                                        <div class="form-group" id="cSelections_<?php echo $i; ?>" style="display:none;">
-                                          <label class="col-sm-2 control-label"><?php echo $text_category_choose; ?></label>
-                                          <div class="col-sm-10">
-                                          <div class="alert alert-info" id="imageLoading_<?php echo $i; ?>"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_loading_categories; ?></div>
-                                          <div class="row form-group">
-                                            <div class="col-sm-12">
-                                              <select id="catsSelect1_<?php echo $i; ?>" class="form-control" onchange="loadCategories(2, false, <?php echo $i; ?>);"></select>
-                                            </div>
-                                          </div>
-                                          <div class="row form-group">
-                                            <div class="col-sm-12">
-                                              <select id="catsSelect2_<?php echo $i; ?>" class="form-control" onchange="loadCategories(3, false, <?php echo $i; ?>);" style="display:none;"></select>
-                                            </div>
-                                          </div>
-                                          <div class="row form-group">
-                                            <div class="col-sm-12">
-                                              <select id="catsSelect3_<?php echo $i; ?>" class="form-control" onchange="loadCategories(4, false, <?php echo $i; ?>);" style="display:none;"></select>
-                                            </div>
-                                          </div>
-                                          <div class="row form-group">
-                                            <div class="col-sm-12">
-                                              <select id="catsSelect4_<?php echo $i; ?>" class="form-control" onchange="loadCategories(5, false, <?php echo $i; ?>, false, <?php echo $i; ?>);" style="display:none;"></select>
-                                            </div>
-                                          </div>
-                                          <div class="row form-group">
-                                            <div class="col-sm-12">
-                                              <select id="catsSelect5_<?php echo $i; ?>" class="form-control" onchange="loadCategories(6, false, <?php echo $i; ?>);" style="display:none;"></select>
-                                            </div>
-                                          </div>
-                                          <div class="row form-group">
-                                            <div class="col-sm-12">
-                                              <select id="catsSelect6_<?php echo $i; ?>" class="form-control" onchange="loadCategories(7, false, <?php echo $i; ?>);" style="display:none;"></select>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+    <?php if(!isset($error_fail)){ ?>
 
-                        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="overlay-catalog-<?php echo $i; ?>" data-backdrop="static" data-keyboard="false">
-                          <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                              <div class="modal-body">
-                                <div class="page-header">
-                                  <div class="container-fluid">
-                                    <div class="pull-right">
-                                      <a onclick="overlayHide();" class="btn btn-default" data-toggle="tooltip" title="<?php echo $text_close; ?>"><i class="fa fa-reply"></i></a>
-                                    </div>
-                                    <h1 class="panel-title"><?php echo $text_catalog_search; ?></h1>
-                                  </div>
-                                </div>
-                                <div class="container-fluid">
-                                  <div class="panel panel-default">
-                                    <div class="panel-body">
-                                      <div class="well">
-                                        <div class="row">
-                                          <div class="form-group">
-                                            <label class="col-sm-2 control-label"><?php echo $text_search_term; ?></label>
-                                            <div class="col-sm-10">
-                                              <input type="text" name="catalog_search" id="catalog_search_<?php echo $i; ?>" value="" class="form-control"/>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="row">
-                                          <div class="col-sm-12 text-right">
-                                            <a onclick="searchEbayCatalog('<?php echo $i; ?>');" class="btn btn-primary" id="button-catalog-search-<?php echo $i; ?>"><?php echo $text_search; ?></a>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div id="catalog-results-<?php echo $i; ?>" style="display:none;"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+    <?php foreach($error_warning as $warning) { ?>
+        <div class="warning mBottom10"><?php echo $warning; ?></div>
+    <?php } ?>
 
-                        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="overlay-profile-<?php echo $i; ?>" data-backdrop="static" data-keyboard="false">
-                          <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                              <div class="modal-body">
-                                <div class="page-header">
-                                  <div class="container-fluid">
-                                    <div class="pull-right">
-                                      <a onclick="overlayHide();" class="btn btn-default" data-toggle="tooltip" title="<?php echo $text_close; ?>"><i class="fa fa-reply"></i></a>
-                                    </div>
-                                    <h1 class="panel-title"><?php echo $text_profile; ?></h1>
-                                  </div>
-                                </div>
-                                <div class="container-fluid">
-                                  <div class="panel panel-default">
-                                    <div class="panel-body">
-                                    <div class="well">
-                                      <div class="form-group">
-                                        <label class="col-sm-2 control-label"><?php echo $text_profile_theme; ?></label>
-                                        <div class="col-sm-10">
-                                          <select name="theme_profile" class="openbay_data_<?php echo $i; ?> form-control">
-                                            <?php foreach($default['profiles_theme'] as $s) { echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_theme_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
-                                          </select>
-                                        </div>
-                                      </div>
-                                      <div class="form-group">
-                                        <label class="col-sm-2 control-label"><?php echo $text_profile_shipping; ?></label>
-                                        <div class="col-sm-10">
-                                          <select name="shipping_profile" class="openbay_data_<?php echo $i; ?> form-control">
-                                            <?php foreach($default['profiles_shipping'] as $s) { echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_shipping_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
-                                          </select>
-                                        </div>
-                                      </div>
-                                      <div class="form-group">
-                                        <label class="col-sm-2 control-label"><?php echo $text_profile_generic; ?></label>
-                                        <div class="col-sm-10">
-                                          <select name="generic_profile" id="generic_profile_<?php echo $i; ?>" class="openbay_data_<?php echo $i; ?> form-control" onchange="genericProfileChange(<?php echo $i; ?>);">
-                                            <?php foreach($default['profiles_generic'] as $s) { echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_generic_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
-                                          </select>
-                                        </div>
-                                      </div>
-                                      <div class="form-group">
-                                        <label class="col-sm-2 control-label"><?php echo $text_profile_returns; ?></label>
-                                        <div class="col-sm-10">
-                                          <select name="return_profile" class="openbay_data_<?php echo $i; ?> form-control">
-                                            <?php foreach($default['profiles_returns'] as $s) { echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_returns_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
-                                          </select>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-sm-10">
-                        <div class="form-group">
-                          <label class="col-sm-2 control-label"><?php echo $text_title; ?></label>
-                          <div class="col-sm-10">
-                            <input type="text" name="title" class="openbay_data_<?php echo $i; ?> form-control" value="<?php echo $product['name']; ?>" id="title_<?php echo $i; ?>" />
-                          </div>
-                        </div>
-                        <div class="form-group">
-                          <label class="col-sm-2 control-label"><?php echo $text_price; ?></label>
-                          <div class="col-sm-10">
-                            <input id="price_<?php echo $i; ?>" type="text" name="price" class="openbay_data_<?php echo $i; ?> form-control" value="<?php echo number_format($product['price']*(($default['defaults']['tax']/100) + 1), 2, '.', ''); ?>" />
-                          </div>
-                        </div>
-                        <div class="alert alert-info" id="conditionLoading_<?php echo $i; ?>"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_loading_condition; ?></div>
-                        <div class="form-group" id="conditionContainer_<?php echo $i; ?>" style="display:none;">
-                          <label class="col-sm-2 control-label"><?php echo $entry_condition; ?></label>
-                          <div class="col-sm-10">
-                            <select name="condition" class="openbay_data_<?php echo $i; ?> form-control" id="conditionRow_<?php echo $i; ?>">
-                              <?php foreach($default['profiles_returns'] as $s) { echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_returns_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="alert alert-info" id="durationLoading_<?php echo $i; ?>"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_loading_duration; ?></div>
-                        <div class="form-group" id="durationContainer_<?php echo $i; ?>" style="display:none;">
-                          <label class="col-sm-2 control-label"><?php echo $text_duration; ?></label>
-                          <div class="col-sm-10">
-                            <select name="duration" class="openbay_data_<?php echo $i; ?> form-control" id="durationRow_<?php echo $i; ?>">
-                              <?php foreach($default['profiles_returns'] as $s) { echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_returns_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <?php $i++;?>
-            <?php } ?>
-          <?php } else { ?>
-            <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $text_no_results; ?></div>
-          <?php } ?>
-        </form>
-        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="overlay-loading" data-backdrop="static" data-keyboard="false">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-body">
-                <div class="progress">
-                  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="1" aria-valuemin="0" aria-valuemax="100" style="width: 0%" id="loading-bar"></div>
-                </div>
-                <p class="text-center"><?php echo $text_preparing0; ?> <span id="ajax-count-complete-display">0</span> <?php echo $text_preparing1; ?> <span id="ajax-count-total-display">0</span> <?php echo $text_preparing2; ?> </p>
-              </div>
+    <div class="box">
+        <div class="heading">
+            <h1><?php echo $lang_page_title; ?></h1>
+            <div class="buttons">
+                <a class="button" onclick="previewAll()" id="previewBtn"><span><?php echo $lang_preview_all; ?></span></a>
+                <a class="button" style="display:none" onclick="editAll();" id="previewEditBtn"><span><?php echo $lang_edit; ?></span></a>
+                <a class="button" style="display:none" onclick="submitAll();" id="submitBtn"><span><?php echo $lang_submit; ?></span></a>
             </div>
-          </div>
         </div>
-      <?php } else { ?>
-        <?php foreach($error_fail as $fail) { ?>
-          <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $fail; ?></div>
-        <?php } ?>
-      <?php } ?>
+        <form id="form">
+            <table class="list">
+                <tbody>
+                    <tr>
+                        <td>
+                            <?php if ($products) { ?>
+                            <?php $i = 0; ?>
+                            <?php foreach ($products as $product) { ?>
+
+                            <div class="box mTop15 listingBox" id="p_row_<?php echo $i; ?>">
+                                <input type="hidden" class="pId openbayData_<?php echo $i; ?>" name="pId" value="<?php echo $i; ?>" />
+                                <input type="hidden" class="openbayData_<?php echo $i; ?>" name="product_id" value="<?php echo $product['product_id']; ?>" />
+                                <div class="heading">
+                                    <div id="p_row_title_<?php echo $i; ?>" style="float:left;" class="displayNone bold m0 p10"></div>
+                                    <div id="p_row_buttons_<?php echo $i; ?>" class="buttons right">
+                                        <a class="button" onclick="removeBox('<?php echo $i; ?>')"><span><?php echo $lang_remove; ?></span></a>
+                                    </div>
+                                </div>
+                                <table class="m0 border borderNoBottom" style="width:100%;" cellpadding="0" cellspacing="0">
+                                    <tr id="p_row_msg_<?php echo $i; ?>" class="displayNone">
+                                        <td colspan="3" id="p_msg_<?php echo $i; ?>">
+                                            <img src="view/image/loading.gif" style="margin:10px;" alt="Loading" />
+                                        </td>
+                                    </tr>
+
+                                    <tr class="p_row_content_<?php echo $i; ?>">
+                                        <td class="center width100"><img src="<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" /></td>
+                                        <td class="left width390" valign="top">
+                                            <p><label style="display:inline-block;" class="width100 mRight10 bold"><?php echo $lang_title; ?>:</label><input type="text" name="title" class="openbayData_<?php echo $i; ?> width250" value="<?php echo $product['name']; ?>" id="title_<?php echo $i; ?>" /></p>
+                                            <input type="hidden" name="price_original" id="price_original_<?php echo $i; ?>" value="<?php echo number_format($product['price']*(($default['defaults']['tax']/100) + 1), 2, '.', ''); ?>" />
+                                            <p><label style="display:inline-block;" class="width100 mRight10 bold"><?php echo $lang_price; ?>:</label><input id="price_<?php echo $i; ?>" type="text" name="price" class="openbayData_<?php echo $i; ?> width50" value="<?php echo number_format($product['price']*(($default['defaults']['tax']/100) + 1), 2, '.', ''); ?>" /></p>
+                                            <p><label style="display:inline-block;" class="width100 mRight10 bold"><?php echo $lang_stock; ?>:</label><?php echo $product['quantity']; ?></p>
+                                            <input type="hidden" name="qty" value="<?php echo $product['quantity']; ?>" class="openbayData_<?php echo $i; ?>" />
+                                            
+                                            <div class="buttons right">
+                                                <a class="button" onclick="showFeatures('<?php echo $i; ?>');" id="editFeature_<?php echo $i; ?>" style="display:none;"><span><?php echo $lang_features; ?></span></a>
+                                                <a class="button" onclick="showCatalog('<?php echo $i; ?>');" id="editCatalog_<?php echo $i; ?>" style="display:none;"><span><?php echo $lang_catalog; ?></span></a>
+                                            </div>
+                                            
+                                            <div id="featurePage_<?php echo $i; ?>" class="greyScreenBox featurePage">
+                                                <div class="bold border p5 previewClose">X</div>
+                                                <div class="previewContentScroll">
+                                                    <table class="form" id="featureRow_<?php echo $i; ?>"></table>
+                                                </div>
+                                            </div>
+
+                                            <!-- main product catalog popup box -->
+                                            <div id="catalogPage_<?php echo $i; ?>" class="greyScreenBox featurePage">
+                                                <div class="bold border p5 previewClose">X</div>
+                                                <div class="previewContentScroll">
+
+                                                    <!-- catalog search area -->
+                                                    <table class="form">
+                                                        <tr>
+                                                            <td><?php echo $lang_catalog_search; ?>:</td>
+                                                            <td>
+                                                                <div class="buttons">
+                                                                    <input type="text" name="catalog_search" id="catalog_search_<?php echo $i; ?>" value="" />
+                                                                    <a onclick="searchEbayCatalog('<?php echo $i; ?>');" class="button" id="catalog_search_btn_<?php echo $i; ?>"><span><?php echo $lang_search; ?></span></a>
+                                                                    <img src="view/image/loading.gif" id="catalog_search_img_<?php echo $i; ?>" class="displayNone" alt="Loading" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+
+                                                    <!-- container for the product catalog information -->
+                                                    <div id="catalogDiv_<?php echo $i; ?>"></div>
+
+                                                    <input type="hidden" class="openbayData_<?php echo $i; ?>" name="catalog_epid" id="catalog_epid_<?php echo $i; ?>" value="0" />
+
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p10">
+                                            <p>
+                                                <label style="display:inline-block;" class="mRight10 bold width100"><?php echo $lang_profile_theme; ?></label>
+                                                <select name="theme_profile" class="width250 openbayData_<?php echo $i; ?>">
+                                                    <?php foreach($default['profiles_theme'] as $s){ echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_theme_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
+                                                </select>
+                                            </p>
+                                            <p>
+                                                <label style="display:inline-block;" class="mRight10 bold width100"><?php echo $lang_profile_shipping; ?></label>
+                                                <select name="shipping_profile" class="width250 openbayData_<?php echo $i; ?>">
+                                                    <?php foreach($default['profiles_shipping'] as $s){ echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_shipping_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
+                                                </select>
+                                            </p>
+                                            <p>
+                                                <label style="display:inline-block;" class="mRight10 bold width100"><?php echo $lang_profile_generic; ?></label>
+                                                <select name="generic_profile" id="generic_profile_<?php echo $i; ?>" class="width250 openbayData_<?php echo $i; ?>" onchange="genericProfileChange(<?php echo $i; ?>);">
+                                                    <?php foreach($default['profiles_generic'] as $s){ echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_generic_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
+                                                </select>
+                                            </p>
+                                            <p>
+                                                <label style="display:inline-block;" class="mRight10 bold width100"><?php echo $lang_profile_returns; ?></label>
+                                                <select name="return_profile" class="width250 openbayData_<?php echo $i; ?>">
+                                                    <?php foreach($default['profiles_returns'] as $s){ echo '<option value="'.$s['ebay_profile_id'].'"'.($default['profiles_returns_def'] == $s['ebay_profile_id'] ? ' selected' : '').'>'.$s['name'].'</option>'; } ?>
+                                                </select>
+                                            </p>
+                                            <p id="conditionContainer_<?php echo $i; ?>" class="displayNone">
+                                                <label style="display:inline-block; width:100px;" class="mRight10 bold"><?php echo $lang_condition; ?> </label>
+                                                <select name="condition" id="conditionRow_<?php echo $i; ?>" class="displayNone width250 openbayData_<?php echo $i; ?>"></select>
+                                                <img id="conditionLoading_<?php echo $i; ?>" src="view/image/loading.gif" alt="Loading" />
+                                            </p>
+                                            <p id="durationContainer_<?php echo $i; ?>" class="displayNone">
+                                                <label style="display:inline-block; width:100px;" class="mRight10 bold"><?php echo $lang_duration; ?> </label>
+                                                <select name="duration" id="durationRow_<?php echo $i; ?>" class="displayNone width250 openbayData_<?php echo $i; ?>"></select>
+                                                <img id="durationLoading_<?php echo $i; ?>" src="view/image/loading.gif" alt="Loading" />
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr class="p_row_content_<?php echo $i; ?>">
+                                        <td colspan="3" style="padding:5px;">
+                                            <p class="bold m0"><?php echo $lang_category; ?> <img src="view/image/loading.gif" id="loadingSuggestedCat_<?php echo $i; ?>" alt="Loading" /></p>
+
+                                            <div class="left pLeft10" id="suggestedCat_<?php echo $i; ?>"></div>
+
+                                            <div style="clear:both;"></div>
+
+                                            <div id="cSelections_<?php echo $i; ?>" class="displayNone left mTop10 pLeft30">
+                                                <select id="catsSelect1_<?php echo $i; ?>" class="mLeft30" onchange="loadCategories(2, false, <?php echo $i; ?>);"></select>
+                                                <select id="catsSelect2_<?php echo $i; ?>" class="displayNone mLeft20" onchange="loadCategories(3, false, <?php echo $i; ?> );"></select>
+                                                <select id="catsSelect3_<?php echo $i; ?>" class="displayNone mLeft20" onchange="loadCategories(4, false, <?php echo $i; ?> );"></select>
+                                                <select id="catsSelect4_<?php echo $i; ?>" class="displayNone mLeft20" onchange="loadCategories(5, false, <?php echo $i; ?> );"></select>
+                                                <select id="catsSelect5_<?php echo $i; ?>" class="displayNone mLeft20" onchange="loadCategories(6, false, <?php echo $i; ?> );"></select>
+                                                <select id="catsSelect6_<?php echo $i; ?>" class="displayNone mLeft20" onchange="loadCategories(7, false, <?php echo $i; ?> );"></select>
+                                                <img src="view/image/loading.gif" id="imageLoading_<?php echo $i; ?>" class="displayNone" alt="Loading" />
+                                            </div>
+
+                                            <input type="hidden" name="finalCat" id="finalCat_<?php echo $i; ?>" class="openbayData_<?php echo $i; ?>" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <?php $i++; } ?>
+                            <?php } else { ?>
+                    <tr>
+                        <td class="center" colspan="3"><?php echo $text_no_results; ?></td>
+                    </tr>
+            </table>
+            <?php } ?>
+            </td></tr>
+            </tbody>
+            </table>
+        </form>
     </div>
-  </div>
+    <div id="greyScreen"></div>
+    <div id="loadingPage" class="greyScreenBox">
+        <p class="bold"><img src="view/image/loading.gif" alt="Loading" /> <?php echo $lang_loading; ?></p>
+        <p><?php echo $lang_preparing0; ?> <span id="ajaxCountDoneDisplay">0</span> <?php echo $lang_preparing1; ?> <span id="ajaxCountTotalDisplay">0</span> <?php echo $lang_preparing2; ?> </p>
+        <div class="buttons">
+            <a class="button" href="index.php?route=extension/openbay/itemList&token=<?php echo $this->request->get['token']; ?>"><span><?php echo $lang_cancel; ?></span></a>
+        </div>
+    </div>
+    <div id="loadingVerify" class="greyScreenBox">
+        <p class="bold"><img src="view/image/loading.gif" alt="Loading" /> <?php echo $lang_verifying; ?></p>
+        <p><?php echo $lang_processing; ?></p>
+    </div>
+    <div id="previewPage" class="greyScreenBox">
+        <div class="bold border p5 previewClose">X</div>
+        <div class="previewContent">
+            <iframe id="previewContentIframe" frameborder="0" height="100%" width="100%" style="margin-left:auto; margin-right:auto;" scrolling="auto"></iframe>
+        </div>
+    </div>
+    <?php }else{ ?>
+        <?php foreach($error_fail as $fail) { ?>
+        <div class="warning mBottom10"><?php echo $fail; ?></div>
+    <?php } ?>
+    <?php } ?>
 </div>
 
-<input type="hidden" id="total-items" value="<?php echo $count; ?>" name="total-items" />
-<input type="hidden" id="ajax-count" value="0" />
-<input type="hidden" id="ajax-count-total" value="0" />
-<input type="hidden" id="ajax-count-complete" value="0" />
+<input type="hidden" id="totalItems" value="<?php echo $count; ?>" name="totalItems" />
+<input type="hidden" id="ajaxCount" value="0" />
+<input type="hidden" class="ajaxCountTotal" id="ajaxCountTotal" value="0" />
+<input type="hidden" class="ajaxCountDone" id="ajaxCountDone" value="0" />
+
 <script type="text/javascript">
-  $(document).ready(function() {
-    overlay('overlay-loading');
+    $(document).ready(function() {
+        showGreyScreen('loadingPage');
 
-    <?php $j = 0; while($j < $i) { ?>
-        getSuggestedCategories('<?php echo (int)$j; ?>');
-        modifyPrices('<?php echo (int)$j; ?>');
-    <?php $j++; } ?>
+        <?php $j = 0; while($j < $i){ ?>
+            getSuggestedCategories('<?php echo (int)$j; ?>');
+            modifyPrices('<?php echo (int)$j; ?>');
+        <?php $j++; } ?>
 
-    $('#activeItems').text($('#total-items').val());
-  });
+        $('#activeItems').text($('#totalItems').val());
+    });
 
-  function overlay(screen) {
-    $('#ajax-count-complete').val(0);
-    $('#ajax-count-complete-display').text(0);
-    $('#ajax-count-total').val(0);
-    $('#ajax-count-total-display').text(0);
-    $('#loading-bar').css('width', '0%');
-    $('#'+screen).modal('toggle');
-  }
+    $(document).keyup(function(e) {
+        if (e.keyCode == 27) {
+            alert('<?php echo $lang_esc_key; ?>');
+            hideGreyScreen();
+        }
+    });
 
-  function overlayHide() {
-    $('.modal').modal('hide');
-  }
+    function modifyPrices(id){
 
-  function modifyPrices(id) {
-      var price_original  = parseFloat($('#price_original_'+id).val());
-      var price_modified = '';
-      var modify_percent = '';
+        var price_original  = parseFloat($('#price_original_'+id).val());
+        var price_modified = '';
+        var modify_percent = '';
 
-      $.ajax({
-          url: 'index.php?route=openbay/ebay_profile/profileGet&token=<?php echo $token; ?>&ebay_profile_id='+$('#generic_profile_'+id).val(),
-          type: 'GET',
-          async: true,
-          dataType: 'json',
-          beforeSend: function() { addCount(); },
-          success: function(data) {
+        $.ajax({
+            url: 'index.php?route=openbay/ebay_profile/profileGet&token=<?php echo $token; ?>&ebay_profile_id='+$('#generic_profile_'+id).val(),
+            type: 'GET',
+            async: true,
+            dataType: 'json',
+            beforeSend: function(){ addCount(); },
+            success: function(data) {
 
-              if (data.data.price_modify !== false && typeof data.data.price_modify !== 'undefined') {
-                  modify_percent = 100 + parseFloat(data.data.price_modify);
-                  modify_percent = parseFloat(modify_percent / 100);
-                  price_modified = price_original * modify_percent;
+                if(data.data.price_modify !== false && typeof data.data.price_modify !== 'undefined'){
+                    modify_percent = 100 + parseFloat(data.data.price_modify);
+                    modify_percent = parseFloat(modify_percent / 100);
+                    price_modified = price_original * modify_percent;
 
-                  $('#price_'+id).val(parseFloat(price_modified).toFixed(2));
-              }
+                    $('#price_'+id).val(parseFloat(price_modified).toFixed(2));
+                }
 
-              removeCount();
-          },
-          failure: function() {
-              removeCount();
-          },
-          error: function() {
-              removeCount();
-          }
-      });
-  }
+                removeCount();
+            },
+            failure: function(){
+                removeCount();
+            },
+            error: function(){
+                removeCount();
+            }
+        });
+    }
 
-  function addCount() {
-    var count = parseInt($('#ajax-count').val()) + 1;
-    $('#ajax-count').val(count);
-    var count1 = parseInt($('#ajax-count-total').val())+1;
-    $('#ajax-count-total').val(count1);
-    $('#ajax-count-total-display').text(count1);
-  }
+    function addCount(){
+        var count = parseInt($('#ajaxCount').val()) + 1;
+        $('#ajaxCount').val(count);
+        var count1 = parseInt($('#ajaxCountTotal').val())+1;
+        $('#ajaxCountTotal').val(count1);
+        $('#ajaxCountTotalDisplay').text(count1);
+    }
 
-  function removeCount() {
-      var count = parseInt($('#ajax-count').val())-1;
-      $('#ajax-count').val(count);
-      var count1 = parseInt($('#ajax-count-complete').val())+1;
-      $('#ajax-count-complete').val(count1);
-      $('#ajax-count-complete-display').text(count1);
+    function removeCount(){
+        var count = parseInt($('#ajaxCount').val())-1;
+        $('#ajaxCount').val(count);
+        var count1 = parseInt($('#ajaxCountDone').val())+1;
+        $('#ajaxCountDone').val(count1);
+        $('#ajaxCountDoneDisplay').text(count1);
 
-      var modifier = 0;
-      var current = 0;
-      var total = $('#ajax-count-total').val();
+        if(count == 0){
+            hideGreyScreen();
+        }
+    }
 
-      modifier = 100 / total;
-      current = parseFloat(modifier * count1);
+    function removeBox(id){
+        $('#p_row_'+id).fadeOut('medium');
+    
+        setTimeout(function(){
+            $('#p_row_'+id).remove();
+        }, 1000);
 
-      $('#loading-bar').css('width', current + '%');
+        $('#totalItems').val($('#totalItems').val()-1);
 
-      if (count == 0) {
-          overlayHide();
-      }
-  }
+        if ($('.listingBox').length == 1){
+            window.location = "index.php?route=extension/openbay/itemList&token=<?php echo $this->request->get['token']; ?>";
+        }else{
+            $('#activeItems').text($('#totalItems').val());
+        }
+    }
 
-  function removeBox(id) {
-      $('#p_row_'+id).fadeOut('medium');
+    function useManualCategory(id){
+        loadCategories(1, true, id);
+        $('#cSelections_'+id).show();
+    }
 
-      setTimeout(function() {
-          $('#p_row_'+id).remove();
-      }, 1000);
+    function getSuggestedCategories(id){
+        var qry = $('#title_'+id).val();
 
-      $('#total-items').val($('#total-items').val()-1);
+        $.ajax({
+            url: 'index.php?route=openbay/openbay/getSuggestedCategories&token=<?php echo $token; ?>&qry='+qry,
+            type: 'GET',
+            async: true,
+            dataType: 'json',
+            beforeSend: function(){ $('#loadingSuggestedCat_'+id).show(); addCount(); },
+            success: function(data) {
+                $('#suggestedCat_'+id).empty();
 
-      if ($('.listingBox').length == 1) {
-          window.location = "index.php?route=extension/openbay/items&token=<?php echo $token; ?>";
-      } else {
-          $('#activeItems').text($('#total-items').val());
-      }
-  }
+                var htmlInj = '';
 
-  function useManualCategory(id) {
-      loadCategories(1, true, id);
-      $('#cSelections_'+id).show();
-  }
+                if(data.error == false && data.data){
+                    var i = 1;
 
-  function getSuggestedCategories(id) {
-      var qry = $('#title_'+id).val();
+                        $.each(data.data, function(key,val){
+                            if(val.percent != 0) {
+                                htmlInj += '<p style="margin:0px; padding:0 0 0 10px;"><input type="radio" id="suggested_category_'+id+'" name="suggested_'+id+'" value="'+val.id+'" onchange="categorySuggestedChange('+val.id+','+id+')"';
+                                if(i == 1){ 
+                                    htmlInj += ' checked="checked"';
+                                    categorySuggestedChange(val.id, id);
+                                }
+                                htmlInj += '/> ('+val.percent+'% match) '+val.name+'</p>';
+                            }
+                            i++;
+                        });
 
-      $.ajax({
-          url: 'index.php?route=openbay/ebay/getSuggestedCategories&token=<?php echo $token; ?>&qry='+qry,
-          type: 'GET',
-          async: true,
-          dataType: 'json',
-          beforeSend: function() { $('#loadingSuggestedCat_'+id).show(); addCount(); },
-          success: function(data) {
-              var htmlInj = '';
+                        htmlInj += '<p style="margin:0px; padding:0 0 0 10px;"><input type="radio" id="manual_use_category_'+id+'" name="suggested_'+id+'" value="" onchange="useManualCategory('+id+')" /> Choose category</p>';
+                        $('#suggestedCat_'+id).html(htmlInj);
+                }else{
+                    htmlInj += '<p style="margin:0px; padding:0 0 0 10px;"><input type="radio" id="manual_use_category_'+id+'" name="suggested_'+id+'" value="" onchange="useManualCategory('+id+')" checked="checked" /> Choose category</p>';
+                    $('#suggestedCat_'+id).html(htmlInj);
+                    useManualCategory(id);
+                }
 
-              if (data.error == false && data.data) {
-                var i = 1;
+                $('#loadingSuggestedCat_'+id).hide();
+                removeCount();
+            },
+            failure: function(){
+                $('#loadingSuggestedCat_'+id).hide();
+                removeCount();
+            },
+            error: function(){
+                $('#loadingSuggestedCat_'+id).hide();
+                removeCount();
+            }
+        });
+    }
 
-                $.each(data.data, function(key,val) {
-                    if (val.percent != 0) {
-                      htmlInj += '<div class="row form-group">';
-                        htmlInj += '<div class="col-sm-1 text-right">';
-                          htmlInj += '<input type="radio" id="suggested_category_'+id+'" name="suggested_'+id+'" value="'+val.id+'" onchange="categorySuggestedChange('+val.id+','+id+')"';
-                          if (i == 1) {
-                              htmlInj += ' checked="checked"';
-                              categorySuggestedChange(val.id, id);
-                          }
-                          htmlInj += '/>';
-                        htmlInj += '</div>';
-                        htmlInj += '<div class="col-sm-11">';
-                          htmlInj += '('+val.percent+'% match) '+val.name;
-                        htmlInj += '</div>';
-                      htmlInj += '</div>';
+    function loadCategories(level, skip, id){
+        var parent = '';
+        
+        if(level == 1){
+            parent = ''
+        }else{
+            var prevLevel = level - 1;
+            parent = $('#catsSelect'+prevLevel+'_'+id).val();
+        }
+
+        var countI = level;
+
+        while(countI <= 6){
+            $('#catsSelect'+countI+'_'+id).hide().empty();
+            countI++;
+        }
+
+        $.ajax({
+            url: 'index.php?route=openbay/openbay/getCategories&token=<?php echo $token; ?>&parent='+parent,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function(){
+                $('#cSelections_'+id).removeClass('success').addClass('attention');
+                $('#imageLoading_'+id).show();
+                addCount();
+            },
+            success: function(data) {
+                if(data.items != null){
+                    $('#catsSelect'+level+'_'+id).empty();
+                    $('#catsSelect'+level+'_'+id).append('<option value="">-- SELECT --</option>');
+                    $.each(data.cats, function(key, val) {
+                        if(val.CategoryID != parent){
+                            $('#catsSelect'+level+'_'+id).append('<option value="'+val.CategoryID+'">'+val.CategoryName+'</option>');
+                        }
+                    });
+
+                    if(skip != true){
+                        $('#finalCat_'+id).val('');
                     }
-                    i++;
-                });
 
-                htmlInj += '<div class="row form-group">';
-                  htmlInj += '<div class="col-sm-1 text-right"><input type="radio" id="manual_use_category_'+id+'" name="suggested_'+id+'" value="" onchange="useManualCategory('+id+')" /></div>';
-                  htmlInj += '<div class="col-sm-11"><?php echo $text_category_choose; ?></div>';
-                htmlInj += '</div>';
-              } else {
-                htmlInj += '<div class="row form-group">';
-                  htmlInj += '<div class="col-sm-1 text-right"><input type="radio" id="manual_use_category_'+id+'" name="suggested_'+id+'" value="" onchange="useManualCategory('+id+')" /></div>';
-                  htmlInj += '<div class="col-sm-11"><?php echo $text_category_choose; ?></div>';
-                htmlInj += '</div>';
-                useManualCategory(id);
-              }
-              $('#suggestedCat_'+id).empty().html(htmlInj);
-              $('#loadingSuggestedCat_'+id).hide();
-              removeCount();
-          },
-          failure: function() {
-              $('#loadingSuggestedCat_'+id).hide();
-              removeCount();
-          },
-          error: function() {
-              $('#loadingSuggestedCat_'+id).hide();
-              removeCount();
-          }
-      });
-  }
+                    $('#catsSelect'+level+'_'+id).show();
+                }else{
+                    if(data.error){
 
-  function loadCategories(level, skip, id) {
-      var parent = '';
+                    }else{
+                        $('#finalCat_'+id).val($('#catsSelect'+prevLevel+'_'+id).val());
+                        $('#cSelections_'+id).removeClass('attention').addClass('success');
+                        getCategoryFeatures($('#catsSelect'+prevLevel+'_'+id).val(), id);
+                    }
+                }
+                $('#imageLoading_'+id).hide();
+                removeCount();
+            },
+            failure: function(){
+                removeCount();
+            },
+            error: function(){
+                removeCount();
+            }
+        });
+    }
 
-      if (level == 1) {
-          parent = ''
-      } else {
-          var prevLevel = level - 1;
-          parent = $('#catsSelect'+prevLevel+'_'+id).val();
-      }
+    function getCategoryFeatures(cat, id){
+        itemFeatures(cat, id);
+        $('#editCatalog_'+id).show();
 
-      var countI = level;
+        $('#durationRow_'+id).hide();
+        $('#durationLoading_'+id).show();
+        $('#durationContainer_'+id).show();
 
-      while(countI <= 6) {
-          $('#catsSelect'+countI+'_'+id).hide().empty();
-          countI++;
-      }
+        $('#conditionRow_'+id).hide();
+        $('#conditionLoading_'+id).show();
+        $('#conditionContainer_'+id).show();
 
-      $.ajax({
-          url: 'index.php?route=openbay/ebay/getCategories&token=<?php echo $token; ?>&parent='+parent,
-          type: 'GET',
-          dataType: 'json',
-          beforeSend: function() {
-              $('#imageLoading_'+id).show();
-          },
-          success: function(data) {
-              if (data.items != null) {
-                  $('#catsSelect'+level+'_'+id).empty();
-                  $('#catsSelect'+level+'_'+id).append('<option value="">-- SELECT --</option>');
-                  $.each(data.cats, function(key, val) {
-                      if (val.CategoryID != parent) {
-                          $('#catsSelect'+level+'_'+id).append('<option value="'+val.CategoryID+'">'+val.CategoryName+'</option>');
-                      }
-                  });
+        $.ajax({
+            url: 'index.php?route=openbay/openbay/getCategoryFeatures&token=<?php echo $token; ?>&category='+cat,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function(){ addCount(); },
+            success: function(data) {
+                if(data.error == false){
+                    var htmlInj = '';
 
-                  if (skip != true) {
-                      $('#finalCat_'+id).val('');
-                  }
+                    listingDuration(data.data.durations, id);
 
-                  $('#catsSelect'+level+'_'+id).show();
-              } else {
-                  if (data.error) {
+                    if(data.data.conditions){
+                        $.each(data.data.conditions, function(key, val){
+                            htmlInj += '<option value='+val.id+'>'+val.name+'</option>';
+                        });
 
-                  } else {
-                      $('#finalCat_'+id).val($('#catsSelect'+prevLevel+'_'+id).val());
-                      getCategoryFeatures($('#catsSelect'+prevLevel+'_'+id).val(), id);
-                  }
-              }
-              $('#imageLoading_'+id).hide();
-          }
-      });
-  }
+                        if(htmlInj == ''){
+                            $('#conditionRow_'+id).empty();
+                            $('#conditionContainer_'+id).hide();
+                            $('#conditionRow_'+id).hide();
+                            $('#conditionLoading_'+id).hide();
+                        }else{
+                            $('#conditionRow_'+id).empty().html(htmlInj);
+                            $('#conditionRow_'+id).show();
+                            $('#conditionLoading_'+id).hide();
+                        }
+                    }
+                }else{
+                    alert(data.msg);
+                }
+                removeCount();
+            },
+            failure: function(){
+                removeCount();
+            },
+            error: function(){
+                removeCount();
+            }
+        });
+    }
+    
+    function itemFeatures(cat, id){
+        $('#editFeature_'+id).hide();
+        
+        $.ajax({
+            url: 'index.php?route=openbay/openbay/getEbayCategorySpecifics&token=<?php echo $token; ?>&category='+cat,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function(){ addCount(); },
+            success: function(data) {
+                if(data.error == false){
+                    $('#featureRow_'+id).empty();
 
-  function getCategoryFeatures(cat, id) {
-      itemFeatures(cat, id);
-      $('#editCatalog_'+id).show();
+                    var htmlInj = '';
+                    var htmlInj2 = '';
+                    var specificCount = 0;
 
-      $('#durationLoading_'+id).show();
-      $('#durationContainer_'+id).hide();
+                    if(data.data.Recommendations.NameRecommendation){
 
-      $('#conditionLoading_'+id).show();
-      $('#conditionContainer_'+id).hide();
+                        data.data.Recommendations.NameRecommendation = $.makeArray(data.data.Recommendations.NameRecommendation);
 
-      $.ajax({
-          url: 'index.php?route=openbay/ebay/getCategoryFeatures&token=<?php echo $token; ?>&category='+cat,
-          type: 'GET',
-          dataType: 'json',
-          beforeSend: function() { addCount(); },
-          success: function(data) {
-              if (data.error == false) {
-                  var htmlInj = '';
+                        $.each(data.data.Recommendations.NameRecommendation, function(key, val){
+                            htmlInj2 = '';
 
-                  listingDuration(data.data.durations, id);
-
-                  if (data.data.conditions) {
-                      $.each(data.data.conditions, function(key, val) {
-                          htmlInj += '<option value='+val.id+'>'+val.name+'</option>';
-                      });
-
-                      if (htmlInj == '') {
-                          $('#conditionRow_'+id).empty();
-                          $('#conditionContainer_'+id).hide();
-                          $('#conditionLoading_'+id).hide();
-                      } else {
-                          $('#conditionRow_'+id).empty().html(htmlInj);
-                          $('#conditionContainer_'+id).show();
-                          $('#conditionLoading_'+id).hide();
-                      }
-                  }
-              } else {
-                  alert(data.msg);
-              }
-              removeCount();
-          },
-          failure: function() {
-              removeCount();
-          },
-          error: function() {
-              removeCount();
-          }
-      });
-  }
-
-  function itemFeatures(cat, id) {
-      $('#editFeature_'+id).hide();
-
-      $.ajax({
-          url: 'index.php?route=openbay/ebay/getEbayCategorySpecifics&token=<?php echo $token; ?>&category='+cat,
-          type: 'GET',
-          dataType: 'json',
-          beforeSend: function() { addCount(); },
-          success: function(data) {
-              if (data.error == false) {
-                  $('#feature-data-'+id).empty();
-
-                  var htmlInj = '';
-                  var htmlInj2 = '';
-                  var specificCount = 0;
-
-                  if (data.data.Recommendations.NameRecommendation) {
-                    htmlInj = '';
-                    htmlInj += '<div class="page-header">';
-                      htmlInj += '<div class="container-fluid">';
-                        htmlInj += '<div class="pull-right">';
-                          htmlInj += '<a onclick="overlayHide();" class="btn btn-default" data-toggle="tooltip" title="<?php echo $text_close; ?>"><i class="fa fa-reply"></i></a>';
-                        htmlInj += '</div>';
-                        htmlInj += '<h1 class="panel-title"><?php echo $text_features; ?></h1>';
-                      htmlInj += '</div>';
-                    htmlInj += '</div>';
-                    htmlInj += '<div class="container-fluid">';
-                      htmlInj += '<div class="panel panel-default">';
-                        htmlInj += '<div class="panel-body">';
-                          htmlInj += '<div class="well">';
-                            htmlInj += '<div class="row">';
-                              data.data.Recommendations.NameRecommendation = $.makeArray(data.data.Recommendations.NameRecommendation);
-                              $.each(data.data.Recommendations.NameRecommendation, function(key, val) {
-                              htmlInj2 = '';
-                              htmlInj += '<div class="row form-group">';
-
-                              if (("ValueRecommendation" in val) && (val.ValidationRules.MaxValues == 1)) {
-                                htmlInj2 += '<option value=""><?php echo $text_select; ?></option>';
+                            if(("ValueRecommendation" in val) && (val.ValidationRules.MaxValues == 1)){
+                                htmlInj2 += '<option value="">-- <?php echo $lang_select; ?> --</option>';
 
                                 //force an array in case of single element
                                 val.ValueRecommendation = $.makeArray(val.ValueRecommendation);
 
-                                $.each(val.ValueRecommendation, function(key2, option) {
+                                $.each(val.ValueRecommendation, function(key2, option){
                                     htmlInj2 += '<option value="'+option.Value+'">'+option.Value+'</option>';
                                 });
 
-                                if (val.ValidationRules.SelectionMode == 'FreeText') {
-                                    htmlInj2 += '<option value="Other"><?php echo $text_other; ?></option>';
+                                if(val.ValidationRules.SelectionMode == 'FreeText'){
+                                    htmlInj2 += '<option value="Other"><?php echo $lang_other; ?></option>';
                                 }
+                                htmlInj += '<tr><td class="ebaySpecificTitle left">'+val.Name+'</td><td><select name="feat['+val.Name+']" class="ebaySpecificSelect openbayData_'+id+' left" id="spec_sel_'+specificCount+'" onchange="toggleSpecOther('+specificCount+');">'+htmlInj2+'</select><br /><span id="spec_'+specificCount+'_other" class="ebaySpecificSpan"><p><?php echo $lang_other; ?>:&nbsp;<input type="text" name="featother['+val.Name+']" class="ebaySpecificOther openbayData_'+id+'" /></p></span></td></tr>';
 
-                                htmlInj += '<label class="col-sm-2 control-label">'+val.Name+'</label>';
-                                htmlInj += '<div class="col-sm-10">';
-                                  htmlInj += '<div class="row">';
-                                    htmlInj += '<div class="col-sm-6">';
-                                      htmlInj += '<select name="feat['+val.Name+']" class="openbay_data_'+id+' form-control" id="spec_sel_'+specificCount+'" onchange="toggleSpecOther('+specificCount+');">'+htmlInj2+'</select>';
-                                    htmlInj += '</div>';
-                                    htmlInj += '<div class="col-sm-6" id="spec_'+specificCount+'_other">';
-                                      htmlInj += '<input type="text" name="featother['+val.Name+']" class="ebaySpecificOther openbay_data_'+id+' form-control" style="display:none;" />';
-                                    htmlInj += '</div>';
-                                  htmlInj += '</div>';
-                                htmlInj += '</div>';
-                              }else if (("ValueRecommendation" in val) && (val.ValidationRules.MaxValues > 1)) {
-                                htmlInj += '<label class="col-sm-2 control-label">'+val.Name+'</label>';
-                                htmlInj += '<div class="col-sm-10">';
-                                  htmlInj += '<div class="row">';
-                                      val.ValueRecommendation = $.makeArray(val.ValueRecommendation);
-                                      $.each(val.ValueRecommendation, function(key2, option) {
-                                        htmlInj += '<div class="col-sm-4">';
-                                          htmlInj += '<label class="checkbox-inline"><input type="checkbox" name="feat['+val.Name+'][]" value="'+option.Value+'" class="openbay_data_'+id+'"/> '+option.Value+'</label>';
-                                        htmlInj += '</div>';
-                                      });
-                                  htmlInj += '</div>';
-                                htmlInj += '</div>';
-                              } else {
-                                htmlInj += '<label class="col-sm-2 control-label">'+val.Name+'</label>';
-                                htmlInj += '<div class="col-sm-10">';
-                                  htmlInj += '<input type="text" name="feat['+val.Name+']" id="taxInc" value="" class="openbay_data_'+id+' form-control col-sm-6" />';
-                                htmlInj += '</div>';
-                              }
+                            }else if(("ValueRecommendation" in val) && (val.ValidationRules.MaxValues > 1)){
+                                htmlInj += '<tr><td class="ebaySpecificTitle left">'+val.Name+'</td><td class="left">';
 
-                              specificCount++;
-                              htmlInj += '</div>';
-                            });
-                            htmlInj += '</div>';
-                          htmlInj += '</div>';
-                        htmlInj += '</div>';
-                      htmlInj += '</div>';
-                    htmlInj += '</div>';
-                    $('#feature-data-'+id).append(htmlInj);
-                  } else {
-                    $('#feature-data-'+id).text('None');
-                  }
-              } else {
-                  alert(data.msg);
-              }
+                                //force an array in case of single element
+                                val.ValueRecommendation = $.makeArray(val.ValueRecommendation);
 
-              $('#editFeature_'+id).show();
+                                $.each(val.ValueRecommendation, function(key2, option){
+                                    htmlInj += '<p><input type="checkbox" name="feat['+val.Name+'][]" value="'+option.Value+'" class="openbayData_'+id+'"/>'+option.Value+'</p>';
+                                });
 
-              removeCount();
-          },
-          failure: function() {
-              removeCount();
-          },
-          error: function() {
-              removeCount();
-          }
-      });
-  }
+                                htmlInj += '</td></tr>';
+                            }else{
+                                htmlInj += '<tr><td class="ebaySpecificTitle left">'+val.Name+'</td><td><input type="text" name="feat['+val.Name+']" class="ebaySpecificInput openbayData_'+id+' left" /></td></tr>';
+                            }
 
-  function toggleSpecOther(id) {
-    var selectVal = $('#spec_sel_'+id).val();
-    if (selectVal == 'Other') {
-      $('#spec_'+id+'_other').show();
-    } else {
-      $('#spec_'+id+'_other').hide();
-    }
-  }
-
-  function searchEbayCatalog(id) {
-    var qry = $('#catalog_search_'+id).val();
-    var cat = $('#finalCat_'+id).val();
-    var html = '';
-    $('#catalog-results-'+id).empty().hide();
-
-      if (qry == '') {
-        $('#catalog_search_'+id).before('<div class="alert alert-danger" id="catalog_search_'+id+'_error"><i class="fa fa-exclamation-circle"></i> <?php echo $text_search_text; ?></div>');
-      } else {
-        $.ajax({
-            url: 'index.php?route=openbay/ebay/searchEbayCatalog&token=<?php echo $token; ?>',
-            type: 'POST',
-            dataType: 'json',
-            data: { category_id: cat, page: 1, search: qry },
-            beforeSend: function() {
-              $('#catalog_search_'+id+'_error').remove();
-              $('#button-catalog-search-'+id).empty().html('<i class="fa fa-cog fa-lg fa-spin"></i>').attr('disabled','disabled');
-            },
-            success: function(data) {
-                    if (data.error == false) {
-                      if (data.results > 0) {
-                        data.products = $.makeArray(data.products);
-
-                        $.each(data.products, function(key, val) {
-                          html = '';
-                          html += '<div class="well">';
-                          html += '<div class="row">';
-                          html += '<div class="col-sm-1">';
-                          html += '<input type="radio" class="openbay_data_'+id+'" name="catalog_epid_'+id+'" value="'+val.productIdentifier.ePID+'" />';
-                          html += '</div>';
-                          html += '<div class="col-sm-2 text-center">';
-                          if (typeof(val.stockPhotoURL) != "undefined" && val.stockPhotoURL !== null) {
-                            html += '<img class="img-thumbnail" src="'+val.stockPhotoURL.thumbnail.value+'"/>';
-                          } else {
-                            html += '<span class="img-thumbnail"><i class="fa fa-camera fa-5x"></i></span>';
-                          }
-                          html += '</div>';
-                          html += '<div class="col-sm-9">';
-                          html += '<p>'+val.productDetails.value.text.value+'</p>';
-                          html += '</div>';
-                          html += '</div>';
-                          html += '</div>';
-
-                          $('#catalog-results-'+id).append(html).show();
+                            specificCount++;
                         });
-                      } else {
-                        $('#catalog-results-'+id).append('<div class="alert alert-warning"><i class="fa fa-warning"></i> <?php echo $text_catalog_no_products; ?></div>').show();
-                      }
-                    } else {
-                      $('#catalog-results-'+id).append('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> '+data.error_message+'</div>').show();
+
+
+                        $('#featureRow_'+id).append(htmlInj);
+                    }else{
+                        $('#featureRow_'+id).text('None');
                     }
+                }else{
+                    alert(data.msg);
+                }
+
+                $('#editFeature_'+id).show();
+                
+                removeCount();
             },
-            complete: function() {
-              $('#button-catalog-search-'+id).empty().html('<i class="fa fa-lg fa-search"></i> <?php echo $text_search; ?>').removeAttr('disabled');
+            failure: function(){
+                removeCount();
             },
-            failure: function() {
-                $('#catalog-results-'+id).append('<?php echo $text_search_failed; ?>');
-            },
-            error: function() {
-                $('#catalog-results-'+id).append('<?php echo $text_search_failed; ?>');
+            error: function(){
+                removeCount();
             }
         });
-      }
-  }
+    }
 
-  function listingDuration(data, id) {
-    var lang            = new Array();
-    var listingDefault  = '<?php echo (isset($default['defaults']['listing_duration']) ? $default['defaults']['listing_duration'] : ''); ?>';
+    function toggleSpecOther(id){
+        var selectVal = $('#spec_sel_'+id).val();
 
-    lang["Days_1"]      = '1 Day';
-    lang["Days_3"]      = '3 Days';
-    lang["Days_5"]      = '5 Days';
-    lang["Days_7"]      = '7 Days';
-    lang["Days_10"]     = '10 Days';
-    lang["Days_30"]     = '30 Days';
-    lang["GTC"]         = 'GTC';
+        if(selectVal == 'Other'){
+            $('#spec_'+id+'_other').show();
+        }else{
+            $('#spec_'+id+'_other').hide();
+        }
+    }
 
-    htmlInj        = '';
-    $.each(data, function(key, val) {
-        htmlInj += '<option value="'+val+'"';
-        if (val == listingDefault) { htmlInj += ' selected="selected"';}
-        htmlInj += '>'+lang[val]+'</option>';
-    });
+    function searchEbayCatalog(id){
+        var qry = $('#catalog_search_'+id).val();
+        var cat = $('#finalCat_'+id).val();
 
-    $('#durationRow_'+id).empty().html(htmlInj);
-    $('#durationLoading_'+id).hide();
-    $('#durationContainer_'+id).show();
-  }
+        var html = '';
 
-  function categorySuggestedChange(val, id) {
-      $('#cSelections_'+id).hide();
-      loadCategories(1, true, id);
-      $('#finalCat_'+id).val(val);
-      getCategoryFeatures(val, id);
-  }
+        if(qry == ''){
+            alert('<?php echo $lang_search_text; ?>');
+        }
+        
+        $.ajax({
+            url: 'index.php?route=openbay/openbay/searchEbayCatalog&token=<?php echo $token; ?>',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                categoryId: cat,
+                page: 1,
+                search: qry
+            },
+            beforeSend: function(){
+                $('#catalog_search_btn_'+id).hide();
+                $('#catalog_search_img_'+id).show();
+                $('#catalogDiv_'+id).empty();
+            },
+            success: function(data) {
+                $('#catalog_search_btn_'+id).show();
+                $('#catalog_search_img_'+id).hide();
+                if(data.error == false){
+                    if(data.data.productSearchResult.paginationOutput.totalEntries == 0 || data.data.ack == 'Failure'){
+                        $('#catalogDiv_'+id).append('<?php echo $lang_catalog_no_products; ?>');
+                    }else{
+                        data.data.productSearchResult.products = $.makeArray(data.data.productSearchResult.products);
 
-  $('#button-verify').bind('click', function() {
-      var id = '';
-      var name = '';
-      var processedData = '';
-
-      overlay('overlay-loading');
-
-      $('#button-verify').hide();
-      $('#button-edit').show();
-      $('#button-submit').show();
-
-      $.each($('.product_id'), function(i) {
-          id = $(this).val();
-          name = $('#title_'+$(this).val()).val();
-
-          $('#product_messages_'+id).html('<div class="alert alert-info"><i class="fa fa-cog fa-lg fa-spin"></i> <?php echo $text_loading; ?></div>').show();
-          $('.product_content_'+id).hide();
-          $('#product_title_'+id).text(name).show();
-
-          $('#catalog_epid_'+id).val($("input[type='radio'][name='catalog_epid_"+id+"']:checked").val());
-
-          processedData = $(".openbay_data_"+id).serialize();
-
-          $.ajax({
-              url: 'index.php?route=openbay/ebay/verifyBulk&token=<?php echo $token; ?>&i='+id,
-              type: 'POST',
-              dataType: 'json',
-              data: processedData,
-              beforeSend: function() { addCount(); },
-              success: function(data) {
-                var html = '';
-                if (data.ack != 'Failure') {
-                  var fee_total = '';
-                  var currency = '';
-
-                  $('#p_row_buttons_'+data.i).prepend('<a class="btn btn-primary button-preview" target="_BLANK" href="'+data.preview+'"><?php echo $text_preview; ?></a>');
-
-                  if (data.errors) {
-                    $.each(data.errors, function(k,v) {
-                      html += '<div class="alert alert-warning"><i class="fa fa-warning"></i> '+v+'</div>';
-                    });
-                  }
-
-                  $.each(data.fees, function(key, val) {
-                    if (val.Fee != 0.0 && val.Name != 'ListingFee') {
-                      fee_total = fee_total + parseFloat(val.Fee);
+                        $.each(data.data.productSearchResult.products, function(key, val){
+                            processCatalogItem(val, id);
+                        });
                     }
-                    currency = val.Cur;
-                  });
-
-                  html += '<div class="alert alert-info"><i class="fa fa-info-circle"></i> <?php echo $text_total_fee; ?> '+currency+' '+parseFloat(fee_total).toFixed(2)+'</div>';
-                } else {
-                    $.each(data.errors, function(k,v) {
-                        html += '<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> '+v+'</div>';
-                    });
                 }
-                $('#product_messages_'+data.i).html(html);
-                removeCount();
-              },
-              failure: function() {
-                  removeCount();
-                  alert('<?php echo $text_error_reverify; ?>');
-              },
-              error: function() {
-                  removeCount();
-                  alert('<?php echo $text_error_reverify; ?>');
-              }
-          });
-      });
-  });
+            },
+            failure: function(){
+                $('#catalog_search_btn_'+id).show();
+                $('#catalog_search_img_'+id).hide();
+                $('#catalogDiv_'+id).append('<?php echo $lang_search_failed; ?>');
+            },
+            error: function(){
+                $('#catalog_search_btn_'+id).show();
+                $('#catalog_search_img_'+id).hide();
+                $('#catalogDiv_'+id).append('<?php echo $lang_search_failed; ?>');
+            }
+        });
+    }
+    
+    function processCatalogItem(val, id){
+        html = '';
+        html += '<div style="float:left; display:inline; width:450px; height:100px; padding:5px; margin-right:10px; margin-bottom:10px;" class="border">';
+            html += '<div style="vertical-align:middle; float:left; display:inline; width:20px; height:100px; vertical-align:middle;">';
+                html += '<input type="radio" class="openbayData_'+id+'" name="catalog_epid_'+id+'" value="'+val.productIdentifier.ePID+'" />';
+            html += '</div>';
+            html += '<div style="float:left; display:inline; width:100px; height:100px; overflow:hidden; text-align: center;">';
+                html += '<img src="'+val.stockPhotoURL.thumbnail.value+'" />';
+            html += '</div>';
+            html += '<div style="float:left; display:inline; width:300px;">';
+                html += '<p style="line-height:24px;">'+val.productDetails.value.text.value+'</p>';
+            html += '</div>';
+        html += '</div>';
 
-  $('#button-edit').bind('click', function() {
-    var id = '';
-    var name = '';
+        $('#catalogDiv_'+id).append(html);
+    }
 
-    $('#button-verify').show();
-    $('#button-edit').hide();
-    $('#button-submit').hide();
-    $('.button-preview').remove();
-    $('.button-listing-view').remove();
+    function listingDuration(data, id){
+        var lang            = new Array();
+        var listingDefault  = '<?php echo (isset($default['defaults']['listing_duration']) ? $default['defaults']['listing_duration'] : ''); ?>';
 
-    $.each($('.product_id'), function(i) {
-      id = $(this).val();
-      name = $('#title_'+$(this).val()).val();
-      $('#product_messages_'+$(this).val()).empty().hide();
-      $('.product_content_'+$(this).val()).show();
-      $('#product_title_'+$(this).val()).text(name).hide();
-    });
-  });
+        lang["Days_1"]      = '1 Day';
+        lang["Days_3"]      = '3 Days';
+        lang["Days_5"]      = '5 Days';
+        lang["Days_7"]      = '7 Days';
+        lang["Days_10"]     = '10 Days';
+        lang["Days_30"]     = '30 Days';
+        lang["GTC"]         = 'GTC';
 
-  $('#button-submit').bind('click', function() {
-      var confirm_box = confirm('<?php echo $text_ajax_confirm_listing; ?>');
-      if (confirm_box) {
-          var id = '';
-          var name = '';
-          var processedData = '';
+        htmlInj        = '';
+        $.each(data, function(key, val){
+            htmlInj += '<option value="'+val+'"';
+            if(val == listingDefault){ htmlInj += ' selected="selected"';}
+            htmlInj += '>'+lang[val]+'</option>';
+        });
 
-          overlay('overlay-loading');
+        $('#durationRow_'+id).empty().html(htmlInj);
+        $('#durationRow_'+id).show();
+        $('#durationLoading_'+id).hide();
+    }
 
-          $('#button-verify').hide();
-          $('#button-edit').hide();
-          $('#button-submit').hide();
-          $('.button-preview').remove();
+    function categorySuggestedChange(val, id){
+        $('#cSelections_'+id).hide();
+        loadCategories(1, true, id);
+        $('input[name=finalCat]').attr('value', val);
+        getCategoryFeatures(val, id);
+    }
 
-          $.each($('.product_id'), function(i) {
-              id = $(this).val();
-              name = $('#title_'+$(this).val()).val();
+    function editAll(){
+        var id = '';
+        var name = '';
 
-              $('.product_content_'+$(this).val()).hide();
-              $('#product_title_'+$(this).val()).text(name).show();
+        $('#previewBtn').show();
+        $('#previewEditBtn').hide();
+        $('#submitBtn').hide();
+        $('.p_row_buttons_prev').remove();
+        $('.p_row_buttons_view').remove();
 
-              $.ajax({
-                url: 'index.php?route=openbay/ebay/listItemBulk&token=<?php echo $token; ?>&i='+id,
+        $.each($('.pId'), function(i){
+            id = $(this).val();
+            name = $('#title_'+$(this).val()).val();
+            $('#p_row_msg_'+$(this).val()).hide();
+            $('.p_row_content_'+$(this).val()).show();
+            $('#p_row_title_'+$(this).val()).text(name).hide();
+            $('#p_msg_'+i).empty();
+        });
+    }
+
+    function previewAll(){
+        var id = '';
+        var name = '';
+        var processedData = '';
+
+        showGreyScreen('loadingVerify');
+
+        $('.warning').hide();
+        $('#previewBtn').hide();
+        $('#previewEditBtn').show();
+        $('#submitBtn').show();
+
+        $.each($('.pId'), function(i){
+            id = $(this).val();
+            name = $('#title_'+$(this).val()).val();
+        
+            $('#p_row_msg_'+$(this).val()).show();
+            $('.p_row_content_'+$(this).val()).hide();
+            $('#p_row_title_'+$(this).val()).text(name).show();
+
+            //set the catalog id if chosen
+            $('#catalog_epid_'+id).val($("input[type='radio'][name='catalog_epid_"+id+"']:checked").val());
+
+            processedData = $(".openbayData_"+id).serialize();
+
+            $.ajax({
+                url: 'index.php?route=openbay/openbay/verifyBulk&token=<?php echo $token; ?>&i='+id,
                 type: 'POST',
                 dataType: 'json',
-                data: $(".openbay_data_"+id).serialize(),
-                beforeSend: function() { addCount(); },
+                data: processedData,
+                beforeSend: function(){ addCount(); },
                 success: function(data) {
-                  var html = '';
-                  if (data.ack != 'Failure') {
-                    if (data.errors) {
-                      $.each(data.errors, function(k,v) {
-                        html += '<div class="alert alert-warning"><i class="fa fa-warning"></i> '+v+'</div>';
-                      });
+                    if(data.ack != 'Failure'){
+
+                        var msgHtml = '';
+                        var feeTot = '';
+                        var currencyCode = '';
+
+                        if(document.location.protocol == 'https:') {
+                            $('#p_row_buttons_'+data.i).prepend('<a class="button p_row_buttons_prev" target="_BLANK" href="'+data.preview+'"><?php echo $lang_preview; ?></a>');
+                        } else {
+                            var prevHtml = "previewListing('"+data.preview+"')";
+                            $('#p_row_buttons_'+data.i).prepend('<a class="button p_row_buttons_prev" onclick="'+prevHtml+'"><?php echo $lang_preview; ?></a>');
+                        }
+
+                        if(data.errors){
+                            $.each(data.errors, function(k,v){
+                                msgHtml += '<div class="attention" style="margin:5px;">'+v+'</div>';
+                            });
+                        }
+
+                        $.each(data.fees, function(key, val){
+                            if(val.Fee != 0.0 && val.Name != 'ListingFee'){
+                                feeTot = feeTot + parseFloat(val.Fee);
+                            }
+                            currencyCode = val.Cur;
+                        });
+
+                        msgHtml += '<div class="success" style="margin:5px;">Total fees: '+currencyCode+' '+feeTot+'</div>';
+
+                        $('#p_msg_'+data.i).html(msgHtml);
+                    }else{
+                        var errorHtml = '';
+
+                        $.each(data.errors, function(k,v){
+                            errorHtml += '<div class="warning" style="margin:5px;">'+v+'</div>';
+                        });
+
+                        $('#p_msg_'+data.i).html(errorHtml);
                     }
-
-                    $('#p_row_buttons_'+data.i).prepend('<a class="btn btn-primary button-listing-view" href="<?php echo $listing_link; ?>'+data.itemid+'" target="_BLANK"><?php echo $button_view; ?></a>');
-
-                    html += '<div class="alert alert-success"><i class="fa fa-check-circle"></i> <?php echo $text_listed; ?>'+data.itemid+'</div>';
-                  } else {
-                    $.each(data.errors, function(k,v) {
-                      html += '<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> '+v+'</div>';
-                    });
-                  }
-                  $('#product_messages_'+data.i).html(html).show();
-                  removeCount();
-                },
-                failure: function() {
                     removeCount();
                 },
-                error: function() {
+                failure: function(){
                     removeCount();
+                    alert('<?php echo $lang_error_reverify; ?>');
+                },
+                error: function(){
+                    removeCount();
+                    alert('<?php echo $lang_error_reverify; ?>');
                 }
-              });
-          });
-      }
-  });
+            });
+        });
+    }
 
-  function showFeatures(id) {
-    overlay('overlay-feature-'+id);
-  }
+    function submitAll(){
+        var confirm_box = confirm('<?php echo $lang_ajax_confirm_listing; ?>');
+        if (confirm_box) {
+            var id = '';
+            var name = '';
+            var processedData = '';
+            
+            showGreyScreen('loadingVerify');
 
-  function showCatalog(id) {
-    overlay('overlay-catalog-'+id);
-  }
+            $('.warning').hide();
+            $('.attention').hide();
+            $('#previewBtn').hide();
+            $('#previewEditBtn').hide();
+            $('#submitBtn').hide();
+            $('.p_row_buttons_prev').remove();
 
-  function showProfiles(id) {
-    overlay('overlay-profile-'+id);
-  }
+            $.each($('.pId'), function(i){
+                id = $(this).val();
+                name = $('#title_'+$(this).val()).val();
 
-  function showCategory(id) {
-    overlay('overlay-category-'+id);
-  }
+                $('#p_row_msg_'+$(this).val()).show();
+                $('.p_row_content_'+$(this).val()).hide();
+                $('#p_row_title_'+$(this).val()).text(name).show();
 
-  function genericProfileChange(id) {
-      modifyPrices(id);
-  }
+                $.ajax({
+                    url: 'index.php?route=openbay/openbay/listItemBulk&token=<?php echo $token; ?>&i='+id,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: $(".openbayData_"+id).serialize(),
+                    beforeSend: function(){ addCount(); },
+                    success: function(data) {
+                        if(data.ack != 'Failure'){
+                            var prevHtml = "previewListing('"+data.preview+"')";
+                            var msgHtml = '';
+                            var feeTot = '';
+                            var currencyCode = '';
+
+                            if(data.errors){
+                                $.each(data.errors, function(k,v){
+                                    msgHtml += '<div class="attention" style="margin:5px;">'+v+'</div>';
+                                });
+                            }
+
+                            $.each(data.fees, function(key, val){
+                                if(val.Fee != 0.0 && val.Name != 'ListingFee'){
+                                    feeTot = feeTot + parseFloat(val.Fee);
+                                }
+                                currencyCode = val.Cur;
+                            });
+
+                            $('#p_row_buttons_'+data.i).prepend('<a class="button p_row_buttons_view" href="<?php echo $listing_link; ?>'+data.itemid+'" target="_BLANK"><?php echo $lang_view; ?></a>');
+
+                            msgHtml += '<div class="success" style="margin:5px;"><?php echo $lang_listed; ?>'+data.itemid+'</div>';
+
+                            $('#p_msg_'+data.i).html(msgHtml);
+                        }else{
+                            var errorHtml = '';
+
+                            $.each(data.errors, function(k,v){
+                                errorHtml += '<div class="warning" style="margin:5px;">'+v+'</div>';
+                            });
+
+                            $('#p_msg_'+data.i).html(errorHtml);
+                        }
+                        removeCount();
+                    },
+                    failure: function(){
+                        removeCount();
+                    },
+                    error: function(){
+                        removeCount();
+                    }
+                });
+            });
+
+        }
+    }
+
+    function previewListing(url){
+        showGreyScreen('previewPage');
+        $('#previewContentIframe').attr('src', url);
+    }
+    
+    function showFeatures(id){
+        showGreyScreen('featurePage_'+id);
+    }
+    
+    function showCatalog(id){
+        showGreyScreen('catalogPage_'+id);
+    }
+
+    function genericProfileChange(id){
+        modifyPrices(id);
+    }
 </script>
+
 <?php echo $footer; ?>

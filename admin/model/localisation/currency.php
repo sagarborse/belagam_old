@@ -4,7 +4,7 @@ class ModelLocalisationCurrency extends Model {
 		$this->db->query("INSERT INTO " . DB_PREFIX . "currency SET title = '" . $this->db->escape($data['title']) . "', code = '" . $this->db->escape($data['code']) . "', symbol_left = '" . $this->db->escape($data['symbol_left']) . "', symbol_right = '" . $this->db->escape($data['symbol_right']) . "', decimal_place = '" . $this->db->escape($data['decimal_place']) . "', value = '" . $this->db->escape($data['value']) . "', status = '" . (int)$data['status'] . "', date_modified = NOW()");
 
 		if ($this->config->get('config_currency_auto')) {
-			$this->refresh(true);
+			$this->updateCurrencies(true);
 		}
 
 		$this->cache->delete('currency');
@@ -101,7 +101,7 @@ class ModelLocalisationCurrency extends Model {
 		}
 	}
 
-	public function refresh($force = false) {
+	public function updateCurrencies($force = false) {
 		if (extension_loaded('curl')) {
 			$data = array();
 
@@ -150,3 +150,4 @@ class ModelLocalisationCurrency extends Model {
 		return $query->row['total'];
 	}
 }
+?>

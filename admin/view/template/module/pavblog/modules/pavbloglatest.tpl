@@ -1,120 +1,234 @@
-<form action="<?php echo $action_lat;?>" method="post" id="formlat">
-<div class="form-horizontal">
-	<div class="row">
-		<div class="col-sm-2">
-			<ul class="nav nav-pills nav-stacked">
-				<?php if ($exlat) { ?>
-				<?php foreach ($exlat as $extension) { ?>
-				<?php $actived = (empty($module_latid))?"class='active'":''; ?>
-				<li <?php echo $actived; ?>><a href="<?php echo $extension['edit']; ?>" ><i class="fa fa-plus-circle"></i> <?php echo $extension['name']; ?></a></li>
-				<?php $i=0; foreach ($extension['module'] as $module) { $i++;?>
-				<?php $active = ($module['module_id'] == $module_latid)?'class="active"':''; ?>
-				<li <?php echo $active; ?>><a href="<?php echo $module['edit']; ?>" ><i class="fa fa-minus-circle"></i> <?php echo $module['name']; ?></a></li>
-				<?php } //end modules?>
-				<?php } //end extensions?>
-				<?php } //end if?>
-			</ul>
-		</div>
-		<!-- End ul #module -->
+<?php
+/******************************************************
+ * @package Pav Megamenu module for Opencart 1.5.x
+ * @version 1.0
+ * @author http://www.pavothemes.com
+ * @copyright	Copyright (C) Feb 2012 PavoThemes.com <@emai:pavothemes@gmail.com>.All rights reserved.
+ * @license		GNU General Public License version 2
+*******************************************************/
 
-		<div class="col-sm-8">
-			<div class="pull-left">
-				<a class="btn btn-success" title="" onclick="$('#formlat').submit();" data-toggle="tooltip" data-original-title="Save"><i class="fa fa-save"> Save </i></a>
-				<?php if(!empty($module_latid)) { ?>
-				<a onclick="confirm('Are you sure?') ? location.href='<?php echo $delete_lat; ?>' : false;" data-toggle="tooltip" title="" class="btn btn-danger" data-original-title="Delete"><i class="fa fa-trash-o"> Delete</i></a>
-				<?php } ?>
-			</div>
-			<div class="tab-content" id="tab-content-blogcomment">
-				<div class="tab-pane active" id="tab-module-pavblogcomment">
-					
-					<table class="table noborder">
-						<tr>
-							<td class="col-sm-2"><?php echo $objlang->get('entry_module_name'); ?></td>
-							<td class="col-sm-10">
-								<input class="form-control" type="text" placeholder="<?php echo $objlang->get('entry_module_name'); ?>" value="<?php echo isset($name_lat)?$name_lat:''; ?>" name="pavbloglatest_module[name]" />
-							</td>
-						</tr>
-						<tr>
-							<td class="col-sm-2"><?php echo $entry_status; ?></td>
-							<td class="col-sm-10">
-								<select name="pavbloglatest_module[status]" id="input-status" class="form-control">
-									<?php if($status_lat) { ?>
-									<option value="1" selected="selected"><?php echo $text_enabled; ?></option>
-									<option value="0"><?php echo $text_disabled; ?></option>
-									<?php } else { ?>
-									<option value="1"><?php echo $text_enabled; ?></option>
-									<option value="0" selected="selected"><?php echo $text_disabled; ?></option>
-									<?php } ?>
-								</select>
-							</td>
-						</tr>
-					</table>
-					<ul class="nav nav-tabs" id="language-pavbloglatest">
-						<?php foreach ($languages as $language) {?>
-						<li><a href="#tab-module-language-<?php echo $language["language_id"]; ?>" data-toggle="tab"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /> <?php echo $language['name']; ?></a></li>
-						<?php } ?>
-					</ul>
-					<div class="tab-content">
-						<?php foreach ($languages as $language) {?>
-						<div class="tab-pane" id="tab-module-language-<?php echo $language["language_id"]; ?>">
-							<table class="table noborder">
-								<tr>
-									<td class="col-sm-2"><?php echo $objlang->get("entry_description"); ?></td>
-									<td class="col-sm-10">
-										<textarea id="pavbloglatest_module_description_<?php echo $language['language_id'];?>" name="pavbloglatest_module[description][<?php echo $language['language_id']; ?>]">
-											<?php echo isset($description[$language['language_id']])?$description[$language['language_id']]:''; ?>
-										</textarea>
-									</td>
-								</tr>
-							</table>
-						</div>
-						<?php } ?>
-					</div>
-					<table class="table no-border">
-							<!-- Prefix Class -->
-							<tr>
-								<td class="col-sm-2"><?php echo $objlang->get("entry_prefixclass"); ?></td>
-								<td class="col-sm-10"><input class="form-control" type="text" name="pavbloglatest_module[prefixclass]" value="<?php echo $prefixclass; ?>"></td>
-							<tr>
-							<!-- //Tab Product -->
-							<tr>
-								<td class="col-sm-2"><?php echo $objlang->get("entry_tabs"); ?></td>
-								<td class="col-sm-10"><select class="form-control" name="pavbloglatest_module[tabs]">
-									<?php foreach ($selectabs as $tab => $tabName ) { ?>
-									<?php $selected = ($tabs == $tab)?'selected="selected"':'';?>
-									<option value="<?php echo $tab; ?>" <?php echo $selected; ?>><?php echo addslashes($tabName); ?></option>
-									<?php } ?>
-								</select></td>
-							<tr>
-							<!-- //Dimension (W x H) and Resize Type: -->
-							<tr>
-								<td class="col-sm-2"><?php echo $entry_dimension; ?></td>
-								<td class="col-sm-10">
-								<input style="width:20%" class="form-control" type="text" name="pavbloglatest_module[width]" value="<?php echo $width; ?>" size="3" />
-								x <input style="width:20%" class="form-control" type="text" name="pavbloglatest_module[height]" value="<?php echo $height; ?>" size="3" /></td>
-							<tr>
+$module_key = isset($module_key)?$module_key:'pavbloglatest';
+?>
+    <div id="<?php echo $module_key; ?>">
+        <div class="vtabs">
+          <?php $module_row = 1; ?>
+          <?php foreach ($modules as $module) { ?>
+          <a href="#tab-module-<?php echo $module_key; ?>-<?php echo $module_row; ?>" id="module-<?php echo $module_key; ?>-<?php echo $module_row; ?>"><?php echo $this->language->get("tab_module") . ' ' . $module_row; ?>&nbsp;<img src="view/image/delete.png" alt="" onclick="$('.vtabs a:first').trigger('click'); $('#module-<?php echo $module_key; ?>-<?php echo $module_row; ?>').remove(); $('#tab-module-<?php echo $module_key; ?>-<?php echo $module_row; ?>').remove(); return false;" /></a>
+          <?php $module_row++; ?>
+          <?php } ?>
+          <span id="module-add-<?php echo $module_key; ?>"><?php echo $button_add_module; ?>&nbsp;<img src="view/image/add.png" alt="" onclick="addModuleLatest();" /></span> </div>
+        <?php $module_row = 1; ?>
+        <?php foreach ($modules as $module) { ?>
+        <div id="tab-module-<?php echo $module_key; ?>-<?php echo $module_row; ?>" class="vtabs-content">
+          <div id="language-<?php echo $module_key; ?>-<?php echo $module_row; ?>" class="htabs">
+            <?php foreach ($languages as $language) { ?>
+            <a href="#tab-language-<?php echo $module_key; ?>-<?php echo $module_row; ?>-<?php echo $language['language_id']; ?>"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /> <?php echo $language['name']; ?></a>
+            <?php } ?>
+          </div>
+          <?php foreach ($languages as $language) { ?>
+          <div id="tab-language-<?php echo $module_key; ?>-<?php echo $module_row; ?>-<?php echo $language['language_id']; ?>">
+            <table class="form">
+              <tr>
+                <td><?php echo $this->language->get("entry_description"); ?></td>
+                <td><textarea name="pavbloglatest_module[<?php echo $module_row; ?>][description][<?php echo $language['language_id']; ?>]" id="description-<?php echo $module_key; ?>-<?php echo $module_row; ?>-<?php echo $language['language_id']; ?>"><?php echo isset($module['description'][$language['language_id']]) ? $module['description'][$language['language_id']] : ''; ?></textarea></td>
+              </tr>
+            </table>
+          </div>
+          <?php } ?>
+          <table class="form">
+			<tr>
+				<td>
+				<?php echo $this->language->get("entry_tabs");?>
+				</td>
+				<td>
+				  <select name="pavbloglatest_module[<?php echo $module_row; ?>][tabs]">
+                  <?php foreach ($tabs as $tab => $tabName) { ?>
+                  <?php if ( in_array($tab,(array)$module['tabs']) ) { ?>
+                  <option value="<?php echo $tab; ?>" selected="selected"><?php echo $tabName; ?></option>
+                  <?php } else { ?>
+                  <option value="<?php echo $tab; ?>"><?php echo $tabName; ?></option>
+                  <?php } ?>
+                  <?php } ?>
+                </select>
+				</td>
+			</tr>
+			<tr>
+				<td><?php echo $entry_dimension; ?></td>
+				<td class="left"><input type="text" name="pavbloglatest_module[<?php echo $module_row; ?>][width]" value="<?php echo $module['width']; ?>" size="3" />
+                <input type="text" name="pavbloglatest_module[<?php echo $module_row; ?>][height]" value="<?php echo $module['height']; ?>" size="3"/>
+                <?php if (isset($error_dimension[$module_row])) { ?>
+                <span class="error"><?php echo $error_dimension[$module_row]; ?></span>
+                <?php } ?></td>	
+			</tr>
+			<tr>
+				 <td class="left"><?php echo $this->language->get("entry_carousel"); ?></td>
+				  <td class="left">
+                <input type="text" name="pavbloglatest_module[<?php echo $module_row; ?>][cols]" value="<?php echo $module['cols']; ?>" size="3"/> - 
+				<input type="text" name="pavbloglatest_module[<?php echo $module_row; ?>][limit]" value="<?php echo $module['limit']; ?>" size="3"/>
+                <?php if (isset($error_carousel[$module_row])) { ?>
+                <span class="error"><?php echo $error_carousel[$module_row]; ?></span>
+                <?php } ?></td>
+			</tr>
+            <tr>
+              <td><?php echo $entry_layout; ?></td>
+              <td><select name="pavbloglatest_module[<?php echo $module_row; ?>][layout_id]">
+                 <?php foreach ($layouts as $layout) { ?>
+                  <?php if ($layout['layout_id'] == $module['layout_id']) { ?>
+                  <option value="<?php echo $layout['layout_id']; ?>" selected="selected"><?php echo $layout['name']; ?></option>
+                  <?php } else { ?>
+                  <option value="<?php echo $layout['layout_id']; ?>"><?php echo $layout['name']; ?></option>
+                  <?php } ?>
+                  <?php } ?>
+                </select></td>
+            </tr>
+            <tr>
+              <td><?php echo $entry_position; ?></td>
+              <td><select name="pavbloglatest_module[<?php echo $module_row; ?>][position]">
+                  <?php foreach( $positions as $pos ) { ?>
+                  <?php if ($module['position'] == $pos) { ?>
+                  <option value="<?php echo $pos;?>" selected="selected"><?php echo $this->language->get('text_'.$pos); ?></option>
+                  <?php } else { ?>
+                  <option value="<?php echo $pos;?>"><?php echo $this->language->get('text_'.$pos); ?></option>
+                  <?php } ?>
+                  <?php } ?> 
+                </select></td>
+            </tr>
+            <tr>
+              <td><?php echo $entry_status; ?></td>
+              <td><select name="pavbloglatest_module[<?php echo $module_row; ?>][status]">
+                  <?php if ($module['status']) { ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                  <option value="0"><?php echo $text_disabled; ?></option>
+                  <?php } else { ?>
+                  <option value="1"><?php echo $text_enabled; ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                  <?php } ?>
+                </select></td>
+            </tr>
+            <tr>
+              <td><?php echo $entry_sort_order; ?></td>
+              <td><input type="text" name="pavbloglatest_module[<?php echo $module_row; ?>][sort_order]" value="<?php echo $module['sort_order']; ?>" size="3" /></td>
+            </tr>
+          </table>
+        </div>
+        <?php $module_row++; ?>
+        <?php } ?>
+      </div>
+<script type="text/javascript" src="view/javascript/ckeditor/ckeditor.js"></script> 
+<script type="text/javascript"><!--
+<?php $module_row = 1; ?>
+<?php foreach ($modules as $module) { ?>
+<?php foreach ($languages as $language) { ?>
+CKEDITOR.replace('description-<?php echo $module_key; ?>-<?php echo $module_row; ?>-<?php echo $language['language_id']; ?>', {
+	filebrowserBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+	filebrowserImageBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+	filebrowserFlashBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+	filebrowserUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+	filebrowserImageUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+	filebrowserFlashUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>'
+});
+<?php } ?>
+<?php $module_row++; ?>
+<?php } ?>
+//--></script> 
+<script type="text/javascript"><!--
+var module_row_latest = <?php echo $module_row; ?>;
 
-							<!-- //Max Columns - Limit Items In Carousel: -->
-							</tr>
-								<td class="col-sm-2"><?php echo $objlang->get("entry_carousel"); ?></td>
-								<td class="col-sm-10">
-									<input style="width:20%" class="form-control" type="text" name="pavbloglatest_module[cols]" value="<?php echo $cols; ?>" size="3" />
-									x <input style="width:20%" class="form-control" type="text" name="pavbloglatest_module[limit]" value="<?php echo $limit_lat; ?>" size="3" />
-								</td>
-							</tr>
-						</table>
-				</div>
-			</div><!-- End div .tab-content module-->		
-		</div>
-	</div>
-</div>
-</form>
-<style type="text/css">
-	.noborder tbody > tr > td {border: 1px solid #fff;}
-</style>
-<script type="text/javascript">
+function addModuleLatest() {	
+	html  = '<div id="tab-module-<?php echo $module_key; ?>-' + module_row_latest + '" class="vtabs-content">';
+	html += '  <div id="language-<?php echo $module_key; ?>-' + module_row_latest + '" class="htabs">';
+    <?php foreach ($languages as $language) { ?>
+    html += '    <a href="#tab-language-<?php echo $module_key; ?>-'+ module_row_latest + '-<?php echo $language['language_id']; ?>"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /> <?php echo $language['name']; ?></a>';
+    <?php } ?>
+	html += '  </div>';
+
 	<?php foreach ($languages as $language) { ?>
-		$("#pavbloglatest_module_description_<?php echo $language['language_id']?>").summernote({ height: 150 });
+	html += '    <div id="tab-language-<?php echo $module_key; ?>-'+ module_row_latest + '-<?php echo $language['language_id']; ?>">';
+	html += '      <table class="form">';
+	html += '        <tr>';
+	html += '          <td><?php echo $this->language->get("entry_description"); ?></td>';
+	html += '          <td><textarea name="pavbloglatest_module[' + module_row_latest + '][description][<?php echo $language['language_id']; ?>]" id="description-<?php echo $module_key; ?>-' + module_row_latest + '-<?php echo $language['language_id']; ?>"></textarea></td>';
+	html += '        </tr>';
+	html += '      </table>';
+	html += '    </div>';
 	<?php } ?>
-	$('#language-pavbloglatest li:first-child a').tab('show');
-</script>
+
+	html += '  <table class="form">';
+		html += '  <tr>';
+	html += '      <td><?php echo $this->language->get("entry_tabs"); ?></td>';		
+	html += '    <td class="left"><select name="pavbloglatest_module[' + module_row_latest + '][tabs]"  >';
+	<?php foreach ($tabs as $tab => $tabName ) { ?>
+	html += '      <option value="<?php echo $tab; ?>"><?php echo addslashes($tabName); ?></option>';
+	<?php } ?>
+	html += '    </select></td>';
+		html += '    <tr>';
+	html += '      <td><?php echo $entry_dimension; ?></td>';
+	html += '    <td class="left"><input type="text" name="pavbloglatest_module[' + module_row_latest + '][width]" value="" size="3" /> <input type="text" name="pavbloglatest_module[' + module_row_latest + '][height]" value="" size="3" /></td>';
+	html += '    <tr>';
+	html += '    </tr>';
+	html += '      <td><?php echo $this->language->get("entry_carousel"); ?></td>';
+	html += '    <td class="left"><input type="text" name="pavbloglatest_module[' + module_row_latest + '][cols]" value="4" size="3" /> - <input type="text" name="pavbloglatest_module[' + module_row_latest + '][limit]" value="16" size="3" /></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_layout; ?></td>';
+	html += '      <td><select name="pavbloglatest_module[' + module_row_latest + '][layout_id]">';
+	<?php foreach ($layouts as $layout) { ?>
+	html += '           <option value="<?php echo $layout['layout_id']; ?>"><?php echo addslashes($layout['name']); ?></option>';
+	<?php } ?>
+	html += '      </select></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_position; ?></td>';
+	html += '      <td><select name="pavbloglatest_module[' + module_row_latest + '][position]">';
+	<?php foreach( $positions as $pos ) { ?>
+	html += '<option value="<?php echo $pos;?>"><?php echo $this->language->get('text_'.$pos); ?></option>';      
+	<?php } ?>		html += '      </select></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_status; ?></td>';
+	html += '      <td><select name="pavbloglatest_module[' + module_row_latest + '][status]">';
+	html += '        <option value="1"><?php echo $text_enabled; ?></option>';
+	html += '        <option value="0"><?php echo $text_disabled; ?></option>';
+	html += '      </select></td>';
+	html += '    </tr>';
+	html += '    <tr>';
+	html += '      <td><?php echo $entry_sort_order; ?></td>';
+	html += '      <td><input type="text" name="pavbloglatest_module[' + module_row_latest + '][sort_order]" value="" size="3" /></td>';
+	html += '    </tr>';
+	html += '  </table>'; 
+	html += '</div>';
+	
+	$('#<?php echo $module_key; ?>').append(html);
+	
+	<?php foreach ($languages as $language) { ?>
+	CKEDITOR.replace('description-<?php echo $module_key; ?>-' + module_row_latest + '-<?php echo $language['language_id']; ?>', {
+		filebrowserBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserImageBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserFlashBrowseUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserImageUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>',
+		filebrowserFlashUploadUrl: 'index.php?route=common/filemanager&token=<?php echo $token; ?>'
+	});  
+	<?php } ?>
+	
+	$('#language-<?php echo $module_key; ?>-' + module_row_latest + ' a').tabs();
+	
+	$('#module-add-<?php echo $module_key; ?>').before('<a href="#tab-module-<?php echo $module_key; ?>-' + module_row_latest + '" id="module-<?php echo $module_key; ?>-' + module_row_latest + '"><?php echo $this->language->get("tab_module"); ?> ' + module_row_latest + '&nbsp;<img src="view/image/delete.png" alt="" onclick="$(\'.vtabs a:first\').trigger(\'click\'); $(\'#module-<?php echo $module_key; ?>-' + module_row_latest + '\').remove(); $(\'#tab-module-<?php echo $module_key; ?>-' + module_row_latest + '\').remove(); return false;" /></a>');
+	
+	$('#<?php echo $module_key; ?> .vtabs a').tabs();
+	
+	$('#module-<?php echo $module_key; ?>-' + module_row_latest).trigger('click');
+	
+	module_row_latest++;
+}
+//--></script> 
+<script type="text/javascript"><!--
+$('#<?php echo $module_key; ?> .vtabs a').tabs();
+//--></script> 
+<script type="text/javascript"><!--
+<?php $module_row = 1; ?>
+<?php foreach ($modules as $module) { ?>
+$('#language-<?php echo $module_key; ?>-<?php echo $module_row; ?> a').tabs();
+<?php $module_row++; ?>
+<?php } ?> 
+//--></script> 

@@ -1,19 +1,15 @@
 <?php  
 class Controllermodulepavbloglatest extends Controller {
-	
-	private $mdata = array();
-
-	public function index($setting) {
+	protected function index($setting) {
 		static $module = 0;
+		
 		$this->load->model('pavblog/blog');
 		$this->load->model('catalog/product'); 
 		$this->load->model('tool/image');
-		$this->language->load('module/pavblog');
+		$this->language->load('module/pavbloglatest');
 		
-		$this->mdata['button_cart'] = $this->language->get('button_cart');
+		$this->data['button_cart'] = $this->language->get('button_cart');
 		
-		$this->mdata['objlang'] = $this->language;
-		$this->mdata['objurl'] = $this->url;
 		
 		if( !defined("_PAVBLOG_MEDIA_") ){
 			if (file_exists('catalog/view/theme/' . $this->config->get('config_template') . '/stylesheet/pavblog.css')) {
@@ -29,14 +25,13 @@ class Controllermodulepavbloglatest extends Controller {
 			'limit' => 9
 		);
 	 
-		$this->mdata['toolimg'] = $this->model_tool_image;
-
-		$this->mdata['width'] = $setting['width'];
-		$this->mdata['height'] = $setting['height'];
-		$this->mdata['cols']   = (int)$setting['cols'];  
-		$this->mdata['prefixclass']   = isset($setting['prefixclass'])?$setting['prefixclass']:'';
-
-		$this->mdata['tabs'] = array();
+		$this->data['width'] = $setting['width'];
+		$this->data['height'] = $setting['height'];
+		$this->data['cols']   = (int)$setting['cols'];  
+		
+		$this->data['tabs'] = array();
+		
+	
 		
 		$data = array(
 			'sort'  => 'b.`created`',
@@ -48,20 +43,22 @@ class Controllermodulepavbloglatest extends Controller {
 		if( $setting['tabs'] == 'featured' ){			
 			$data['featured'] = 1;
 			$blogs = $this->model_pavblog_blog->getListBlogs( $data );
-			$this->mdata['heading_title'] = $this->language->get('text_featured');
+			$this->data['heading_title'] = $this->language->get('text_featured');
 		}elseif( $setting['tabs'] == 'mostviewed' ){	
 			$data['sort'] = 'b.`hits`';
 			$blogs = $this->model_pavblog_blog->getListBlogs( $data );
-			$this->mdata['heading_title'] = $this->language->get('text_mostviewed');
+			$this->data['heading_title'] = $this->language->get('text_mostviewed');
 		}else {
 			$blogs = $this->model_pavblog_blog->getListBlogs( $data );
-			$this->mdata['heading_title'] = $this->language->get('text_latest');
+			$this->data['heading_title'] = $this->language->get('text_latest');
 		}
 		
+	
 		
-		$this->load->model('pavblog/category'); 
-		$users = $this->model_pavblog_category->getUsers();
 		
+		
+		
+	
 		foreach( $blogs as $key => $blog ){
 			if( $blogs[$key]['image'] ){	
 				$blogs[$key]['thumb'] = $this->model_tool_image->resize($blog['image'], $setting['width'], $setting['height'] );
@@ -78,21 +75,23 @@ class Controllermodulepavbloglatest extends Controller {
 
 		
 		if( isset( $setting['description'][$this->config->get('config_language_id')] ) ) {	
-			$this->mdata['message'] = html_entity_decode($setting['description'][$this->config->get('config_language_id')], ENT_QUOTES, 'UTF-8');
+			$this->data['message'] = html_entity_decode($setting['description'][$this->config->get('config_language_id')], ENT_QUOTES, 'UTF-8');
 	 	}else {
-			$this->mdata['message'] = '';
+			$this->data['message'] = '';
 		}
 		
 		
 
-		$this->mdata['blogs'] = $blogs;
-		$this->mdata['module'] = $module++;
+		$this->data['blogs'] = $blogs;
+		$this->data['module'] = $module++;
 						
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/module/pavbloglatest.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/module/pavbloglatest.tpl', $this->mdata);
+			$this->template = $this->config->get('config_template') . '/template/module/pavbloglatest.tpl';
 		} else {
-			return $this->load->view('default/template/module/pavbloglatest.tpl', $this->mdata);
+			$this->template = 'default/template/module/pavbloglatest.tpl';
 		}
+		
+		$this->render();
 	}
 	
 }
