@@ -1,0 +1,4 @@
+.DS_Store
+config.php
+admin/config.php
+system/cache
