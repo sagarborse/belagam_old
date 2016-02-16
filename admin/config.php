@@ -1,12 +1,12 @@
 <?php
 // HTTP
-define('HTTP_SERVER', 'https://belagam.com/admin/');
-define('HTTP_CATALOG', 'https://belagam.com/');
+define('HTTP_SERVER', 'http://belagam.local/admin/');
+define('HTTP_CATALOG', 'http://belagam.local/');
 // HTTPS
-define('HTTPS_SERVER', 'https://belagam.com/admin/');
-define('HTTPS_CATALOG', 'https://belagam.com/');
+define('HTTPS_SERVER', 'http://belagam.local/admin/');
+define('HTTPS_CATALOG', 'http://belagam.local/');
 // DIR
-define('DIR_ROOT', '/home/websites/belagam/');
+define('DIR_ROOT', '/Applications/MAMP/htdocs/belagam/');
 define('DIR_APPLICATION', DIR_ROOT.'admin/');
 define('DIR_SYSTEM', DIR_ROOT.'system/');
 define('DIR_DATABASE', DIR_ROOT.'system/database/');
@@ -20,9 +20,9 @@ define('DIR_LOGS', DIR_ROOT.'system/logs/');
 define('DIR_CATALOG', DIR_ROOT.'catalog/');
 // DB
 define('DB_DRIVER', 'mysqli');
-define('DB_HOSTNAME', '173.194.243.94');
-define('DB_USERNAME', 'belagam');
-define('DB_PASSWORD', 'Zerocool1$$');
+define('DB_HOSTNAME', 'localhost');
+define('DB_USERNAME', 'root');
+define('DB_PASSWORD', '123');
 define('DB_DATABASE', 'belagam');
 define('DB_PREFIX', 'oc_');
 ?>
