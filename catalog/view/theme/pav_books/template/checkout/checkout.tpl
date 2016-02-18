@@ -16,9 +16,9 @@
 		
 			<?php require( DIR_TEMPLATE.$this->config->get('config_template')."/template/common/breadcrumb.tpl" ); ?>
 			
-			<h1><?php echo $heading_title; ?></h1>
+			<h1><?php //echo $heading_title; ?></h1>
 
-			<div class="inner">
+			<div class="inner" style='display:none'>
 				
 					<div id="checkout">
 						<h3 class="checkout-heading">
