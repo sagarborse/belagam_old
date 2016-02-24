@@ -27,3 +27,25 @@
 2016-02-18 9:57:41 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: No address associated with hostname in /home/websites/belagam/system/library/mail.php on line 153
 2016-02-18 9:57:41 - PHP Warning:  fsockopen(): unable to connect to mail.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: No address associated with hostname) in /home/websites/belagam/system/library/mail.php on line 153
 2016-02-18 9:57:41 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: No address associated with hostname (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-18 14:33:37 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: No address associated with hostname in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-18 14:33:37 - PHP Warning:  fsockopen(): unable to connect to mail.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: No address associated with hostname) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-18 14:33:37 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: No address associated with hostname (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-18 17:21:00 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: No address associated with hostname in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-18 17:21:00 - PHP Warning:  fsockopen(): unable to connect to mail.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: No address associated with hostname) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-18 17:21:00 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: No address associated with hostname (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-20 9:27:20 - PHP Notice:  Undefined index: company_id in /home/websites/belagam/catalog/model/account/customer.php on line 18
+2016-02-20 9:27:21 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: No address associated with hostname in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-20 9:27:21 - PHP Warning:  fsockopen(): unable to connect to mail.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: No address associated with hostname) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-20 9:27:21 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: No address associated with hostname (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-20 9:30:47 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: No address associated with hostname in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-20 9:30:47 - PHP Warning:  fsockopen(): unable to connect to mail.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: No address associated with hostname) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-20 9:30:47 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: No address associated with hostname (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-23 7:41:31 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: No address associated with hostname in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-23 7:41:31 - PHP Warning:  fsockopen(): unable to connect to mail.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: No address associated with hostname) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-23 7:41:31 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: No address associated with hostname (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-23 7:54:41 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: Name or service not known in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-23 7:54:41 - PHP Warning:  fsockopen(): unable to connect to smtp.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: Name or service not known) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-23 7:54:41 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: Name or service not known (0) in /home/websites/belagam/system/library/mail.php on line 156
+2016-02-24 3:40:23 - PHP Warning:  fsockopen(): php_network_getaddresses: getaddrinfo failed: Name or service not known in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-24 3:40:23 - PHP Warning:  fsockopen(): unable to connect to smtp.belagam.com:2525 (php_network_getaddresses: getaddrinfo failed: Name or service not known) in /home/websites/belagam/system/library/mail.php on line 153
+2016-02-24 3:40:23 - PHP Notice:  Error: php_network_getaddresses: getaddrinfo failed: Name or service not known (0) in /home/websites/belagam/system/library/mail.php on line 156
